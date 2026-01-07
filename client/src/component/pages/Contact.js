@@ -1,4 +1,4 @@
-import { Clock, Mail, MessageCircle, Phone, PhoneCall } from 'lucide-react'
+import { Clock, Mail, MessageCircle, Phone } from 'lucide-react'
 import React from 'react'
 import Footer from '../footer/Footer'
 
@@ -29,11 +29,7 @@ const Contact = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-8">
                     <div className="flex flex-col items-center text-center">
 
-                        <div className="text-orange-500 mb-2 h-8 w-8 flex items-center justify-center rounded-[50%]  bg-orange-100 "><Phone /></div>
-
-                        {/* <div className="mb-4">
-                            <Phone />
-                        </div> */}
+                        <div className="text-orange-500 mb-2 h-12 w-12 flex items-center justify-center rounded-[50%]  bg-orange-100  "><Phone /></div>
                         <h3 className="text-xl font-semibold text-gray-800">Call Us</h3>
                         <h6 className="text font-semibold text-gray-800">+1 (555) 123-4567</h6>
 
@@ -41,7 +37,7 @@ const Contact = () => {
                     </div>
 
                     <div className="flex flex-col items-center text-center">
-                        <div className="text-orange-500 mb-2 h-8 w-8 flex items-center justify-center rounded-[50%]  bg-orange-100 ">
+                        <div className="text-orange-500 mb-2 h-12 w-12 flex items-center justify-center rounded-[50%]  bg-orange-100 ">
                             <Mail />
                         </div>
                         <h3 className="text-xl font-semibold text-gray-800">Email Us</h3>
@@ -51,7 +47,7 @@ const Contact = () => {
                     </div>
 
                     <div className="flex flex-col items-center text-center">
-                        <div className="text-orange-500 mb-2 h-8 w-8 flex items-center justify-center rounded-[50%]  bg-orange-100 ">
+                        <div className="text-orange-500 mb-2 h-12 w-12 flex items-center justify-center rounded-[50%]  bg-orange-100 ">
                             <Clock />
                         </div>
                         <h3 className="text-xl font-semibold text-gray-800">Business Hours</h3>

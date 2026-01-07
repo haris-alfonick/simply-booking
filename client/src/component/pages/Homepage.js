@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Globe, BarChart3, DollarSign, FileText, Plus, Share2, CheckCircle, Phone, Mail, Clock, Truck, TruckIcon, Wrench, Sofa, Zap } from 'lucide-react';
+import { Calendar, Globe, BarChart3, DollarSign, FileText, Plus, Share2, CheckCircle, Phone, Mail, Clock, Truck, TruckIcon, Wrench, Sofa, Zap, MapPin, ArrowBigRight, Play } from 'lucide-react';
 import Footer from '../footer/Footer';
 
 export default function Homepage() {
@@ -130,33 +130,35 @@ export default function Homepage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      <section className=" bg-cyan-50 p-5">
+      <section className=" bg-cyan-50 p-[clamp(1.8rem,6vw,3.5rem)]">
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
-          <div className='mt-20'>
-            <h1 className="text-5xl md:text-6xl font-bold text-cyan-500 mb-6">
+          <div className='sm:mt-4 md:mt-10 lg:mt-16 mb-10 rounded-lg'>
+
+            <h1 className=" text-[clamp(1.8rem,6vw,3.5rem)] font-bold text-cyan-500 mb-6 leading-tight">
               Build Your Service<br />Website in Minutes
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className=" text-[clamp(0.95rem,3vw,1.25rem)] text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
               A simple platform where service businesses can create their own booking page,
               generate leads, manage clients, track jobs, send quotes, and grow, all within minutes.
             </p>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button className="bg-cyan-500 text-white px-8 py-3 rounded-lg hover:bg-cyan-600 font-medium">
-                Create My Page →
+                Create My Page <ArrowBigRight className="inline-block ml-2 h-5 w-5" />
               </button>
               <button className="bg-white text-cyan-500 border-2 border-cyan-500 px-8 py-3 rounded-lg hover:bg-cyan-50 font-medium">
-                ▷ Watch Demo
+                <Play className="inline-block mr-2" /> Watch Demo
               </button>
             </div>
 
             <div className='bg-white p-6 mt-7 rounded-lg mb-5 border-0'>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-16">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:mt lg:mt-16">
                 {stats.map((stat, i) => (
                   <div key={i} className="bg-white rounded-lg p-6 shadow-sm border-2 border-gray-100">
                     <div className="text-sm text-gray-500 mb-2">{stat.label}</div>
-                    <div className={`text-3xl font-bold ${i === 0 ? 'text-cyan-500' : i === 2 ? 'text-cyan-500' : 'text-orange-400'}`}>
+                    <div className={`text-[clamp(1.5rem,4vw,2.5rem)] font-bold ${i === 0 ? 'text-cyan-500' : i === 2 ? 'text-cyan-500' : 'text-orange-400'}`}>
                       {stat.value}
                     </div>
                   </div>
@@ -204,7 +206,7 @@ export default function Homepage() {
           <div className="grid md:grid-cols-3 gap-8">
             {['of Small Businesses do not have their own website', 'Lost Revenue without online bookings portal', 'of service appointments are booked online'].map((text, i) => (
               <div key={i} className="bg-white border-2 border-gray-100 rounded-lg p-8 font-bold">
-                <div className="text-5xl font-bold text-orange-400 mb-4">30%</div>
+                <div className="text-[clamp(1.8rem,6vw,3.5rem)] font-bold text-orange-400 mb-4">30%</div>
                 <p className="text-gray-700">{text}</p>
               </div>
             ))}
@@ -279,7 +281,7 @@ export default function Homepage() {
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">Elite Plumbing Services</h3>
                     <p className="text-gray-500 flex items-center mt-1">
-                      📍 Los Angeles, CA
+                      <MapPin className='me-2' /> Los Angeles, CA
                     </p>
                     <div className="flex items-center mt-2">
                       <div className="flex text-orange-400">★★★★★</div>
