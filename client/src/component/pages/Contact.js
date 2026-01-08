@@ -115,7 +115,6 @@ const Contact = () => {
                         </form>
                     </div>
 
-
                     <div className="bg-white shadow-lg rounded-lg max-w-md w-full py-8 lg:py-12 xl:py-16 px-4 lg:px-16">
                         <h2 className="text-2xl font-semibold text-gray-700 mb-4">Frequently Asked Questions</h2>
                         <div className="space-y-4">

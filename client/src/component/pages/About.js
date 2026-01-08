@@ -61,17 +61,16 @@ const About = () => {
             title: 'Our Mission',
             description: 'To democratize technology for service businesses by providing affordable, easy-to-use tools that help them compete and thrive in the digital age',
             bg: 'bg-orange-100',
-            textColor: 'text-orange-500' // Ensuring text is dark
+            textColor: 'text-orange-500'
         },
         {
             icon: <Eye className="w-8 h-8" />,
             title: 'Our Vision',
             description: 'A world where every service professional has the same powerful business tools as large corporations, leveling the playing field',
             bg: 'bg-cyan-100',
-            textColor: 'text-cyan-500' // Ensuring text is dark
+            textColor: 'text-cyan-500'
         },
     ];
-
 
 
     return (
@@ -166,11 +165,6 @@ const About = () => {
                     </div>
                 </div>
             </section>
-
-
-
-
-
 
 
             <section className="container mx-auto py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white">
