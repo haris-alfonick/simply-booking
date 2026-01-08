@@ -5,11 +5,11 @@ import Footer from '../footer/Footer'
 const Contact = () => {
     return (
         <div>
-            <section className="bg-cyan-50 p-5">
+            <section className="bg-cyan-50 py-8 lg:py-12 xl:py-16 px-4 lg:px-16">
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div className="max-w-7xl mx-auto text-center">
 
-                    <div className='mt-20'>
+                    <div className='lg:mt-10'>
                         <h1 className="text-5xl md:text-6xl font-bold text-cyan-500 mb-6">
                             Get in Touch
                         </h1>
@@ -24,7 +24,7 @@ const Contact = () => {
 
 
 
-            <section className="container mx-auto px-4 py-16">
+            <section className="container mx-auto py-8 lg:py-12 xl:py-16 px-4 lg:px-16">
 
                 <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-8">
                     <div className="flex flex-col items-center text-center">
@@ -61,8 +61,8 @@ const Contact = () => {
 
 
 
-            <section className="bg-white-100 py-12">
-                <div className="container  mx-auto px-4 py-16 flex flex-col md:flex-row justify-center items-start gap-8">
+            <section className="bg-white-100 py-8 lg:py-12 xl:py-16 px-4 lg:px-16">
+                <div className="container  mx-auto flex flex-col md:flex-row justify-center items-start gap-8">
 
                     <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
                         <h2 className="text-2xl font-semibold text-gray-700 mb-4 flex"> <MessageCircle className='me-2 mt-1 text-cyan-500' />Send Us a Message</h2>
@@ -116,7 +116,7 @@ const Contact = () => {
                     </div>
 
 
-                    <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full mt-8 sm:mt-0">
+                    <div className="bg-white shadow-lg rounded-lg max-w-md w-full py-8 lg:py-12 xl:py-16 px-4 lg:px-16">
                         <h2 className="text-2xl font-semibold text-gray-700 mb-4">Frequently Asked Questions</h2>
                         <div className="space-y-4">
                             <div>
@@ -150,7 +150,7 @@ const Contact = () => {
 
 
 
-            <section className="bg-gray-100 py-12 mb-20">
+            <section className="bg-gray-100 py-8 lg:py-12 xl:py-16 px-4 lg:px-16">
                 <div className="container mx-auto px-4 py-16 text-center">
                     <h2 className=" font-bold text-gray-800 mb-4 ">interactive map coming soon</h2>
 

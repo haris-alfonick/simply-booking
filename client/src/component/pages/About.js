@@ -76,11 +76,11 @@ const About = () => {
 
     return (
         <div>
-            <section className="bg-gradient-to-br from-blue-50 to-cyan-50 p-5">
+            <section className="bg-gradient-to-br from-blue-50 to-cyan-50 p-2 lg:p-6 xl:p-8">
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
-                    <div className='mt-20'>
+                    <div className='mt-10 mb-16 lg:mt-16 lg:mb-20'>
                         <h1 className="text-5xl md:text-6xl font-bold text-cyan-500 mb-6">
                             About SimplyBooking
                         </h1>
@@ -93,8 +93,8 @@ const About = () => {
                 </div>
             </section>
 
-            <section className="py-16 bg-white border-radius-lg mt-10 mb-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <section className="py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white border-radius-lg">
+                <div className="max-w-7xl mx-auto text-center">
 
                     <div className="grid md:grid-cols-2 gap-8">
 
@@ -110,7 +110,7 @@ const About = () => {
             </section>
 
 
-            <section className="py-16 bg-gray-50">
+            <section className="py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid md:grid-cols-4 gap-8">
                         {process.map((step, i) => (
@@ -125,7 +125,7 @@ const About = () => {
             </section>
 
 
-            <section className="py-20 bg-white sm:px-4">
+            <section className="py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Story</h2>
                     <p className="text-lg text-gray-700 mb-6">
@@ -145,8 +145,8 @@ const About = () => {
 
 
 
-            <section className="py-16 bg-gray-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <section className="py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-gray-50">
+                <div className="max-w-7xl mx-auto ">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Us</h2>
                         <p className="text-gray-600">Get a professional online presence and grow your business faster than ever before</p>
@@ -173,8 +173,8 @@ const About = () => {
 
 
 
-            <section className="container mx-auto px-4 py-16">
-                <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Our Values</h2>
+            <section className="container mx-auto py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white">
+                <h2 className="text-3xl font-bold text-center text-gray-800">Our Values</h2>
                 <p className="text-center text-gray-500 mb-12">The principles that guide everything we do at SimplyBooking.</p>
 
                 <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-8">
