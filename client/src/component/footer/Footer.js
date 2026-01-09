@@ -1,4 +1,4 @@
-import { Star, Stars } from 'lucide-react'
+import { ArrowBigRight, Star, Stars } from 'lucide-react'
 import React from 'react'
 
 const Footer = () => {
@@ -25,10 +25,12 @@ const Footer = () => {
           <button className='bg-orange-500 text-white px-4 sm:px-8 sm:py-4 py-3 rounded-lg hover:bg-orange-600 font-medium text-lg'>
             Build My Page (Free Setup) →
           </button>
-          <div className='flex justify-center gap-2 sm:gap-8 mt-8 text-sm text-cyan-50 md:flex-row flex-col items-center md:space-y-0'>
-            <div>● No credit card needed</div>
-            <div>● Setup in minutes</div>
-            <div>● Cancel anytime</div>
+          <div className='mt-6 text-sm text-cyan-50'>
+            <ul className='list-disc pl-5 flex md:flex-row lg:flex-row justify-center  max-[475px]:[&_li]:m-auto max-[475px]:[&_li]:w-fit max-[475px]:flex-col sm:gap-4 gap-2'>
+              <li className='ms-3'>No credit card needed</li>
+              <li className='ms-3'>Setup in minutes</li>
+              <li className='ms-3'>Cancel anytime</li>
+            </ul>
           </div>
         </div>
       </section>
