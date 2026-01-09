@@ -3,6 +3,26 @@ import { Phone, Mail, MapPin, Clock, Globe, FileText, Plus, Trash2, Check, Arrow
 
 
 
+const StepIndicator = ({ currentStep, steps }) => {
+  currentStep = currentStep - 2;
+  return (
+    <div className="flex items-center justify-center mb-8 gap-4">
+      {steps.map((step, index) => (
+        <React.Fragment key={step}>
+          <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${currentStep > step ? 'bg-green-500 text-white' :
+            currentStep === step && currentStep < 3 ? 'bg-blue-500 text-white' : currentStep === 3 ? 'bg-green-500 text-white' :
+              'bg-gray-600 text-white'
+            }`}>
+            {currentStep > step ? <Check size={20} /> : currentStep === 3 ? <Check size={20} /> : step}
+          </div>
+          {index < steps.length - 1 && (<div className="w-12 h-0.5 bg-green-300" />)}
+        </React.Fragment>
+      ))}
+    </div>
+  )
+};
+
+
 const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceArea, toggleDay,
   handleFileUpload, setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours
 
@@ -12,7 +32,7 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
       <h1 className="text-3xl font-bold mb-2">Set Up Your Business</h1>
       <p className="text-gray-600 mb-8">Tell us about your business so customers can find and book with you.</p>
 
-      <div className="mb-6">
+      <div className="">
         <div className="flex items-center mb-4">
           <div className='w-[110px] h-[110px] border-2 border-dashed border-blue-300 rounded-[20px] p-6 text-center mb-6 cursor-pointer hover:border-blue-400 transition'>
             <label className="cursor-pointer block">
@@ -280,100 +300,116 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep }) => {
 
 const AddServicesStep = ({ formData, addService, updateService, removeService, currentStep, setCurrentStep }) => {
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4 lg:p-8">
-      <h1 className="text-3xl font-bold mb-2">Add Your Services</h1>
-      <p className="text-gray-600 mb-8">Add your services with pricing.</p>
+    <div>
+      <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
+      <div className="mt-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4 lg:p-8">
+        <h1 className="text-3xl font-bold mb-2">Add Your Services</h1>
+        <p className="text-gray-600 mb-8">Add your services with pricing.You can also seet custom pricing.</p>
 
-      <div className="mb-6">
-        <label className="flex items-center text-sm font-medium mb-4">
-          <FileText className="mr-2 text-blue-500" size={18} />
-          Services & Pricing
-        </label>
+        <div className="mb-6">
+          <label className="flex items-center text-sm font-medium mb-4">
+            <FileText className="mr-2 text-blue-500" size={18} />
+            Services & Pricing
+          </label>
 
-        {formData.services.map((service, index) => (
-          <div key={index} className="border border-gray-300 rounded-lg p-4 mb-4">
-            <div className="flex items-center gap-4 mb-4">
-              <span className="w-8 h-8 flex items-center justify-center rounded-[16px] bg-cyan-100 text-cyan-600 rounded font-semibold">
-                {index + 1}
-              </span>
-              <input
-                type="text"
-                placeholder="e.g., Pipe Fitting"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={service.name}
-                onChange={(e) => updateService(index, 'name', e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => removeService(index)}
-                className="text-gray-400 hover:text-red-500"
-              >
-                <Trash2 size={20} />
-              </button>
-            </div>
-            <div className="flex items-center gap-4 pl-12">
-              <input
-                type="text"
-                placeholder="e.g., 50.00"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={service.price}
-                onChange={(e) => updateService(index, 'price', e.target.value)}
-                disabled={service.customPrice}
-              />
-
-              <label className="flex items-center cursor-pointer">
-                <div
-                  className={`relative inline-block w-12 h-7 rounded-full transition-colors duration-300 ${service.customPrice ? "bg-blue-500" : "bg-gray-300"}`}
+          {formData.services.map((service, index) => (
+            <div key={index} className="border border-gray-300 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-4 mb-4">
+                <span className="w-8 h-8 flex items-center justify-center rounded-[16px] bg-cyan-100 text-cyan-600 rounded font-semibold">
+                  {index + 1}
+                </span>
+                <input
+                  type="text"
+                  placeholder="e.g., Pipe Fitting"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={service.name}
+                  onChange={(e) => updateService(index, 'name', e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeService(index)}
+                  className="text-gray-400 hover:text-red-500"
                 >
-                  <input
-                    type="checkbox"
-                    className="absolute opacity-0 w-full h-full"
-                    checked={service.customPrice}
-                    onChange={(e) => updateService(index, 'customPrice', e.target.checked)}
-                  />
-                  <span
-                    className={`absolute top-1/2 transform -translate-y-1/2 transition-transform duration-300 ms-[2px] w-5 h-5 bg-white rounded-full shadow-md ${service.customPrice ? "translate-x-6" : "translate-x-0"
-                      }`}
-                  />
-                </div>
-                <span className="text-sm text-gray-600 ms-2">Custom Price</span>
-              </label>
+                  <Trash2 size={20} />
+                </button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:pl-12">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="e.g., 50.00"
+                  className="w-full sm:flex-1 px-4 py-2 border border-gray-300 rounded-lg
+               focus:outline-none focus:ring-2 focus:ring-blue-500
+               disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  value={service.price}
+                  onChange={(e) => updateService(index, "price", e.target.value)}
+                  disabled={service.customPrice}
+                />
+
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <div
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${service.customPrice ? "bg-blue-500" : "bg-gray-300"}`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={service.customPrice}
+                      onChange={(e) =>
+                        updateService(index, "customPrice", e.target.checked)
+                      }
+                    />
+                    <span
+                      className={`absolute top-1/2 left-1 h-4 w-4 bg-white rounded-full shadow transform -translate-y-1/2 transition-transform duration-300 ${service.customPrice ? "translate-x-5" : "translate-x-0"}`}
+                    />
+                  </div>
+
+                  <span className="text-sm text-gray-600 whitespace-nowrap">
+                    Custom Price
+                  </span>
+                </label>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        <button
-          type="button"
-          onClick={addService}
-          className="w-full border-2 border-dashed border-blue-300 text-blue-500 font-bold bg-blue-50 py-3  lg:mb-20 rounded-lg hover:bg-blue-50 flex items-center justify-center gap-2">
-          <Plus size={20} /> Add New Service
-        </button>
+          <button
+            type="button"
+            onClick={addService}
+            className="w-full border-2 border-dashed border-blue-300 text-blue-500 font-bold bg-blue-50 py-3  lg:mb-20 rounded-lg hover:bg-blue-50 flex items-center justify-center gap-2">
+            <Plus size={20} /> Add New Service
+          </button>
+        </div>
+
+        <hr />
+        <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
+          <button
+            type="button"
+            onClick={() => setCurrentStep(currentStep - 1)}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
+            <ArrowLeft size={20} />Back</button>
+          <button
+            type="button"
+            onClick={() => setCurrentStep(currentStep + 1)}
+            className="ml-auto bg-cyan-500 text-white px-4 md:px-6 lg:px-8 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
+            Next Step</button>
+        </div>
+
       </div>
 
-      <hr />
-      <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
-        <button
-          type="button"
-          onClick={() => setCurrentStep(currentStep - 1)}
-          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
-          <ArrowLeft size={20} />Back</button>
-        <button
-          type="button"
-          onClick={() => setCurrentStep(currentStep + 1)}
-          className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
-          Next Step</button>
-      </div>
     </div>
   )
 };
 
 const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuestion, currentStep, setCurrentStep }) => {
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-      <h1 className="text-3xl font-bold mb-2">Build Your Questionnaire</h1>
-      <p className="text-gray-600 mb-8">Add questions to gather information from customers</p>
+    <div className="">
+      <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
 
-      <div className="mb-6">
+
+      <div className="mb-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+
+        <h1 className="text-3xl font-bold mb-2">Build Your Questionnaire</h1>
+        <p className="text-gray-600 mb-8">Add questions to gather information from customers</p>
         <label className="block text-sm font-medium mb-4">Add Questions</label>
 
         {formData.questions.map((question, index) => (
@@ -416,19 +452,21 @@ const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuesti
           <Plus size={20} />
           Add New Question
         </button>
+
+        <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
+          <button
+            type="button"
+            onClick={() => setCurrentStep(currentStep - 1)}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
+            <ArrowLeft size={20} />Back</button>
+          <button
+            type="button"
+            onClick={() => setCurrentStep(currentStep + 1)}
+            className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
+            Save Service</button>
+        </div>
       </div>
-      <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
-        <button
-          type="button"
-          onClick={() => setCurrentStep(currentStep - 1)}
-          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
-          <ArrowLeft size={20} />Back</button>
-        <button
-          type="button"
-          onClick={() => setCurrentStep(currentStep + 1)}
-          className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
-          Save Service</button>
-      </div>
+
     </div>
   )
 };
@@ -436,6 +474,7 @@ const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuesti
 const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep }) => {
   return (
     <div className="max-w-2xl mx-auto  rounded-lg  p-8">
+      <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
       <div className="text-center mb-8">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Stars className="text-green-500" size={40} />
@@ -467,7 +506,7 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep }) => {
           type="button"
           onClick={() => setCurrentStep(currentStep + 1)}
           className="w-full py-3 rounded-lg hover:bg-gray-100 flex items-center justify-center gap-2 mb-4">
-          <ArrowRight size={20} />Continue to Preview</button>
+          Continue to Preview <ArrowRight size={20} className='mt-1' /></button>
 
       </div>
     </div>
@@ -475,6 +514,110 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep }) => {
 };
 
 
+const PreviewStep = ({ formData, currentStep, setCurrentStep }) => (
+  <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
+    <h1 className="text-3xl font-bold mb-2">Preview Your Page</h1>
+    <p className="text-gray-600 mb-8">This is how your customers will see your booking page.</p>
+
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="h-32 bg-gradient-to-r from-blue-600 to-cyan-400 relative">
+        <div className="absolute -bottom-8 left-8 w-20 h-20 bg-white rounded-lg border-4 border-white flex items-center justify-center">
+          <Wrench className="text-blue-500" size={32} />
+        </div>
+      </div>
+      <div className="p-8 pt-12">
+        <h2 className="text-2xl font-bold mb-2">{formData.businessName || 'Your Business'}</h2>
+        <p className="text-sm text-gray-600 flex items-center gap-1 mb-4">
+          <MapPin size={14} />
+          {formData.cityTown || 'Your City'}
+        </p>
+
+        <p className="text-gray-700 mb-6">
+          {formData.businessDescription || 'Your business description will appear here...'}
+        </p>
+
+        <h3 className="text-xl font-bold mb-4">Our Services</h3>
+        <div className="space-y-3">
+          {formData.services.length > 0 && formData.services[0].name ? (
+            formData.services.map((service, index) => (
+              <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200">
+                <span className="font-medium">{service.name}</span>
+                <span className="text-gray-600">
+                  {service.customPrice ? 'Custom Quote' : `$${service.price || '0'}`}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400 text-center py-4">No services added yet</p>
+          )}
+        </div>
+      </div>
+    </div>
+    <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
+      <button
+        type="button"
+        onClick={() => setCurrentStep(currentStep - 1)}
+        className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
+        <ArrowLeft size={20} />Back</button>
+      <button
+        type="button"
+        onClick={() => setCurrentStep(currentStep + 1)}
+        className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
+        Next: Choose Plan</button>
+    </div>
+  </div>
+);
+
+const PricingStep = () => {
+  return (
+    <div className="">
+      <div className="max-w-2xl mx-auto  rounded-lg  p-8 my-10 text-center">
+        <h1 className="text-3xl font-bold text-center mb-2">Complete Setup</h1>
+        <p className="text-gray-600 text-center">Start free for 07 days... Cancel anytime.</p>
+      </div>
+
+      <div className='max-w-2xl mx-auto bg-white rounded-[20px] shadow-lg p-6 mt-6'>
+        <div className=" rounded-lg p-4 flex items-center ">
+          <div className="text-center border-2 border-cyan-500 p-12 rounded-[20px]">
+            <h4 className="text-gray-600 text-2xl mb-2 font-bold">ALL IN JUST</h4>
+            <div className="text-7xl font-bold text-cyan-500 mb-2">$5.99</div>
+            <p className="text-gray-600">Per month</p>
+          </div>
+
+          <div className="space-y-3 p-4 ">
+
+            <div className="flex items-center gap-3">
+              <h2 className='text-xl font-bold'>What is Include In This Price?</h2>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <ArrowRight className="text-cyan-500" size={20} />
+              <span>Unlimited Requests</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <ArrowRight className="text-cyan-500" size={20} />
+              <span>Email Support</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <ArrowRight className="text-cyan-500" size={20} />
+              <span>Email Support</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <ArrowRight className="text-cyan-500" size={20} />
+              <span>No Hidden Fees</span>
+            </div>
+            <button className=" bg-cyan-500 text-white py-2 px-4 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-1">
+              Next: Choose Plan
+              <ArrowRight size={20} className='mt-1' />
+            </button>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+  )
+};
 
 const Booking = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -502,7 +645,8 @@ const Booking = () => {
   });
 
   const [newServiceArea, setNewServiceArea] = useState('');
-  const totalSteps = 5;
+  const totalSteps = 7;
+
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -593,11 +737,13 @@ const Booking = () => {
     switch (currentStep) {
       case 1: return <BusinessInfoStep formData={formData} updateField={updateField} newServiceArea={newServiceArea} addServiceArea={addServiceArea} toggleDay={toggleDay} handleFileUpload={handleFileUpload}
         removeServiceArea={removeServiceArea} setNewServiceArea={setNewServiceArea} updateHours={updateHours} currentStep={currentStep} setCurrentStep={setCurrentStep}
-      />;
+/>;
       case 2: return <DomainStep formData={formData} updateField={updateField} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
       case 3: return <AddServicesStep formData={formData} addService={addService} updateService={updateService} removeService={removeService} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
       case 4: return <QuestionnaireStep formData={formData} addQuestion={addQuestion} updateQuestion={updateQuestion} removeQuestion={removeQuestion} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
       case 5: return <ServiceCreatedStep formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} />;
+      case 6: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
+      case 7: return <PricingStep />;
       default: return <BusinessInfoStep />;
     }
   };
@@ -611,9 +757,7 @@ const Booking = () => {
           </div>
           <h1 className="text-2xl font-bold">SimplyBooking</h1>
           <span className="ml-auto text-sm text-gray-600">Step {currentStep} of {totalSteps} - {currentStep === 1 ? 'Business Info' : currentStep === 2 ? 'Domain' : currentStep === 3 ? 'Services' : currentStep === 4 ? 'Services' : currentStep === 5 ? 'Services' : currentStep === 6 ? 'Preview' : 'Preview'}</span>
-
         </div>
-
         <ProgressBar />
         {renderStep()}
 

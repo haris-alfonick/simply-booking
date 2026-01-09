@@ -144,7 +144,7 @@ const About = () => {
         </div>
       </section>
 
-      <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white'>
+      {/* <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white'>
         <div className='max-w-4xl mx-auto text-center'>
           <h2 className='sm:text-4xl text-3xl font-bold text-gray-900 mb-6'>
             Our Story
@@ -173,7 +173,7 @@ const About = () => {
             simple, powerful tools.
           </p>
         </div>
-      </section>
+      </section> */}
 
       <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-gray-50'>
         <div className='max-w-7xl mx-auto '>

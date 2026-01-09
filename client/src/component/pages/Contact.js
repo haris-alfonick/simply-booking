@@ -21,7 +21,7 @@ const Contact = () => {
 
       <section className='max-w-[1000px] mx-auto py-8 lg:py-12 xl:py-16 px-4 lg:px-16'>
         <div className='flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-8'>
-          <div className='flex flex-col items-center text-center'>
+          {/* <div className='flex flex-col items-center text-center'>
             <div className='text-orange-500 mb-2 h-12 w-12 flex items-center justify-center rounded-[50%]  bg-orange-100  '>
               <Phone />
             </div>
@@ -31,21 +31,24 @@ const Contact = () => {
             </h6>
 
             <p className='text-gray-600'>Mon-Fri 9am to 6pm EST</p>
-          </div>
+          </div> */}
 
-          <div className='flex flex-col items-center text-center'>
-            <div className='text-orange-500 mb-2 h-12 w-12 flex items-center justify-center rounded-[50%]  bg-orange-100 '>
+          <div className=' flex bg-gray-100 w-full p-4 rounded-lg items-center text-start'>
+            <div className='text-orange-500 mb-2 h-12 w-12 flex  me-4 items-center justify-center rounded-[50%]  bg-orange-100 '>
               <Mail />
             </div>
-            <h3 className='text-xl font-semibold text-gray-800'>Email Us</h3>
-            <h6 className='text font-semibold text-gray-800'>
-              contact@simplybooking.com
-            </h6>
+            <div >
+              <h3 className='text-xl font-semibold text-gray-800'>Email Us</h3>
+              <h6 className='text font-semibold text-gray-800'>
+                contact@simplybooking.com
+              </h6>
 
-            <p className='text-gray-600'>We respond with in 24 hours</p>
+              <p className='text-gray-600'>We respond with in 24 hours</p>
+            </div>
+
           </div>
 
-          <div className='flex flex-col items-center text-center'>
+          {/* <div className='flex flex-col items-center text-center'>
             <div className='text-orange-500 mb-2 h-12 w-12 flex items-center justify-center rounded-[50%]  bg-orange-100 '>
               <Clock />
             </div>
@@ -57,7 +60,7 @@ const Contact = () => {
             </h6>
 
             <p className='text-gray-600'>9:00 AM to 6:00 PM EST</p>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -114,6 +117,7 @@ const Contact = () => {
                   className='w-full p-3 border border-gray-300 rounded-md mt-2'
                   placeholder='Tell us more about your inquiry...'
                   rows='4'
+
                 />
               </div>
               <button

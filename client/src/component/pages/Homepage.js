@@ -11,18 +11,18 @@ import {
   Phone,
   Mail,
   Clock,
-  Truck,
   TruckIcon,
   Wrench,
   Sofa,
   Zap,
   MapPin,
   ArrowBigRight,
-  Play
+  Play,
+  Clock1
 } from 'lucide-react'
 import Footer from '../footer/Footer'
 
-export default function Homepage () {
+export default function Homepage() {
   const stats = [
     { label: 'Requests This Month', value: '18' },
     { label: 'Job Schedule', value: '18' },
@@ -124,17 +124,17 @@ export default function Homepage () {
   ]
 
   const pricingPlans = [
-    {
-      name: 'Unlimited Bookings',
-      subtitle: 'Perfect for getting started',
-      price: '$5.99',
-      features: ['Unlimited services', 'Custom Subdomain', 'Email Support'],
-      popular: false
-    },
+    // {
+    //   name: 'Unlimited Bookings',
+    //   subtitle: 'Perfect for getting started',
+    //   price: '$5.99',
+    //   features: ['Unlimited services', 'Custom Subdomain', 'Email Support'],
+    //   popular: false
+    // },
     {
       name: 'Pro',
       subtitle: 'Most popular for growing businesses',
-      price: '$9.99',
+      price: '$5.99',
       features: [
         '100 Requests / month',
         '2 Admin Users',
@@ -147,24 +147,31 @@ export default function Homepage () {
       ],
       popular: true
     },
-    {
-      name: 'Elite',
-      subtitle: 'For established businesses',
-      price: '$19.99',
-      features: [
-        '1000 Requests / month',
-        '5 Admin Users',
-        'Unlimited Services',
-        'Custom Subdomain',
-        '24/7 Priority Support',
-        'Advanced Analytics',
-        'Marketing Tracking',
-        'Recurring Bookings',
-        'API Access',
-        'Custom Branding'
-      ],
-      popular: false
-    }
+    // {
+    //   name: 'Elite',
+    //   subtitle: 'For established businesses',
+    //   price: '$19.99',
+    //   features: [
+    //     '1000 Requests / month',
+    //     '5 Admin Users',
+    //     'Unlimited Services',
+    //     'Custom Subdomain',
+    //     '24/7 Priority Support',
+    //     'Advanced Analytics',
+    //     'Marketing Tracking',
+    //     'Recurring Bookings',
+    //     'API Access',
+    //     'Custom Branding'
+    //   ],
+    //   popular: false
+    // }
+  ]
+
+
+  const texts = [
+    { text: 'of Small Businesses do not have their own website', per: '30%' },
+    { text: 'Lost Revenue without online bookings portal', per: '37%' },
+    { text: 'of service appointments are booked online', per: '46%' }
   ]
 
   return (
@@ -202,13 +209,12 @@ export default function Homepage () {
                   >
                     <div className='text-sm text-[#A9A7A7]'>{stat.label}</div>
                     <div
-                      className={`text-[clamp(1.5rem,4vw,2.5rem)] font-bold ${
-                        i === 0
+                      className={`text-[clamp(1.5rem,4vw,2.5rem)] font-bold ${i === 0
                           ? 'text-cyan-500'
                           : i === 2
-                          ? 'text-cyan-500'
-                          : 'text-orange-400'
-                      }`}
+                            ? 'text-cyan-500'
+                            : 'text-orange-400'
+                        }`}
                     >
                       {stat.value}
                     </div>
@@ -264,19 +270,15 @@ export default function Homepage () {
             businesses
           </p>
           <div className='grid md:grid-cols-3 grid-cols-2 gap-3 md:gap-8'>
-            {[
-              'of Small Businesses do not have their own website',
-              'Lost Revenue without online bookings portal',
-              'of service appointments are booked online'
-            ].map((text, i) => (
+            {texts.map((item, i) => (
               <div
                 key={i}
                 className='bg-white border-2 border-gray-100 rounded-lg sm:p-8 p-3 font-bold last:col-span-2 md:last:col-span-1'
               >
                 <div className='text-[clamp(1.8rem,6vw,3.5rem)] font-bold text-orange-400 sm:mb-4'>
-                  30%
+                  {item.per}
                 </div>
-                <p className='leading-[1.1] font-[500] text-gray-700'>{text}</p>
+                <p className='leading-[1.1] font-[500] text-gray-700'>{item.text}</p>
               </div>
             ))}
           </div>
@@ -472,21 +474,24 @@ export default function Homepage () {
               data storage even if payment pauses.
             </p>
             <div className='mt-4 inline-flex items-center px-4 py-2 bg-cyan-50 text-cyan-700 rounded-[12px] text-sm border border-cyan-200'>
-              {/* 💎 */}
-              <Zap className='mr-2' /> Auto-upgrade available if request limit
-              is reached
+             
+             <Clock1 className='mr-2' /> 07 Day free Trial
+              {/* <Zap className='mr-2' /> Auto-upgrade available if request limit
+              is reached */}
             </div>
           </div>
 
-          <div className='grid md:grid-cols-3 gap-7 md:gap-8 max-w-6xl mx-auto'>
+          {/* <div className='grid md:grid-cols-3 flex items-center justify-center gap-7 md:gap-8 max-w-6xl mx-auto'> */}
+            {/* changes by client */}
+                      <div className=' p-4 flex items-center justify-center gap-7 md:gap-8 max-w-6xl mx-auto'>
+
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
-                className={`rounded-lg p-4 md:p-8 flex flex-col ${
-                  plan.popular
+                className={`rounded-lg p-4 md:p-8 flex flex-col ${plan.popular
                     ? ' border-2 border-cyan-500 shadow-lg'
                     : 'bg-white border-2 border-gray-200'
-                }`}
+                  }`}
               >
                 {plan.popular && (
                   <div className='text-center mb-4 md:mt-[-45px] mt-[-30px]'>
@@ -515,11 +520,10 @@ export default function Homepage () {
                 </ul>
                 <div className='mt-auto'>
                   <button
-                    className={`w-full py-3 rounded-lg font-medium ${
-                      plan.popular
+                    className={`w-full py-3 rounded-lg font-medium ${plan.popular
                         ? 'bg-cyan-500 text-white hover:bg-cyan-600'
                         : 'bg-white text-cyan-500 border-2 border-cyan-500 hover:bg-cyan-50'
-                    }`}
+                      }`}
                   >
                     Get Started
                   </button>
