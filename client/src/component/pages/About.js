@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import React from 'react'
 import Footer from '../footer/Footer'
+import Navbar from '../navbar/Navbar'
 
 const About = () => {
   const process = [
@@ -90,7 +91,8 @@ const About = () => {
 
   return (
     <div>
-      <section className='bg-gradient-to-br from-blue-50 to-cyan-50 p-2 lg:p-6 xl:p-8'>
+      <Navbar />
+      <section className='bg-cyan-50 p-2 lg:p-6 xl:p-8'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
           <div className='mt-10 mb-16 lg:mt-16 lg:mb-20'>
             <h1 className='text-3xl md:text-6xl font-bold text-cyan-500 mb-6'>

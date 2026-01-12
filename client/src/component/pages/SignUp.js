@@ -93,8 +93,8 @@ const SignUp = () => {
                                 <div className="flex items-center h-5 rounded-[50%]">
                                     <input
                                         type="radio"
-                                        // checked={agreedterms}
-                                        // onChange={(e) => setAgreedTerms(e.target.checked)}
+                                        checked={agreedterms}
+                                        onChange={(e) => setAgreedTerms(e.target.checked)}
                                         className="w-4 h-4 text-cyan-500 border-cyan-500 bg-cyan-500 rounded focus:ring-2 focus:ring-cyan-500 cursor-pointer"
                                     />
                                 </div>

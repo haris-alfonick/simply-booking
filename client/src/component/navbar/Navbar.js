@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,6 +7,7 @@ const Navbar = () => {
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+  const navigate = useNavigate()
 
   return (
     <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 bg-cyan-50 py-2">
@@ -33,8 +34,8 @@ const Navbar = () => {
         <nav className="hidden md:flex space-x-8 items-center">
           <Link to="/about" className="text-gray-600 hover:text-gray-900">About Us</Link>
           <Link to="/contact" className="text-gray-600 hover:text-gray-900">Contact Us</Link>
-          <Link to="/join" className="text-gray-600 hover:text-gray-900">Join</Link>
-          <button className="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-600">Log In →</button>
+          <Link to="/signup" className="text-gray-600 hover:text-gray-900">Join</Link>
+          <button className="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-600" onClick={() => { navigate('/login') }}>Log In →</button>
         </nav>
       </div>
 
@@ -42,8 +43,8 @@ const Navbar = () => {
         <nav className="md:hidden flex flex-col space-y-4 pb-4">
           <Link to="/about" className="text-gray-600 hover:text-gray-900">About Us</Link>
           <Link to="/contact" className="text-gray-600 hover:text-gray-900">Contact Us</Link>
-          <Link to="/join" className="text-gray-600 hover:text-gray-900">Join</Link>
-          <button className="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-600">Log In →</button>
+          <Link to="/signup" className="text-gray-600 hover:text-gray-900">Join</Link>
+          <button className="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-600" onClick={() => { navigate('/login') }}>Log In →</button>
         </nav>
       )}
     </div>

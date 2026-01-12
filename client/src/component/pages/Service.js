@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, loca, MapPinIcon } from 'lucide-react';
+import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, MapPinIcon } from 'lucide-react';
 import Footer from '../footer/Footer';
+import Navbar from '../navbar/Navbar';
 const Service = () => {
     const [reviewText, setReviewText] = useState('');
     const [reviewName, setReviewName] = useState('');
@@ -103,6 +104,7 @@ const Service = () => {
 
     return (
         <>
+        <Navbar />
 
             {isFormVisible && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">

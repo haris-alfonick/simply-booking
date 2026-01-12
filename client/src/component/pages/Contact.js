@@ -1,10 +1,12 @@
 import { Clock, Mail, MessageCircle, Phone } from 'lucide-react'
 import React from 'react'
 import Footer from '../footer/Footer'
+import Navbar from '../navbar/Navbar'
 
 const Contact = () => {
   return (
     <div>
+       <Navbar />
       <section className='bg-cyan-50 py-8 lg:py-12 xl:py-16 px-4 lg:px-16'>
         <div className='max-w-7xl mx-auto text-center'>
           <div className='lg:mt-10'>

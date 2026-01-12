@@ -21,6 +21,7 @@ import {
   Clock1
 } from 'lucide-react'
 import Footer from '../footer/Footer'
+import Navbar from '../navbar/Navbar'
 
 export default function Homepage() {
   const stats = [
@@ -176,6 +177,7 @@ export default function Homepage() {
 
   return (
     <div className='min-h-screen bg-white'>
+      <Navbar />
       <section className='bg-cyan-50 p-0 md:p-[clamp(1.8rem,6vw,3.5rem)]'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
           <div className='sm:mt-4 md:mt-10 lg:mt-16 mb-10 rounded-lg'>

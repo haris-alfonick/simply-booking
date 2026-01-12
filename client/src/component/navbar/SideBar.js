@@ -50,7 +50,6 @@ const SideBar = () => {
                 </div>
             </div>
 
-
             <div className="flex-1 flex flex-col overflow-hidden">
 
                 <header className="bg-white border-b px-6 py-4">
@@ -86,6 +85,13 @@ const SideBar = () => {
                     </div>
                 </header>
             </div>
+
+
+
+
+
+
+            
 
         </div>
     )
