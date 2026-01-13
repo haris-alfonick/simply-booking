@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Globe, FileText, Plus, Trash2, Check, ArrowLeft, ArrowRight, Star, Wrench, Camera, Building2, Lightbulb, Stars } from 'lucide-react';
-
-
+import { checkDomainAvailability, generateUniqueDomain } from '../api/Api';
 
 const StepIndicator = ({ currentStep, steps }) => {
   currentStep = currentStep - 2;
@@ -23,36 +23,67 @@ const StepIndicator = ({ currentStep, steps }) => {
 };
 
 
-const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceArea, toggleDay,
-  handleFileUpload, setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours
-
+const BusinessInfoStep = ({
+formData, updateField, newServiceArea, addServiceArea, toggleDay, handleFileUpload,
+setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, saveToLocalStorage
 }) => {
+
+
+    const handleNext = async () => {
+    saveToLocalStorage();
+        console.log("hi this domain api working")
+
+    // Generate domain suggestion when moving to next step
+    if (formData.businessName && !formData.domain) {
+      try {
+        const { domain } = await generateUniqueDomain(formData.businessName);
+        updateField('domain', domain);
+      } catch (error) {
+        console.error('Error generating domain:', error);
+      }
+    }
+    setCurrentStep(currentStep + 1);
+  };
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-[20px] shadow-lg p-4 md:p-6 lg:p-8">
       <h1 className="text-3xl font-bold mb-2">Set Up Your Business</h1>
       <p className="text-gray-600 mb-8">Tell us about your business so customers can find and book with you.</p>
 
       <div className="">
+
         <div className="flex items-center mb-4">
-          <div className='w-[110px] h-[110px] border-2 border-dashed border-blue-300 rounded-[20px] p-6 text-center mb-6 cursor-pointer hover:border-blue-400 transition'>
-            <label className="cursor-pointer block">
+          <div className="w-[110px] h-[110px] border-2 border-dashed border-blue-300 rounded-[20px] p-2 text-center cursor-pointer hover:border-blue-400 transition">
+            <label className="cursor-pointer flex flex-col items-center justify-center h-full">
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => handleFileUpload('businessLogo', e.target.files[0])}
+                onChange={(e) =>
+                  e.target.files?.[0] &&
+                  handleFileUpload("businessLogo", e.target.files[0])
+                }
               />
-              <Camera className="mx-auto text-blue-500" size={40} />
-              {formData.businessLogo ? (
-                <p className="text-sm text-green-600 mt-2">{formData.businessLogo.name}</p>
+
+              {formData?.businessLogo ? (
+                <img
+                  src={URL.createObjectURL(formData.businessLogo)}
+                  alt="Business Logo"
+                  className="w-full h-full object-cover rounded-lg"
+                />
               ) : (
-                <p className="text-sm text-blue-500 ">Logo</p>
+                <>
+                  <Camera className="text-blue-500 mb-1" size={40} />
+                  <p className="text-sm text-blue-500">Logo</p>
+                </>
               )}
             </label>
           </div>
+
           <div className="text-start ms-4">
             <p className="font-semibold">Business Logo</p>
-            <p className="text-sm text-gray-500">Upload a square image, at least 200x200px</p>
+            <p className="text-sm text-gray-500">
+              Upload a square image, at least 200×200px
+            </p>
           </div>
         </div>
 
@@ -228,77 +259,90 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
             <ArrowLeft size={20} />Back</button>
           <button
             type="button"
-            onClick={() => setCurrentStep(currentStep + 1)}
+            onClick={ handleNext}
             className="ml-auto bg-cyan-500 text-white px-2 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
             Next: Choose Domain<ArrowRight size={18} /></button>
         </div>
+
       </div>
     </div>
   )
 };
 
-const DomainStep = ({ formData, updateField, currentStep, setCurrentStep }) => {
+const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveToLocalStorage }) => {
+
+  const [checking, setChecking] = useState(false);
+  const [available, setAvailable] = useState(null);
+
+    const checkAvailability = async () => {
+    if (!formData.domain) return;
+    
+    setChecking(true);
+    try {
+      const result = await checkDomainAvailability(formData.domain);
+      setAvailable(result.available);
+    } catch (error) {
+      console.error('Error checking domain:', error);
+    }
+    setChecking(false);
+  };
+
+  const handleNext = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep + 1);
+  };
+
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4 md:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold mb-2">Choose Your Business Domain</h1>
-      <p className="text-gray-600 mb-8">This will be your public service booking link</p>
+     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+       <h1 className="text-3xl font-bold mb-2">Choose Your Business Domain</h1>
+       <p className="text-gray-600 mb-8">This will be your public service booking link</p>
 
-      <label className="block text-sm font-medium mb-2">Your Domain</label>
-      <div className="flex items-center border-4 border-double border-blue-500 rounded-lg overflow-hidden mb-4">
-        <span className="px-4 py-3 bg-gray-50 text-blue-600 font-medium border-r">
-          simplybooking.org/
-        </span>
-        <input
-          type="text"
-          placeholder="your-business"
-          className="flex-1 px-4 py-3 focus:outline-none"
-          value={formData.domain}
-          onChange={(e) => updateField('domain', e.target.value)}
-        />
-      </div>
+       <label className="block text-sm font-medium mb-2">Your Domain</label>
+       <div className="flex items-center border-4 border-double border-blue-500 rounded-lg overflow-hidden mb-4">
+         <span className="px-4 py-3 bg-gray-50 text-blue-600 font-medium border-r">simplybooking.org/</span>
+         <input type="text" placeholder="your-business-12" className="flex-1 px-4 py-3 focus:outline-none" value={formData.domain} onChange={(e) => { updateField('domain', e.target.value); setAvailable(null); }} onBlur={checkAvailability} />
+       </div>
 
-      <div className="mb-6 bg-gray-100 rounded-[16px] p-6">
-        <p className="text-sm text-gray-600 mb-2">Examples</p>
-        <div className="space-y-3">
-          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded-[16px]">
-            <Globe className="mr-2" size={16} />
-            simplybooking.org/plumberpro
-          </div>
-          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded-[16px]">
-            <Globe className="mr-2" size={16} />
-            simplybooking.org/smartcleaning
-          </div>
-          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded-[16px]">
-            <Globe className="mr-2" size={16} />
-            simplybooking.org/fastcleaning
-          </div>
-        </div>
-      </div>
+       {checking && <p className="text-sm text-gray-500 mb-4">Checking availability...</p>}
+       {available === true && <p className="text-sm text-green-600 mb-4">✓ Domain available!</p>}
+       {available === false && <p className="text-sm text-red-600 mb-4">✗ Domain already taken</p>}
 
-      <div className="flex mb-6 justify-center">
-        <span className="mr-1 mt-1 item-center"><Lightbulb className='text-yellow-500' size={16} /></span>
-        <p className="text-sm text-gray-700">You can change this later anytime in your settings.</p>
-      </div>
+       <div className="mb-6 bg-gray-100 rounded-lg p-6">
+         <p className="text-sm text-gray-600 mb-2">Examples</p>
+         <div className="space-y-3">
+           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
+             <Globe className="mr-2" size={16} />simplybooking.org/plumberpro
+           </div>
+           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
+             <Globe className="mr-2" size={16} />simplybooking.org/smartcleaning
+           </div>
+           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
+             <Globe className="mr-2" size={16} />simplybooking.org/fastcleaning
+           </div>
+         </div>
+       </div>
 
-      <hr />
+       <div className="flex mb-6 justify-center">
+         <Lightbulb className='text-yellow-500 mr-1' size={16} />
+         <p className="text-sm text-gray-700">You can change this later anytime in your settings.</p>
+       </div>
 
-      <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
-        <button
-          type="button"
-          onClick={() => setCurrentStep(currentStep - 1)}
-          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
-          <ArrowLeft size={20} />Back</button>
-        <button
-          type="button"
-          onClick={() => setCurrentStep(currentStep + 1)}
-          className="ml-auto bg-cyan-500 text-white px-2 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
-          Add Services<ArrowRight size={18} /></button>
-      </div>
-    </div>
+       <hr className="my-6" />
+
+       <div className="flex justify-between items-center">
+         <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
+           <ArrowLeft size={20} />Back
+         </button>
+         <button type="button" onClick={handleNext} disabled={available === false} className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+           Add Services<ArrowRight size={18} />
+         </button>
+       </div>
+     </div>
+
   )
 };
 
-const AddServicesStep = ({ formData, addService, updateService, removeService, currentStep, setCurrentStep }) => {
+const AddServicesStep = ({ formData, addService, updateService, removeService, currentStep, setCurrentStep ,saveToLocalStorage }) => {
   return (
     <div>
       <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
@@ -340,8 +384,8 @@ const AddServicesStep = ({ formData, addService, updateService, removeService, c
                   inputMode="decimal"
                   placeholder="e.g., 50.00"
                   className="w-full sm:flex-1 px-4 py-2 border border-gray-300 rounded-lg
-               focus:outline-none focus:ring-2 focus:ring-blue-500
-               disabled:bg-gray-100 disabled:cursor-not-allowed"
+                              focus:outline-none focus:ring-2 focus:ring-blue-500
+                               disabled:bg-gray-100 disabled:cursor-not-allowed"
                   value={service.price}
                   onChange={(e) => updateService(index, "price", e.target.value)}
                   disabled={service.customPrice}
@@ -349,7 +393,7 @@ const AddServicesStep = ({ formData, addService, updateService, removeService, c
 
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <div
-                    className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${service.customPrice ? "bg-blue-500" : "bg-gray-300"}`}
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${service.customPrice ? "bg-gray-300" : "bg-blue-500"}`}
                   >
                     <input
                       type="checkbox"
@@ -513,7 +557,6 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep }) => {
   )
 };
 
-
 const PreviewStep = ({ formData, currentStep, setCurrentStep }) => (
   <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
     <h1 className="text-3xl font-bold mb-2">Preview Your Page</h1>
@@ -521,9 +564,16 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep }) => (
 
     <div className="border border-gray-200 rounded-lg overflow-hidden">
       <div className="h-32 bg-gradient-to-r from-blue-600 to-cyan-400 relative">
-        <div className="absolute -bottom-8 left-8 w-20 h-20 bg-white rounded-lg border-4 border-white flex items-center justify-center">
-          <Wrench className="text-blue-500" size={32} />
-        </div>
+     {formData?.businessLogo && (
+  <div className="absolute -bottom-8 left-8 w-20 h-20 bg-white rounded-lg border-4 border-white flex items-center justify-center">
+    <img
+      src={URL.createObjectURL(formData?.businessLogo)}
+      alt="Business Logo"
+      className="w-full h-full object-cover rounded-lg"
+    />
+  </div>
+)}
+
       </div>
       <div className="p-8 pt-12">
         <h2 className="text-2xl font-bold mb-2">{formData.businessName || 'Your Business'}</h2>
@@ -537,19 +587,25 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep }) => (
         </p>
 
         <h3 className="text-xl font-bold mb-4">Our Services</h3>
-        <div className="space-y-3">
+        <div className="space-y-1">
           {formData.services.length > 0 && formData.services[0].name ? (
-            formData.services.map((service, index) => (
-              <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200">
-                <span className="font-medium">{service.name}</span>
-                <span className="text-gray-600">
-                  {service.customPrice ? 'Custom Quote' : `$${service.price || '0'}`}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400 text-center py-4">No services added yet</p>
-          )}
+          <div className="grid grid-cols-2 gap-2">
+            {formData.services.map((service, index) => (
+      <div
+        key={index}
+        className="flex justify-between items-center p-2 rounded-lg border border-gray-200"
+      >
+        <span className="font-medium">{service.name}</span>
+        <span className="text-gray-600">
+          {service.customPrice ? 'Custom Quote' : `$${service.price || '0'}`}
+        </span>
+      </div>
+    ))}
+  </div>
+) : (
+  <p className="text-gray-400 text-center py-4">No services added yet</p>
+)}
+
         </div>
       </div>
     </div>
@@ -620,7 +676,9 @@ const PricingStep = () => {
 };
 
 const Booking = () => {
+
   const [currentStep, setCurrentStep] = useState(1);
+  const [businessId, setBusinessId] = useState(null);
   const [formData, setFormData] = useState({
     businessName: '',
     phoneNumber: '',
@@ -628,7 +686,7 @@ const Booking = () => {
     cityTown: '',
     businessLogo: null,
     businessCoverPhoto: null,
-    serviceAreas: ['Downtown', 'Midtown'],
+    serviceAreas: [],
     businessDescription: '',
     hours: {
       mon: { start: '09:00', end: '17:00', closed: false },
@@ -647,6 +705,37 @@ const Booking = () => {
   const [newServiceArea, setNewServiceArea] = useState('');
   const totalSteps = 7;
 
+  
+     useEffect(() => {
+    const saved = localStorage.getItem('bookingFormData');
+    const savedStep = localStorage.getItem('bookingCurrentStep');
+    const savedId = localStorage.getItem('bookingBusinessId');
+    
+    if (saved) {
+      setFormData(JSON.parse(saved));
+    }
+    if (savedStep) {
+      setCurrentStep(parseInt(savedStep));
+    }
+    if (savedId) {
+      setBusinessId(savedId);
+    }
+  }, []);
+
+  // Save to localStorage
+  const saveToLocalStorage = () => {
+    localStorage.setItem('bookingFormData', JSON.stringify(formData));
+    localStorage.setItem('bookingCurrentStep', currentStep.toString());
+    if (businessId) {
+      localStorage.setItem('bookingBusinessId', businessId);
+    }
+  };
+
+    useEffect(() => {
+    if (formData.businessName) {
+      saveToLocalStorage();
+    }
+  }, [formData]);
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -732,13 +821,13 @@ const Booking = () => {
 
   // ///////////////////////////////////////////////
 
-
   const renderStep = () => {
+
     switch (currentStep) {
       case 1: return <BusinessInfoStep formData={formData} updateField={updateField} newServiceArea={newServiceArea} addServiceArea={addServiceArea} toggleDay={toggleDay} handleFileUpload={handleFileUpload}
-        removeServiceArea={removeServiceArea} setNewServiceArea={setNewServiceArea} updateHours={updateHours} currentStep={currentStep} setCurrentStep={setCurrentStep}
-/>;
-      case 2: return <DomainStep formData={formData} updateField={updateField} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
+        removeServiceArea={removeServiceArea} setNewServiceArea={setNewServiceArea} updateHours={updateHours} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage}
+      />;
+      case 2: return <DomainStep formData={formData} updateField={updateField} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
       case 3: return <AddServicesStep formData={formData} addService={addService} updateService={updateService} removeService={removeService} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
       case 4: return <QuestionnaireStep formData={formData} addQuestion={addQuestion} updateQuestion={updateQuestion} removeQuestion={removeQuestion} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
       case 5: return <ServiceCreatedStep formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} />;
@@ -767,6 +856,16 @@ const Booking = () => {
 };
 
 export default Booking;
+
+
+
+
+
+
+
+
+
+
 
 
 

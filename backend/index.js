@@ -1,29 +1,19 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const verifyToken = require('./middleware/VerifyToken');
-require('./models/ConnectDB')
-dotenv.config({ path: 'config.env' });
+const cors = require('cors');
+const authRoutes = require('./router/authRoutes');
+const businessRoutes = require('./router/businessRoutes');
+require('./models/ConnectDB');
 
 const PORT = process.env.PORT;
-
+const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.send('Server is running');
-});
-
-app.get("/protected", verifyToken, (req, res) => {
-    res.json({ message: "Access granted", user: req.user });
-});
+app.use('/api/auth', authRoutes);
+app.use('/api/businesses', businessRoutes);
 
 
-const authRoutes = require("./routes/authRoutes");
-
-
-app.use("/api/auth", authRoutes);
-
-// Start server
 app.listen(PORT || 5001, () => {
     console.log(` Server running on port ${PORT}`);
 });

@@ -1,9 +1,13 @@
-const express = require("express");
-const { registerUser, verifyOTP } = require("../controllers/authController");
-
+// routes/authRoutes.js
+const express = require('express');
 const router = express.Router();
+const { sendOTP, verifyOTP, resendOTP, login } = require('../controllers/authController');
 
-router.post("/register", registerUser);
-router.post("/verify-email", verifyOTP);
+// Send OTP to email
+router.post('/send-otp', sendOTP);
+router.post('/verify-otp', verifyOTP);
+router.post('/resend-otp', resendOTP);
+router.post('/login', login);
 
 module.exports = router;
+
