@@ -1,32 +1,51 @@
 import React from 'react'
 import { ArrowRight, Lock, Mail, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { login } from '../api/Api'
+import { showError, showSuccess } from '../utils/toast'
 
 const Login = () => {
 
-    const [user, setuser] = useState({
-        email: "",
-        password: ""
-    });
+    const [user, setuser] = useState({ email: "", password: "" });
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate()
 
     const { email, password } = user;
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setuser({
-            ...user,
-            [name]: value
-        });
+        setuser({ ...user, [name]: value });
     };
 
-    const HandleSubmit = () => {
-        console.log(user)
-    }
+    const HandleSubmit = async () => {
+        if (!email || !password) {
+            showError("Email and password are required");
+            return;
+        }
 
+        setLoading(true);
+        showError(null);
 
-
+        try {
+            const result = await login(user);
+            if (result?.token) {
+                localStorage.setItem("user", JSON.stringify(result.user));
+                localStorage.setItem("token", JSON.stringify(result.token));
+                // console.log("Login successful:", result);
+                showSuccess("Login successful");
+                navigate('/clientdashboard')
+            } else {
+                showError("Invalid login response");
+            }
+        } catch (err) {
+            showError(err?.response?.data?.message || "Login failed");
+            console.error("Login error:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className='min-h-screen bg-cyan-50 flex items-center justify-center p-4'>
@@ -78,7 +97,10 @@ const Login = () => {
                             </div>
                         </div>
 
-                        <button onClick={() => HandleSubmit()} className='w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-cyan-500/30 flex items-center justify-center'>Log in <ArrowRight className='h-4 w-4 ml-2 justify-center items-center' /></button>
+                        <button onClick={() => HandleSubmit()} disabled={loading} className='w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-cyan-500/30 flex items-center justify-center'>
+                            {loading ? "Logging in..." : <>Log in <ArrowRight className="h-4 w-4 ml-2 mt-1 items-center justify-center" /></>}
+
+                        </button>
                     </div>
                     <div className="flex items-center my-6">
                         <div className="flex-1 border-t border-gray-200"></div>
@@ -119,9 +141,6 @@ const Login = () => {
                 </div>
             </div>
         </div>
-
-
-
     )
 }
 

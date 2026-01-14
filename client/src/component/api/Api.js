@@ -1,9 +1,6 @@
 import axios from 'axios';
 
-
 export const API_BASE_URL = 'http://localhost:5000/api';
-
-// const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -13,7 +10,6 @@ const api = axios.create({
 });
 
 
-// Generate unique domain slug
 export const generateUniqueDomain = async (businessName) => {
   try {
     const response = await api.post('/businesses/generate-domain', { businessName });
@@ -24,7 +20,6 @@ export const generateUniqueDomain = async (businessName) => {
   }
 };
 
-// Check if domain exists
 export const checkDomainAvailability = async (domain) => {
   try {
     const response = await api.get(`/businesses/check-domain/${domain}`);
@@ -35,7 +30,6 @@ export const checkDomainAvailability = async (domain) => {
   }
 };
 
-// Save business data
 export const saveBusinessData = async (data) => {
   try {
     const response = await api.post('/businesses', data);
@@ -46,7 +40,6 @@ export const saveBusinessData = async (data) => {
   }
 };
 
-// Update business data
 export const updateBusinessData = async (id, data) => {
   try {
     const response = await api.put(`/businesses/${id}`, data);
@@ -57,13 +50,12 @@ export const updateBusinessData = async (id, data) => {
   }
 };
 
-// Upload images
 export const uploadImage = async (file, fieldName) => {
   try {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('fieldName', fieldName);
-    
+
     const response = await api.post('/businesses/upload-image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -72,6 +64,17 @@ export const uploadImage = async (file, fieldName) => {
     return response.data;
   } catch (error) {
     console.error('Error uploading image:', error);
+    throw error;
+  }
+};
+
+
+export const login = async (user) => {
+  try {
+    const response = await api.post('/auth/login', user);
+    return response.data;
+  } catch (error) {
+    console.error('Error saving business:', error);
     throw error;
   }
 };

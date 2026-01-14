@@ -1,5 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import './App.css';
 import Homepage from './component/pages/Homepage';
 import About from './component/pages/About';
@@ -26,11 +28,9 @@ const App = () => {
           <Route path='/service' element={<Service />} />
           <Route path='/form' element={<Form />} />
 
-
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/booking' element={<Booking />} />
-
 
           {/* client dashboard */}
 
@@ -41,6 +41,7 @@ const App = () => {
 
         </Routes>
       </Router>
+      <ToastContainer position="top-right" autoClose={3000} />
     </>
   );
 };

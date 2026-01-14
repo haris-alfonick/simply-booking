@@ -64,7 +64,7 @@ const SignUp = () => {
 
     const handleOTPSuccess = () => {
         // Redirect to dashboard or login
-        window.location.href = '/dashboard';
+        window.location.href = '/booking';
     };
 
     if (showOTPModal) {
@@ -194,8 +194,6 @@ const SignUp = () => {
 }
 
 export default SignUp
-
-
 
 
 

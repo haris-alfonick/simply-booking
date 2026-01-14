@@ -782,10 +782,8 @@ const ClientDashboard = () => {
     const [selectedClient, setSelectedClient] = useState(null);
     const [selectedJob, setSelectedJob] = useState(null);
 
-
-
-
-    const user = { name: 'Admin User', email: "admin@simplybooking.com" }
+    const user = JSON.parse(localStorage.getItem("user"))
+    // console.log(user)
 
     return (
         <>
@@ -855,11 +853,11 @@ const ClientDashboard = () => {
                                 </button>
                                 <div className="flex items-center gap-3">
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-sm font-medium">{user.name}</p>
+                                        <p className="text-sm font-medium">{user.fullname}</p>
                                         <p className="text-xs text-gray-500">{user.email}</p>
                                     </div>
                                     <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                        {user.name[0]}
+                                        {user.fullname[0]}
                                     </div>
                                 </div>
                             </div>

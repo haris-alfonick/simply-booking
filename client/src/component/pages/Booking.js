@@ -1,7 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Globe, FileText, Plus, Trash2, Check, ArrowLeft, ArrowRight, Star, Wrench, Camera, Building2, Lightbulb, Stars } from 'lucide-react';
-import { checkDomainAvailability, generateUniqueDomain } from '../api/Api';
+import { checkDomainAvailability, generateUniqueDomain, saveBusinessData } from '../api/Api';
+import { showError, showSuccess } from '../utils/toast';
 
 const StepIndicator = ({ currentStep, steps }) => {
   currentStep = currentStep - 2;
@@ -24,16 +25,13 @@ const StepIndicator = ({ currentStep, steps }) => {
 
 
 const BusinessInfoStep = ({
-formData, updateField, newServiceArea, addServiceArea, toggleDay, handleFileUpload,
-setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, saveToLocalStorage
+  formData, updateField, newServiceArea, addServiceArea, toggleDay, handleFileUpload,
+  setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, saveToLocalStorage
 }) => {
 
-
-    const handleNext = async () => {
+  const handleNext = async () => {
     saveToLocalStorage();
-        console.log("hi this domain api working")
 
-    // Generate domain suggestion when moving to next step
     if (formData.businessName && !formData.domain) {
       try {
         const { domain } = await generateUniqueDomain(formData.businessName);
@@ -43,6 +41,11 @@ setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, 
       }
     }
     setCurrentStep(currentStep + 1);
+  };
+
+  const handleBack = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep - 1);
   };
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-[20px] shadow-lg p-4 md:p-6 lg:p-8">
@@ -66,7 +69,11 @@ setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, 
 
               {formData?.businessLogo ? (
                 <img
-                  src={URL.createObjectURL(formData.businessLogo)}
+                  src={
+                    formData.businessLogo instanceof File
+                      ? URL.createObjectURL(formData.businessLogo) // freshly uploaded
+                      : formData.businessLogo // base64 from localStorage
+                  }
                   alt="Business Logo"
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -242,11 +249,20 @@ setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, 
             />
             <Camera className="mx-auto text-blue-500 mb-2" size={40} />
             <p className="font-semibold">Upload Cover Photo</p>
-            {formData.businessCoverPhoto ? (
-              <p className="text-sm text-green-600 mt-2">{formData.businessCoverPhoto.name}</p>
+            {formData?.businessCoverPhoto ? (
+              <p className="text-sm text-green-600 mt-2">
+                {formData.businessCoverPhoto instanceof File
+                  ? formData.businessCoverPhoto.name
+                  : 'Cover photo selected'}
+              </p>
             ) : (
-              <p className="text-sm text-gray-500">Recommended: 1200x400px</p>
+              <>
+                <Camera className="text-blue-500 mb-1" size={40} />
+                <p className="text-sm text-blue-500">Recommended: 1200×400px</p>
+              </>
             )}
+
+
           </label>
         </div>
         <hr />
@@ -254,12 +270,12 @@ setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, 
         <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
           <button
             type="button"
-            onClick={() => setCurrentStep(currentStep - 1)}
+            onClick={handleBack}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
             <ArrowLeft size={20} />Back</button>
           <button
             type="button"
-            onClick={ handleNext}
+            onClick={handleNext}
             className="ml-auto bg-cyan-500 text-white px-2 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
             Next: Choose Domain<ArrowRight size={18} /></button>
         </div>
@@ -274,9 +290,9 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState(null);
 
-    const checkAvailability = async () => {
+  const checkAvailability = async () => {
     if (!formData.domain) return;
-    
+
     setChecking(true);
     try {
       const result = await checkDomainAvailability(formData.domain);
@@ -291,58 +307,71 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
     saveToLocalStorage();
     setCurrentStep(currentStep + 1);
   };
+  const handleBack = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep - 1);
+  };
 
   return (
-     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-       <h1 className="text-3xl font-bold mb-2">Choose Your Business Domain</h1>
-       <p className="text-gray-600 mb-8">This will be your public service booking link</p>
+    <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+      <h1 className="text-3xl font-bold mb-2">Choose Your Business Domain</h1>
+      <p className="text-gray-600 mb-8">This will be your public service booking link</p>
 
-       <label className="block text-sm font-medium mb-2">Your Domain</label>
-       <div className="flex items-center border-4 border-double border-blue-500 rounded-lg overflow-hidden mb-4">
-         <span className="px-4 py-3 bg-gray-50 text-blue-600 font-medium border-r">simplybooking.org/</span>
-         <input type="text" placeholder="your-business-12" className="flex-1 px-4 py-3 focus:outline-none" value={formData.domain} onChange={(e) => { updateField('domain', e.target.value); setAvailable(null); }} onBlur={checkAvailability} />
-       </div>
+      <label className="block text-sm font-medium mb-2">Your Domain</label>
+      <div className="flex items-center border-4 border-double border-blue-500 rounded-lg overflow-hidden mb-4">
+        <span className="px-4 py-3 bg-gray-50 text-blue-600 font-medium border-r">simplybooking.org/</span>
+        <input type="text" placeholder="your-business-12" className="flex-1 px-4 py-3 focus:outline-none" value={formData.domain} onChange={(e) => { updateField('domain', e.target.value); setAvailable(null); }} onBlur={checkAvailability} />
+      </div>
 
-       {checking && <p className="text-sm text-gray-500 mb-4">Checking availability...</p>}
-       {available === true && <p className="text-sm text-green-600 mb-4">✓ Domain available!</p>}
-       {available === false && <p className="text-sm text-red-600 mb-4">✗ Domain already taken</p>}
+      {checking && <p className="text-sm text-gray-500 mb-4">Checking availability...</p>}
+      {available === true && <p className="text-sm text-green-600 mb-4">✓ Domain available!</p>}
+      {available === false && <p className="text-sm text-red-600 mb-4">✗ Domain already taken</p>}
 
-       <div className="mb-6 bg-gray-100 rounded-lg p-6">
-         <p className="text-sm text-gray-600 mb-2">Examples</p>
-         <div className="space-y-3">
-           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-             <Globe className="mr-2" size={16} />simplybooking.org/plumberpro
-           </div>
-           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-             <Globe className="mr-2" size={16} />simplybooking.org/smartcleaning
-           </div>
-           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-             <Globe className="mr-2" size={16} />simplybooking.org/fastcleaning
-           </div>
-         </div>
-       </div>
+      <div className="mb-6 bg-gray-100 rounded-lg p-6">
+        <p className="text-sm text-gray-600 mb-2">Examples</p>
+        <div className="space-y-3">
+          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
+            <Globe className="mr-2" size={16} />simplybooking.org/plumberpro
+          </div>
+          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
+            <Globe className="mr-2" size={16} />simplybooking.org/smartcleaning
+          </div>
+          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
+            <Globe className="mr-2" size={16} />simplybooking.org/fastcleaning
+          </div>
+        </div>
+      </div>
 
-       <div className="flex mb-6 justify-center">
-         <Lightbulb className='text-yellow-500 mr-1' size={16} />
-         <p className="text-sm text-gray-700">You can change this later anytime in your settings.</p>
-       </div>
+      <div className="flex mb-6 justify-center">
+        <Lightbulb className='text-yellow-500 mr-1' size={16} />
+        <p className="text-sm text-gray-700">You can change this later anytime in your settings.</p>
+      </div>
 
-       <hr className="my-6" />
+      <hr className="my-6" />
 
-       <div className="flex justify-between items-center">
-         <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
-           <ArrowLeft size={20} />Back
-         </button>
-         <button type="button" onClick={handleNext} disabled={available === false} className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
-           Add Services<ArrowRight size={18} />
-         </button>
-       </div>
-     </div>
+      <div className="flex justify-between items-center">
+        <button type="button" onClick={handleBack} className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
+          <ArrowLeft size={20} />Back
+        </button>
+        <button type="button" onClick={handleNext} disabled={available === false} className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+          Add Services<ArrowRight size={18} />
+        </button>
+      </div>
+    </div>
 
   )
 };
 
-const AddServicesStep = ({ formData, addService, updateService, removeService, currentStep, setCurrentStep ,saveToLocalStorage }) => {
+const AddServicesStep = ({ formData, addService, updateService, removeService, currentStep, setCurrentStep, saveToLocalStorage }) => {
+  const handleNext = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handleBack = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep - 1);
+  };
   return (
     <div>
       <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
@@ -379,6 +408,7 @@ const AddServicesStep = ({ formData, addService, updateService, removeService, c
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:pl-12">
+                {/* /////////////////////////////////////////////////////////////////////////////////////// */}
                 <input
                   type="text"
                   inputMode="decimal"
@@ -428,12 +458,12 @@ const AddServicesStep = ({ formData, addService, updateService, removeService, c
         <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
           <button
             type="button"
-            onClick={() => setCurrentStep(currentStep - 1)}
+            onClick={handleBack}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
             <ArrowLeft size={20} />Back</button>
           <button
             type="button"
-            onClick={() => setCurrentStep(currentStep + 1)}
+            onClick={handleNext}
             className="ml-auto bg-cyan-500 text-white px-4 md:px-6 lg:px-8 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
             Next Step</button>
         </div>
@@ -444,7 +474,17 @@ const AddServicesStep = ({ formData, addService, updateService, removeService, c
   )
 };
 
-const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuestion, currentStep, setCurrentStep }) => {
+const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuestion, currentStep, setCurrentStep, saveToLocalStorage }) => {
+
+  const handleNext = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handleBack = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep - 1);
+  };
   return (
     <div className="">
       <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
@@ -478,13 +518,18 @@ const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuesti
                 <Trash2 size={20} />
               </button>
             </div>
-            <textarea
-              placeholder="Enter Your Answer (optional)"
-              rows="3"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={question.answer}
-              onChange={(e) => updateQuestion(index, 'answer', e.target.value)}
-            />
+            <div className='flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:pl-12'>
+              {/* ////////////////////////////////////////////////////////////////////////////////////////////// */}
+              <textarea
+                placeholder="Enter Your Answer (optional)"
+                rows="3"
+                className="w-full sm:flex-1 px-4 py-2 border border-gray-300 rounded-lg
+                              focus:outline-none focus:ring-2 focus:ring-blue-500"
+                // "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={question.answer}
+                onChange={(e) => updateQuestion(index, 'answer', e.target.value)}
+              />
+            </div>
           </div>
         ))}
 
@@ -500,12 +545,12 @@ const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuesti
         <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
           <button
             type="button"
-            onClick={() => setCurrentStep(currentStep - 1)}
+            onClick={handleBack}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
             <ArrowLeft size={20} />Back</button>
           <button
             type="button"
-            onClick={() => setCurrentStep(currentStep + 1)}
+            onClick={handleNext}
             className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
             Save Service</button>
         </div>
@@ -515,7 +560,12 @@ const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuesti
   )
 };
 
-const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep }) => {
+const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage }) => {
+  const handleNext = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep + 1);
+  };
+
   return (
     <div className="max-w-2xl mx-auto  rounded-lg  p-8">
       <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
@@ -548,7 +598,7 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep }) => {
 
         <button
           type="button"
-          onClick={() => setCurrentStep(currentStep + 1)}
+          onClick={handleNext}
           className="w-full py-3 rounded-lg hover:bg-gray-100 flex items-center justify-center gap-2 mb-4">
           Continue to Preview <ArrowRight size={20} className='mt-1' /></button>
 
@@ -557,72 +607,153 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep }) => {
   )
 };
 
-const PreviewStep = ({ formData, currentStep, setCurrentStep }) => (
-  <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
-    <h1 className="text-3xl font-bold mb-2">Preview Your Page</h1>
-    <p className="text-gray-600 mb-8">This is how your customers will see your booking page.</p>
+const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage }) => {
+  const handleNext = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep + 1);
+  };
 
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="h-32 bg-gradient-to-r from-blue-600 to-cyan-400 relative">
-     {formData?.businessLogo && (
-  <div className="absolute -bottom-8 left-8 w-20 h-20 bg-white rounded-lg border-4 border-white flex items-center justify-center">
-    <img
-      src={URL.createObjectURL(formData?.businessLogo)}
-      alt="Business Logo"
-      className="w-full h-full object-cover rounded-lg"
-    />
-  </div>
-)}
+  const handleBack = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep - 1);
+  };
 
-      </div>
-      <div className="p-8 pt-12">
-        <h2 className="text-2xl font-bold mb-2">{formData.businessName || 'Your Business'}</h2>
-        <p className="text-sm text-gray-600 flex items-center gap-1 mb-4">
-          <MapPin size={14} />
-          {formData.cityTown || 'Your City'}
-        </p>
 
-        <p className="text-gray-700 mb-6">
-          {formData.businessDescription || 'Your business description will appear here...'}
-        </p>
+  const SubmitFormData = async () => {
+    try {
+      console.log(formData)
+      const res = await saveBusinessData(formData);
+      console.log(res)
+      showSuccess("Data Submit successful", res);
+    } catch (err) {
+      showError(err?.response?.data?.message || "failed");
+      console.error("error:", err);
+    }
+  }
 
-        <h3 className="text-xl font-bold mb-4">Our Services</h3>
-        <div className="space-y-1">
-          {formData.services.length > 0 && formData.services[0].name ? (
-          <div className="grid grid-cols-2 gap-2">
-            {formData.services.map((service, index) => (
-      <div
-        key={index}
-        className="flex justify-between items-center p-2 rounded-lg border border-gray-200"
-      >
-        <span className="font-medium">{service.name}</span>
-        <span className="text-gray-600">
-          {service.customPrice ? 'Custom Quote' : `$${service.price || '0'}`}
-        </span>
-      </div>
-    ))}
-  </div>
-) : (
-  <p className="text-gray-400 text-center py-4">No services added yet</p>
-)}
+  return (
 
+    <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
+      <h1 className="text-3xl font-bold mb-2">Preview Your Page</h1>
+      <p className="text-gray-600 mb-8">This is how your customers will see your booking page.</p>
+
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <div className="h-32 bg-gradient-to-r from-blue-600 to-cyan-400 relative">
+          <div className="absolute -bottom-8 left-8 w-20 h-20 bg-white rounded-lg border-4 border-white flex items-center justify-center">
+
+            {formData?.businessLogo && (
+              <img
+                src={
+                  formData.businessLogo instanceof File
+                    ? URL.createObjectURL(formData.businessLogo) // freshly uploaded
+                    : formData.businessLogo // base64 from localStorage
+                }
+                alt="Business Logo"
+                className="w-full h-full object-cover rounded-lg"
+              />
+
+            )}
+          </div>
+        </div>
+        <div className="p-6 pt-12">
+
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">{formData.businessName || 'Your Business'}</h2>
+              <p className="text-sm text-gray-600 flex items-center gap-1 mb-2">
+                <MapPin size={14} />
+                {formData.cityTown || 'Your City'}
+              </p>
+
+              <div className="flex items-center mt-2">
+                <div className="flex text-orange-400">★★★★★</div>
+                <span className="text-sm text-gray-500 ml-2">(128 reviews)</span>
+              </div>
+            </div>
+            <button className="bg-orange-500 text-xs text-white px-4 py-2 rounded-lg hover:bg-orange-600" onClick={() => SubmitFormData()}>
+              Request a Quote
+            </button>
+          </div>
+
+          <p className="text-gray-700 mb-6">
+            {formData.businessDescription || 'Your business description will appear here...'}
+          </p>
+
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div className="text-center px-2 py-1 bg-gray-50 rounded-lg flex gap-2 items-center">
+              <div className="text-cyan-500 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200">
+                <Phone />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs text-gray-500 text-start">Phone</div>
+                <div className="text-sm">{formData.phoneNumber}</div>
+              </div>
+            </div>
+
+            <div className="text-center px-2 py-1 bg-gray-50 rounded-lg flex gap-2 items-center">
+              <div className="text-cyan-500 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200 shrink-0">
+                <Mail />
+              </div>
+
+              <div className="min-w-0">
+                <div className="text-xs text-gray-500 text-start">Email</div>
+                <div className="text-sm break-all">
+                  {formData.email}
+                </div>
+              </div>
+            </div>
+
+
+            <div className="text-center px-2 py-1 bg-gray-50 rounded-lg flex gap-2 items-center">
+              <div className="text-cyan-500 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200">
+                <Clock />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs text-gray-500 text-start">Hours</div>
+                <div className="text-sm">24/7 Available</div>
+              </div>
+            </div>
+          </div>
+
+          <h3 className="text-xl font-bold mb-4">Our Services</h3>
+          <div className="space-y-1">
+            {formData.services.length > 0 && formData.services[0].name ? (
+              <div className="grid grid-cols-2 gap-3">
+                {formData.services.map((service, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center px-4 py-3 rounded-lg border border-gray-200"
+                  >
+                    <span className="font-medium">{service.name}</span>
+                    <span className="text-gray-600">
+                      {service.customPrice ? 'Custom Quote' : `$${service.price || '0'}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 text-center py-4">No services added yet</p>
+            )}
+
+          </div>
         </div>
       </div>
+      <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
+          <ArrowLeft size={20} />Back</button>
+        <button
+          type="button"
+          onClick={handleNext}
+          className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
+          Next: Choose Plan</button>
+      </div>
     </div>
-    <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
-      <button
-        type="button"
-        onClick={() => setCurrentStep(currentStep - 1)}
-        className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
-        <ArrowLeft size={20} />Back</button>
-      <button
-        type="button"
-        onClick={() => setCurrentStep(currentStep + 1)}
-        className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
-        Next: Choose Plan</button>
-    </div>
-  </div>
-);
+  )
+};
 
 const PricingStep = () => {
   return (
@@ -677,8 +808,11 @@ const PricingStep = () => {
 
 const Booking = () => {
 
+  const user = JSON.parse(localStorage.getItem("user")) || {}; // fallback if no user
+  const id = user.id;
   const [currentStep, setCurrentStep] = useState(1);
   const [businessId, setBusinessId] = useState(null);
+
   const [formData, setFormData] = useState({
     businessName: '',
     phoneNumber: '',
@@ -695,22 +829,24 @@ const Booking = () => {
       thu: { start: '09:00', end: '17:00', closed: false },
       fri: { start: '09:00', end: '17:00', closed: false },
       sat: { start: '', end: '', closed: true },
-      sun: { start: '', end: '', closed: true }
+      sun: { start: '', end: '', closed: true },
     },
     domain: '',
     services: [{ name: '', price: '', customPrice: false }],
-    questions: [{ question: '', answer: '' }]
+    questions: [{ question: '', answer: '' }],
+    userId: id
   });
 
+  console.log(formData, "check ==================")
   const [newServiceArea, setNewServiceArea] = useState('');
   const totalSteps = 7;
 
-  
-     useEffect(() => {
+
+  useEffect(() => {
     const saved = localStorage.getItem('bookingFormData');
     const savedStep = localStorage.getItem('bookingCurrentStep');
     const savedId = localStorage.getItem('bookingBusinessId');
-    
+
     if (saved) {
       setFormData(JSON.parse(saved));
     }
@@ -731,7 +867,7 @@ const Booking = () => {
     }
   };
 
-    useEffect(() => {
+  useEffect(() => {
     if (formData.businessName) {
       saveToLocalStorage();
     }
@@ -746,6 +882,26 @@ const Booking = () => {
       updateField(field, file);
     }
   };
+
+  // const fileToBase64 = (file) =>
+  //   new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.readAsDataURL(file);
+  //     reader.onload = () => resolve(reader.result);
+  //     reader.onerror = reject;
+  //   });
+
+  // const handleFileUpload = async (field, file) => {
+  //   if (!file) return;
+
+  //   const base64 = await fileToBase64(file);
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     [field]: base64
+  //   }));
+  // };
+
+
 
   const addServiceArea = () => {
     if (newServiceArea.trim()) {
@@ -828,10 +984,10 @@ const Booking = () => {
         removeServiceArea={removeServiceArea} setNewServiceArea={setNewServiceArea} updateHours={updateHours} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage}
       />;
       case 2: return <DomainStep formData={formData} updateField={updateField} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
-      case 3: return <AddServicesStep formData={formData} addService={addService} updateService={updateService} removeService={removeService} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
-      case 4: return <QuestionnaireStep formData={formData} addQuestion={addQuestion} updateQuestion={updateQuestion} removeQuestion={removeQuestion} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
-      case 5: return <ServiceCreatedStep formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} />;
-      case 6: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
+      case 3: return <AddServicesStep formData={formData} addService={addService} updateService={updateService} removeService={removeService} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
+      case 4: return <QuestionnaireStep formData={formData} addQuestion={addQuestion} updateQuestion={updateQuestion} removeQuestion={removeQuestion} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
+      case 5: return <ServiceCreatedStep formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} saveToLocalStorage={saveToLocalStorage} />;
+      case 6: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
       case 7: return <PricingStep />;
       default: return <BusinessInfoStep />;
     }
@@ -877,3 +1033,4 @@ export default Booking;
 
 
 
+// 

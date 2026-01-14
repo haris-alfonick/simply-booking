@@ -5,8 +5,9 @@ const businessSchema = new mongoose.Schema({
     phoneNumber: String,
     email: String,
     cityTown: String,
-    businessLogo: String,
-    businessCoverPhoto: String,
+    // businessLogo: { type: String },
+    // businessCoverPhoto: { type: String },
+
     serviceAreas: [String],
     businessDescription: String,
     hours: {
@@ -29,7 +30,8 @@ const businessSchema = new mongoose.Schema({
         answer: String
     }],
     createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    updatedAt: { type: Date, default: Date.now },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true }
 });
 
 module.exports = mongoose.model('Business', businessSchema);

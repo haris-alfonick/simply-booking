@@ -8,6 +8,7 @@ app.use('/uploads', express.static('uploads'));
 
 if (!fs.existsSync('uploads')) { fs.mkdirSync('uploads') }
 
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -94,14 +95,31 @@ exports.uploadImage = upload.single('image'), (req, res) => {
         res.status(500).json({ error: 'Failed to upload image' });
     }
 }
-
 exports.createBusiness = async (req, res) => {
     try {
         const businessData = req.body;
 
+        // Upload files to Cloudinary (or S3) and get URLs
+        if (req.files?.businessLogo) {
+            const file = req.files.businessLogo[0];
+            const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
+                if (error) throw error;
+                businessData.businessLogo = result.secure_url;
+            });
+        }
+
+        if (req.files?.businessCoverPhoto) {
+            const file = req.files.businessCoverPhoto[0];
+            const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
+                if (error) throw error;
+                businessData.businessCoverPhoto = result.secure_url;
+            });
+        }
+
+        // Domain logic
         if (businessData.domain) {
             const existing = await Business.findOne({ domain: businessData.domain });
-            if (existing) { return res.status(400).json({ error: 'Domain already exists' }) }
+            if (existing) return res.status(400).json({ error: 'Domain already exists' });
         } else {
             businessData.domain = await generateUniqueDomain(businessData.businessName);
         }
@@ -118,7 +136,32 @@ exports.createBusiness = async (req, res) => {
         console.error('Error creating business:', error);
         res.status(500).json({ error: 'Failed to create business' });
     }
-}
+};
+
+// exports.createBusiness = async (req, res) => {
+//     try {
+//         const businessData = req.body;
+
+//         if (businessData.domain) {
+//             const existing = await Business.findOne({ domain: businessData.domain });
+//             if (existing) { return res.status(400).json({ error: 'Domain already exists' }) }
+//         } else {
+//             businessData.domain = await generateUniqueDomain(businessData.businessName);
+//         }
+
+//         const business = new Business(businessData);
+//         await business.save();
+
+//         res.status(201).json({
+//             success: true,
+//             business,
+//             message: 'Business created successfully'
+//         });
+//     } catch (error) {
+//         console.error('Error creating business:', error);
+//         res.status(500).json({ error: 'Failed to create business' });
+//     }
+// }
 
 exports.updateBusiness = async (req, res) => {
     try {
