@@ -53,7 +53,7 @@ const SignUp = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/send-otp', { fullname, email, password });
+            const response = await axios.post('http://192.168.10.182:5000/api/auth/send-otp', { fullname, email, password });
             if (response.data.success) { setShowOTPModal(true) }
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');

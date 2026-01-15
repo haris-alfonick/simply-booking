@@ -1,13 +1,142 @@
-import React, { useState } from 'react';
-import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, MapPinIcon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, MapPinIcon, CheckCircle, XCircle } from 'lucide-react';
 
 import Footer from '../footer/Footer';
 import Navbar from '../navbar/Navbar';
+import axios from 'axios';
+import { showError, showSuccess } from '../utils/toast';
 const Service = () => {
     const [reviewText, setReviewText] = useState('');
     const [reviewName, setReviewName] = useState('');
     const [reviewEmail, setReviewEmail] = useState('');
     const [isFormVisible, setIsFormVisible] = useState(false);
+
+
+    const [business, setBusiness] = useState([])
+    //    quetes
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        service: 'Junk Removal',
+        address: '',
+        details: '',
+        photo: null
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
+
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [id]: value
+        }));
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFormData(prev => ({
+                ...prev,
+                photo: file
+            }));
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        setLoading(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('name', formData.name);
+            formDataToSend.append('email', formData.email);
+            formDataToSend.append('phone', formData.phone);
+            formDataToSend.append('service', formData.service);
+            formDataToSend.append('address', formData.address);
+            formDataToSend.append('details', formData.details);
+
+            if (formData.photo) {
+                formDataToSend.append('photo', formData.photo);
+            }
+            const response = await fetch('http://192.168.10.182:5000/api/quotes', {
+                method: 'POST',
+                body: formDataToSend
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setMessage({ type: 'success', text: 'Quote request submitted successfully!' });
+                setFormData({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    service: 'Junk Removal',
+                    address: '',
+                    details: '',
+                    photo: null
+                });
+                setTimeout(() => {
+                    toggleForm();
+                }, 2000);
+            } else {
+                setMessage({ type: 'error', text: data.message || 'Failed to submit quote request' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
+    const submitReview = async (e) => {
+
+        try {
+            const response = await fetch('http://192.168.10.182:5000/api/reviews', {
+                method: 'POST',
+                body: JSON.stringify({ reviewText, reviewName, reviewEmail }),
+                headers: {
+                    'Content-Type': "application/json"
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showSuccess('Review submitted successfully!');
+                setReviewText("")
+                setReviewName("")
+                setReviewEmail("")
+
+            } else {
+                showError('Failed to submit Review');
+            }
+        } catch (error) {
+            showError('Network error. Please try again.');
+        };
+
+    }
+
+
+
+
+    const getBusiness = async () => {
+        const user = JSON.parse(localStorage.getItem("user")); // fallback if no user
+        const id = user.id;
+        // try {
+        //     const { data } = await axios.get(`http://192.168.10.182:5000/api/businesses/${id}`);
+        //     setBusiness(data);
+        // } catch (error) {
+        //     console.log(error);
+        // }
+    };
+
+    useEffect(() => { getBusiness(); }, [])
 
     const toggleForm = () => {
         setIsFormVisible(!isFormVisible);
@@ -105,47 +234,86 @@ const Service = () => {
 
     return (
         <>
-        <Navbar />
+            <Navbar />
 
             {isFormVisible && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="min-w-[30%] mx-auto shadow-lg mt-10 mb-20">
+                    <div className="min-w-[30%] max-w-2xl mx-auto shadow-lg mt-10 mb-20 max-h-[90vh] overflow-y-auto">
                         <div className="text-start bg-cyan-500 text-white p-6 rounded-t-lg">
-                            <div className="text-2xl font-semibold mb-6">
+                            <div className="text-2xl font-semibold mb-2">
                                 Request a Quote
-                                <div className="text-sm text-white">Fill in your details and we will get back to you shortly</div>
+                            </div>
+                            <div className="text-sm text-white">
+                                Fill in your details and we will get back to you shortly
                             </div>
                         </div>
 
-                        <form className="mx-auto p-6 bg-white shadow-md rounded-b-lg">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 ">
+                        <div className="mx-auto p-6 bg-white shadow-md rounded-b-lg">
+                            {message.text && (
+                                <div className={`mb-4 p-4 rounded-md flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+                                    }`}>
+                                    {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+                                    {message.text}
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="mb-4">
-                                    <label htmlFor="name" className="flex block text-sm font-medium text-gray-700 items-center">
-                                        <User className='text-cyan-500 h-4 w-4 mr-1' />
+                                    <label htmlFor="name" className="flex items-center text-sm font-medium text-gray-700">
+                                        <User className="text-cyan-500 h-4 w-4 mr-1" />
                                         Name
                                     </label>
-                                    <input type="text" id="name" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                    />
                                 </div>
+
                                 <div className="mb-4">
-                                    <label htmlFor="email" className="flex block text-sm font-medium text-gray-700 items-center">
-                                        <Mail className='text-cyan-500 h-4 w-4 mr-1' />
+                                    <label htmlFor="email" className="flex items-center text-sm font-medium text-gray-700">
+                                        <Mail className="text-cyan-500 h-4 w-4 mr-1" />
                                         Email
                                     </label>
-                                    <input type="email" id="email" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                    />
                                 </div>
+
                                 <div className="mb-4">
-                                    <label htmlFor="phone" className="flex block text-sm font-medium text-gray-700 items-center">
-                                        <Phone className='text-cyan-500 h-4 w-4 mr-1' />
+                                    <label htmlFor="phone" className="flex items-center text-sm font-medium text-gray-700">
+                                        <Phone className="text-cyan-500 h-4 w-4 mr-1" />
                                         Phone
                                     </label>
-                                    <input type="text" id="phone" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                                    <input
+                                        type="tel"
+                                        id="phone"
+                                        value={formData.phone}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                    />
                                 </div>
+
                                 <div className="mb-4">
-                                    <label htmlFor="service" className="flex block text-sm font-medium text-gray-700 items-center">
-                                        <Wrench className='text-cyan-500 h-4 w-4 mr-1' />
+                                    <label htmlFor="service" className="flex items-center text-sm font-medium text-gray-700">
+                                        <Wrench className="text-cyan-500 h-4 w-4 mr-1" />
                                         Select Service
                                     </label>
-                                    <select id="service" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <select
+                                        id="service"
+                                        value={formData.service}
+                                        onChange={handleInputChange}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                    >
                                         <option>Junk Removal</option>
                                         <option>Furniture Delivery</option>
                                         <option>Appliance Assembly</option>
@@ -155,52 +323,83 @@ const Service = () => {
                             </div>
 
                             <div className="mb-4">
-                                <label htmlFor="address" className="flex block text-sm font-medium text-gray-700 items-center">
-                                    <MapPinIcon className='text-cyan-500 h-4 w-4 mr-1' />
+                                <label htmlFor="address" className="flex items-center text-sm font-medium text-gray-700">
+                                    <MapPin className="text-cyan-500 h-4 w-4 mr-1" />
                                     Address
                                 </label>
-                                <input type="text" id="address" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                                <input
+                                    type="text"
+                                    id="address"
+                                    value={formData.address}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                />
                             </div>
 
                             <div className="mb-4">
-                                <label htmlFor="details" className="flex block text-sm font-medium text-gray-700 items-center">
-                                    <FileText className='text-cyan-500 h-4 w-4 mr-1' />
+                                <label htmlFor="details" className="flex items-center text-sm font-medium text-gray-700">
+                                    <FileText className="text-cyan-500 h-4 w-4 mr-1" />
                                     Describe your problem
                                 </label>
-                                <textarea id="details" rows="4" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                                <textarea
+                                    id="details"
+                                    rows="4"
+                                    value={formData.details}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                />
                             </div>
 
                             <div className="mb-4">
-                                <label htmlFor="dropzone-file" className="flex block text-sm font-medium text-gray-700 items-center">
-                                    <Image className='text-cyan-500 h-4 w-4 mr-1' />
+                                <label htmlFor="dropzone-file" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                    <Image className="text-cyan-500 h-4 w-4 mr-1" />
                                     Upload Photo (Optional)
                                 </label>
                                 <div className="flex items-center justify-center w-full">
-                                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 rounded-lg bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium">
-                                        <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
-                                            <Upload />
-                                            <span className="font-semibold">Drag and drop an image here</span>
-                                            <p className="text-xs">or click to browse from your device</p>
+                                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 rounded-lg bg-gray-50 border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                                            <span className="font-semibold text-sm text-gray-600">
+                                                {formData.photo ? formData.photo.name : 'Drag and drop an image here'}
+                                            </span>
+                                            <p className="text-xs text-gray-500">or click to browse from your device</p>
                                         </div>
-                                        <input id="dropzone-file" type="file" className="hidden" />
+                                        <input
+                                            id="dropzone-file"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                        />
                                     </label>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <button type="button" className="bg-white text-gray-800 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors" onClick={() => { toggleForm() }}>
+                                <button
+                                    type="button"
+                                    onClick={toggleForm}
+                                    disabled={loading}
+                                    className="bg-white text-gray-800 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                >
                                     Cancel
                                 </button>
 
-                                <button type="submit" className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors">
-                                    Submit
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => handleSubmit()}
+                                >
+                                    {loading ? 'Submitting...' : 'Submit'}
                                 </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             )}
-
             <div className="min-h-screen bg-white">
 
 
@@ -218,7 +417,7 @@ const Service = () => {
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900">Elite Plumbing Services</h3>
                                     <p className="text-gray-500 flex items-center mt-1">
-                                         Los Angeles, CA
+                                        Los Angeles, CA
                                     </p>
                                     <div className="flex items-center mt-2">
                                         <div className="flex text-orange-400">★★★★★</div>
@@ -399,7 +598,9 @@ const Service = () => {
                                     />
                                 </div>
                                 <div className="mt-4">
-                                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-lg shadow-md transition-colors">
+                                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-lg shadow-md transition-colors"
+                                        onClick={() => submitReview()}
+                                    >
                                         Submit Review
                                     </button>
                                 </div>

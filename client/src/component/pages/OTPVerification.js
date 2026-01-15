@@ -79,7 +79,7 @@ const OTPVerification = ({ email, onSuccess, onBack }) => {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/verify-otp', { email, otp: otpCode });
+            const response = await axios.post('http://192.168.10.182:5000/api/auth/verify-otp', { email, otp: otpCode });
 
             if (response.data.success) {
                 setSuccess(true);
@@ -101,7 +101,7 @@ const OTPVerification = ({ email, onSuccess, onBack }) => {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/resend-otp', {
+            const response = await axios.post('http://192.168.10.182:5000/api/auth/resend-otp', {
                 email
             });
 

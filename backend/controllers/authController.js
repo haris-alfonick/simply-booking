@@ -8,7 +8,6 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-console.log(generateOTP(), "this is otp code ")
 const createTransporter = () => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.error('ERROR: EMAIL_USER and EMAIL_PASS must be set in .env file');

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Globe, FileText, Plus, Trash2, Check, ArrowLeft, ArrowRight, Star, Wrench, Camera, Building2, Lightbulb, Stars } from 'lucide-react';
 import { checkDomainAvailability, generateUniqueDomain, saveBusinessData } from '../api/Api';
 import { showError, showSuccess } from '../utils/toast';
+import axios from 'axios';
 
 const StepIndicator = ({ currentStep, steps }) => {
   currentStep = currentStep - 2;
@@ -62,7 +63,6 @@ const BusinessInfoStep = ({
                 accept="image/*"
                 className="hidden"
                 onChange={(e) =>
-                  e.target.files?.[0] &&
                   handleFileUpload("businessLogo", e.target.files[0])
                 }
               />
@@ -245,6 +245,7 @@ const BusinessInfoStep = ({
               type="file"
               accept="image/*"
               className="hidden"
+              hidden
               onChange={(e) => handleFileUpload('businessCoverPhoto', e.target.files[0])}
             />
             <Camera className="mx-auto text-blue-500 mb-2" size={40} />
@@ -607,7 +608,8 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep, saveToLocal
   )
 };
 
-const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage }) => {
+const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage, userId }) => {
+
   const handleNext = () => {
     saveToLocalStorage();
     setCurrentStep(currentStep + 1);
@@ -619,17 +621,86 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
   };
 
 
-  const SubmitFormData = async () => {
-    try {
-      console.log(formData)
-      const res = await saveBusinessData(formData);
-      console.log(res)
-      showSuccess("Data Submit successful", res);
-    } catch (err) {
-      showError(err?.response?.data?.message || "failed");
-      console.error("error:", err);
+  // const SubmitFormData = async () => {
+  //   try {
+
+  //     const formDataToSend = new FormData();
+  //     formDataToSend.append('name', formData.name);
+  //     formDataToSend.append('email', formData.email);
+  //     formDataToSend.append('phone', formData.phone);
+  //     formDataToSend.append('service', formData.service);
+  //     formDataToSend.append('address', formData.address);
+  //     formDataToSend.append('details', formData.details);
+
+  //     if (formData.photo) {
+  //       formDataToSend.append('photo', formData.photo);
+  //     }
+
+
+
+
+
+
+
+
+  //     console.log(formData)
+  //     const res = await saveBusinessData(formData);
+  //     console.log(res)
+  //     showSuccess("Data Submit successful", res);
+  //   } catch (err) {
+  //     showError(err?.response?.data?.message || "failed");
+  //     console.error("error:", err);
+  //   }
+  // }
+
+
+
+const SubmitFormData = async () => {
+  try {
+    const formDataToSend = new FormData();
+    
+    // Append text data to FormData
+    formDataToSend.append('businessName', formData.businessName);
+    formDataToSend.append('phoneNumber', formData.phoneNumber);
+    formDataToSend.append('email', formData.email);
+    formDataToSend.append('cityTown', formData.cityTown);
+    formDataToSend.append('businessDescription', formData.businessDescription);
+    formDataToSend.append('domain', formData.domain);
+    formDataToSend.append('userId', formData.userId);
+
+    // Append JSON stringified data
+    formDataToSend.append('serviceAreas', JSON.stringify(formData.serviceAreas));
+    formDataToSend.append('hours', JSON.stringify(formData.hours));
+    formDataToSend.append('services', JSON.stringify(formData.services));
+    formDataToSend.append('questions', JSON.stringify(formData.questions));
+
+    // Append files if available
+    if (formData.businessLogo) {
+      formDataToSend.append('businessLogo', formData.businessLogo);
     }
+    if (formData.businessCoverPhoto) {
+      formDataToSend.append('businessCoverPhoto', formData.businessCoverPhoto);
+    }
+
+    // Make the API request with FormData
+    const response = await fetch('http://localhost:5000/api/businesses', {
+      method: 'POST',
+      body: formDataToSend, // Send FormData directly (no need to stringify it)
+    });
+
+    // Check if response is ok
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Business created successfully', data);
+
+  } catch (error) {
+    console.error('Error submitting form:', error);
   }
+};
+
 
   return (
 
@@ -808,10 +879,13 @@ const PricingStep = () => {
 
 const Booking = () => {
 
-  const user = JSON.parse(localStorage.getItem("user")) || {}; // fallback if no user
-  const id = user.id;
   const [currentStep, setCurrentStep] = useState(1);
   const [businessId, setBusinessId] = useState(null);
+  const [newServiceArea, setNewServiceArea] = useState('');
+
+
+  const user = JSON.parse(localStorage.getItem("user")) || {}; // fallback if no user
+  const userId = user.id;
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -834,11 +908,9 @@ const Booking = () => {
     domain: '',
     services: [{ name: '', price: '', customPrice: false }],
     questions: [{ question: '', answer: '' }],
-    userId: id
+    userId: userId
   });
 
-  console.log(formData, "check ==================")
-  const [newServiceArea, setNewServiceArea] = useState('');
   const totalSteps = 7;
 
 
@@ -859,13 +931,30 @@ const Booking = () => {
   }, []);
 
   // Save to localStorage
-  const saveToLocalStorage = () => {
-    localStorage.setItem('bookingFormData', JSON.stringify(formData));
+
+
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      if (!file || !(file instanceof File)) return resolve(file); // already Base64 or empty
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+
+
+  const saveToLocalStorage = async () => {
+    const formDataCopy = { ...formData };
+
+    // formDataCopy.businessLogo = await fileToBase64(formData.businessLogo);
+    // formDataCopy.businessCoverPhoto = await fileToBase64(formData.businessCoverPhoto);
+
+    localStorage.setItem('bookingFormData', JSON.stringify(formDataCopy));
     localStorage.setItem('bookingCurrentStep', currentStep.toString());
-    if (businessId) {
-      localStorage.setItem('bookingBusinessId', businessId);
-    }
+    if (businessId) localStorage.setItem('bookingBusinessId', businessId);
   };
+
 
   useEffect(() => {
     if (formData.businessName) {
@@ -879,26 +968,16 @@ const Booking = () => {
 
   const handleFileUpload = (field, file) => {
     if (file) {
-      updateField(field, file);
+      setFormData(prev => ({ ...prev, [field]: file }));
     }
   };
 
-  // const fileToBase64 = (file) =>
-  //   new Promise((resolve, reject) => {
-  //     const reader = new FileReader();
-  //     reader.readAsDataURL(file);
-  //     reader.onload = () => resolve(reader.result);
-  //     reader.onerror = reject;
-  //   });
 
-  // const handleFileUpload = async (field, file) => {
-  //   if (!file) return;
-
-  //   const base64 = await fileToBase64(file);
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [field]: base64
-  //   }));
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     setFormData(prev => ({ ...prev, photo: file }));
+  //   }
   // };
 
 
@@ -987,7 +1066,7 @@ const Booking = () => {
       case 3: return <AddServicesStep formData={formData} addService={addService} updateService={updateService} removeService={removeService} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
       case 4: return <QuestionnaireStep formData={formData} addQuestion={addQuestion} updateQuestion={updateQuestion} removeQuestion={removeQuestion} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
       case 5: return <ServiceCreatedStep formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} saveToLocalStorage={saveToLocalStorage} />;
-      case 6: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
+      case 6: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} userId={userId} />;
       case 7: return <PricingStep />;
       default: return <BusinessInfoStep />;
     }

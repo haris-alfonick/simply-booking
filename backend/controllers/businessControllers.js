@@ -3,36 +3,13 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const Business = require('../models/Business');
+const upload = require('../middleware/upload');
 const app = express();
 app.use('/uploads', express.static('uploads'));
 
-if (!fs.existsSync('uploads')) { fs.mkdirSync('uploads') }
+// if (!fs.existsSync('uploads')) { fs.mkdirSync('uploads') }
 
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb(new Error('Only image files are allowed!'));
-    }
-});
 
 function generateSlug(text) {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -95,73 +72,175 @@ exports.uploadImage = upload.single('image'), (req, res) => {
         res.status(500).json({ error: 'Failed to upload image' });
     }
 }
+
+
+// create business logic
+
+
 exports.createBusiness = async (req, res) => {
-    try {
-        const businessData = req.body;
+  try {
+    // Destructure the necessary fields directly from req.body
+    const {
+      email,
+      businessName,
+      phoneNumber,
+      cityTown,
+      businessDescription,
+      domain,
+      userId,
+      serviceAreas,
+      hours,
+      services,
+      questions
+    } = req.body;
 
-        // Upload files to Cloudinary (or S3) and get URLs
-        if (req.files?.businessLogo) {
-            const file = req.files.businessLogo[0];
-            const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
-                if (error) throw error;
-                businessData.businessLogo = result.secure_url;
-            });
-        }
-
-        if (req.files?.businessCoverPhoto) {
-            const file = req.files.businessCoverPhoto[0];
-            const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
-                if (error) throw error;
-                businessData.businessCoverPhoto = result.secure_url;
-            });
-        }
-
-        // Domain logic
-        if (businessData.domain) {
-            const existing = await Business.findOne({ domain: businessData.domain });
-            if (existing) return res.status(400).json({ error: 'Domain already exists' });
-        } else {
-            businessData.domain = await generateUniqueDomain(businessData.businessName);
-        }
-
-        const business = new Business(businessData);
-        await business.save();
-
-        res.status(201).json({
-            success: true,
-            business,
-            message: 'Business created successfully'
-        });
-    } catch (error) {
-        console.error('Error creating business:', error);
-        res.status(500).json({ error: 'Failed to create business' });
+    // Email check for duplicates
+    const existingEmail = await Business.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered"
+      });
     }
+
+    // Domain logic: Check if domain exists
+    if (domain) {
+      const existingDomain = await Business.findOne({ domain });
+      if (existingDomain) {
+        return res.status(400).json({
+          success: false,
+          message: "Domain already exists"
+        });
+      }
+    } else {
+      // If no domain is provided, generate one from the business name
+      businessData.domain = await generateUniqueDomain(businessName);
+    }
+
+    // Create the business object using the destructured fields
+    const businessData = {
+      businessName,
+      phoneNumber,
+      email,
+      cityTown,
+      businessDescription,
+      domain: businessData.domain, // Use the domain from above
+      userId, 
+      serviceAreas: JSON.parse(serviceAreas),
+      hours: JSON.parse(hours),
+      services: JSON.parse(services),
+      questions: JSON.parse(questions)
+    };
+
+    const business = new Business(businessData);
+
+    // File Upload Handling
+    if (req.files) {
+      // Check if businessLogo exists in the uploaded files
+      if (req.files.businessLogo) {
+        business.businessLogo = {
+          data: fs.readFileSync(req.files.businessLogo[0].path), // Multer stores files as arrays
+          contentType: req.files.businessLogo[0].mimetype
+        };
+      }
+
+      // Check if businessCoverPhoto exists in the uploaded files
+      if (req.files.businessCoverPhoto) {
+        business.businessCoverPhoto = {
+          data: fs.readFileSync(req.files.businessCoverPhoto[0].path),
+          contentType: req.files.businessCoverPhoto[0].mimetype
+        };
+      }
+    }
+
+    // Save the business to the database
+    await business.save();
+
+    // Respond with success message
+    res.status(201).json({
+      success: true,
+      message: "Business created successfully",
+      business
+    });
+
+  } catch (error) {
+    console.error("Error creating business:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create business"
+    });
+  }
 };
 
 // exports.createBusiness = async (req, res) => {
 //     try {
-//         const businessData = req.body;
 
+//         const { email, businessName, phoneNumber, cityTown, businessDescription, domain, userId, serviceAreas, hours, services, questions } = req.body;
+//         const businessData = req.body;
+//         // console.log(email)
+
+//         // businessData.userId = req.user._id;
+
+//         /* ---------- Email Check ---------- */
+//         const existingEmail = await Business.findOne({ email });
+//         if (existingEmail) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Email already registered"
+//             });
+//         }
+
+//         // /* ---------- Domain Logic ---------- */
 //         if (businessData.domain) {
-//             const existing = await Business.findOne({ domain: businessData.domain });
-//             if (existing) { return res.status(400).json({ error: 'Domain already exists' }) }
+//             const existingDomain = await Business.findOne({ domain: businessData.domain });
+//             if (existingDomain) {
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: "Domain already exists"
+//                 });
+//             }
 //         } else {
 //             businessData.domain = await generateUniqueDomain(businessData.businessName);
 //         }
 
+//         // /* ---------- Create Business ---------- */
 //         const business = new Business(businessData);
+
+//         // /* ---------- File Uploads ---------- */
+
+//         if (req.files) {
+//             if (req.files.businessLogo) {
+//                 business.businessLogo = {
+//                     data: fs.readFileSync(req.files.businessLogo.path),
+//                     contentType: req.files.businessLogo.type
+//                 };
+//             }
+
+//             if (req.files.businessCoverPhoto) {
+//                 business.businessCoverPhoto = {
+//                     data: fs.readFileSync(req.files.businessCoverPhoto.path),
+//                     contentType: req.files.businessCoverPhoto.type
+//                 };
+//             }
+//         }
+
 //         await business.save();
 
 //         res.status(201).json({
 //             success: true,
-//             business,
-//             message: 'Business created successfully'
+//             message: "Business created successfully",
+//             business
 //         });
+
 //     } catch (error) {
-//         console.error('Error creating business:', error);
-//         res.status(500).json({ error: 'Failed to create business' });
+//         console.error("Error creating business:", error);
+//         res.status(500).json({
+//             success: false,
+//             message: "Failed to create business"
+//         });
 //     }
-// }
+// };
+
 
 exports.updateBusiness = async (req, res) => {
     try {
@@ -184,8 +263,9 @@ exports.updateBusiness = async (req, res) => {
 }
 
 exports.getBusinessById = async (req, res) => {
+    console.log(req.params.id)
     try {
-        const business = await Business.findById(req.params.id);
+        const business = await Business.findById({ userId: req.params.id }).populate('userId');
         if (!business) {
             return res.status(404).json({ error: 'Business not found' });
         }
@@ -222,5 +302,25 @@ exports.deleteBusiness = async (req, res) => {
     }
 }
 
+
+
+
+
+// Upload files to Cloudinary (or S3) and get URLs
+// if (req.files?.businessLogo) {
+//     const file = req.files.businessLogo[0];
+//     const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
+//         if (error) throw error;
+//         businessData.businessLogo = result.secure_url;
+//     });
+// }
+
+// if (req.files?.businessCoverPhoto) {
+//     const file = req.files.businessCoverPhoto[0];
+//     const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
+//         if (error) throw error;
+//         businessData.businessCoverPhoto = result.secure_url;
+//     });
+// }
 
 
