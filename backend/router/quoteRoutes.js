@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { createQuote, getAllQuotes, getQuoteById, updateQuoteStatus, deleteQuote }
-    = require('../controllers/clientController')
+    = require('../controllers/quoteController')
 const upload = require('../middleware/upload');
 
 // Public route - Create quote
@@ -12,5 +12,6 @@ router.get('/', getAllQuotes);
 router.get('/:id', getQuoteById);
 router.put('/:id', updateQuoteStatus);
 router.delete('/:id', deleteQuote);
+
 
 module.exports = router;

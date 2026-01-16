@@ -5,7 +5,7 @@ const path = require('path');
 const authRoutes = require('./router/authRoutes');
 const businessRoutes = require('./router/businessRoutes');
 require('./models/ConnectDB');
-const clinetRoutes = require('./router/clientRoutes');
+const quoteRoutes = require('./router/quoteRoutes');
 const reviewRoute = require('./router/reviewRoutes');
 
 const PORT = process.env.PORT;
@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/businesses', businessRoutes);
-app.use('/api/quotes',clinetRoutes);
+app.use('/api/quotes',quoteRoutes);
 app.use('/api/reviews', reviewRoute);
 
 app.listen(PORT || 5001, () => {

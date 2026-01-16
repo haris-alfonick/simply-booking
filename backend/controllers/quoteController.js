@@ -1,6 +1,6 @@
 
-const Quote = require('../models/Clients');
 const path = require('path');
+const Quote = require('../models/Quote');
 const fs = require('fs').promises;
 
 // @desc    Create new quote request
@@ -8,7 +8,7 @@ const fs = require('fs').promises;
 // @access  Public
 exports.createQuote = async (req, res) => {
   try {
-    const { name, email, phone, service, address, details } = req.body;
+    const { name, email, phone, service, address, details, businessId } = req.body;
 
     // Validate required fields
     if (!name || !email || !phone || !service || !address || !details) {
@@ -19,7 +19,7 @@ exports.createQuote = async (req, res) => {
     }
 
     // Prepare quote data
-    const quoteData = { name, email, phone, service, address, details};
+    const quoteData = { name, email, phone, service, address, details, businessId };
 
     // Handle file upload if exists
     if (req.file) {
@@ -37,7 +37,7 @@ exports.createQuote = async (req, res) => {
 
   } catch (error) {
     console.error('Error creating quote:', error);
-    
+
     // Delete uploaded file if quote creation fails
     if (req.file) {
       await fs.unlink(req.file.path).catch(err => console.error('Error deleting file:', err));

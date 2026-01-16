@@ -5,12 +5,14 @@ const Review = require('../models/Review');
  */
 exports.createReview = async (req, res) => {
     try {
-        const { reviewName, reviewEmail, reviewText } = req.body;
+        const { reviewName, reviewEmail, reviewText, businessId, ratingStars } = req.body;
 
         const review = await Review.create({
             reviewName,
             reviewEmail,
-            reviewText
+            reviewText,
+            businessId,
+            ratingStars
         });
 
         res.status(201).json({
@@ -32,7 +34,7 @@ exports.createReview = async (req, res) => {
  */
 exports.getAllReviews = async (req, res) => {
     try {
-        const reviews = await Review.find().sort({ createdAt: -1 });
+        const reviews = await Review.find().sort({ createdAt: -1 }).limit(3);
 
         res.status(200).json({
             success: true,
@@ -47,6 +49,27 @@ exports.getAllReviews = async (req, res) => {
         });
     }
 };
+
+exports.getAllReviewsBusinessId = async (req, res) => {
+    const { businessId } = req.body;
+    // console.log(businessId,"from get reviews")
+    try {
+        const reviews = await Review.find({businessId}).sort({ createdAt: -1 }).limit(5);
+
+        res.status(200).json({
+            success: true,
+            count: reviews.length,
+            data: reviews
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 
 /**
  * Get single review by ID

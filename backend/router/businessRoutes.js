@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 const { createDomain, checkDomain, uploadImage, createBusiness, updateBusiness, getBusinessById,
-    getDomain, deleteBusiness } = require('../controllers/businessControllers');
+    getDomain, deleteBusiness, 
+    threedomains} = require('../controllers/businessControllers');
 const upload = require('../middleware/upload');
 
 router.post('/generate-domain', createDomain);
@@ -18,5 +19,6 @@ router.get('/:id', getBusinessById);
 router.get('/domain/:domain', getDomain);
 router.delete('/:id', deleteBusiness);
 
+router.post('/generate-domainss', threedomains);
 
 module.exports = router;

@@ -5,15 +5,21 @@ import Footer from '../footer/Footer';
 import Navbar from '../navbar/Navbar';
 import axios from 'axios';
 import { showError, showSuccess } from '../utils/toast';
+import { useParams } from 'react-router-dom';
+import { API_BASE_URL } from '../api/Api';
 const Service = () => {
     const [reviewText, setReviewText] = useState('');
     const [reviewName, setReviewName] = useState('');
     const [reviewEmail, setReviewEmail] = useState('');
+    const [ratingStars, setRatingStars] = useState([false, false, false, false, false]);
+
     const [isFormVisible, setIsFormVisible] = useState(false);
 
+    const [getreviews, setgetreviews] = useState([]);
+
+    const params = useParams();
 
     const [business, setBusiness] = useState([])
-    //    quetes
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -49,6 +55,10 @@ const Service = () => {
         setLoading(true);
         setMessage({ type: '', text: '' });
 
+
+        console.log(formData)
+
+
         try {
             const formDataToSend = new FormData();
             formDataToSend.append('name', formData.name);
@@ -57,11 +67,12 @@ const Service = () => {
             formDataToSend.append('service', formData.service);
             formDataToSend.append('address', formData.address);
             formDataToSend.append('details', formData.details);
+            formDataToSend.append('businessId', business._id);
 
             if (formData.photo) {
                 formDataToSend.append('photo', formData.photo);
             }
-            const response = await fetch('http://192.168.10.182:5000/api/quotes', {
+            const response = await fetch(`${API_BASE_URL}/quotes`, {
                 method: 'POST',
                 body: formDataToSend
             });
@@ -94,12 +105,12 @@ const Service = () => {
 
 
 
-    const submitReview = async (e) => {
+    const submitReview = async () => {
 
         try {
-            const response = await fetch('http://192.168.10.182:5000/api/reviews', {
+            const response = await fetch(`${API_BASE_URL}/reviews`, {
                 method: 'POST',
-                body: JSON.stringify({ reviewText, reviewName, reviewEmail }),
+                body: JSON.stringify({ reviewText, reviewName, reviewEmail, businessId: business._id, ratingStars }),
                 headers: {
                     'Content-Type': "application/json"
                 }
@@ -112,7 +123,7 @@ const Service = () => {
                 setReviewText("")
                 setReviewName("")
                 setReviewEmail("")
-
+                getReviews();
             } else {
                 showError('Failed to submit Review');
             }
@@ -123,20 +134,35 @@ const Service = () => {
     }
 
 
+    useEffect(() => { getBusiness(); }, [])
 
 
     const getBusiness = async () => {
-        const user = JSON.parse(localStorage.getItem("user")); // fallback if no user
-        const id = user.id;
-        // try {
-        //     const { data } = await axios.get(`http://192.168.10.182:5000/api/businesses/${id}`);
-        //     setBusiness(data);
-        // } catch (error) {
-        //     console.log(error);
-        // }
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/businesses/${params.id}`);
+            setBusiness(data);
+        } catch (error) {
+            console.log(error);
+        }
     };
 
-    useEffect(() => { getBusiness(); }, [])
+
+
+
+    useEffect(() => { if (business?._id) { getReviews(); } }, [business?._id]);
+
+    const getReviews = async () => {
+        try {
+            const { data } = await axios.post(
+                `${API_BASE_URL}/reviews/get-reviews-business`,
+                { businessId: business._id }
+            );
+            console.log(data)
+            setgetreviews(data);
+        } catch (error) {
+            console.error("Failed to fetch reviews:", error);
+        }
+    };
 
     const toggleForm = () => {
         setIsFormVisible(!isFormVisible);
@@ -178,59 +204,65 @@ const Service = () => {
         "/api/placeholder/400/300"
     ];
 
-    const reviews = [
-        {
-            name: "Sarah Johnson",
-            service: "Pipe Restoration",
-            avatar: "S",
-            rating: 5,
-            time: "2 weeks ago",
-            text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
-        },
-        {
-            name: "Michael Chen",
-            service: "Pipe Restoration",
-            avatar: "M",
-            rating: 5,
-            time: "1 month ago",
-            text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
-        },
-        {
-            name: "Emily Rodriguez",
-            service: "Pipe Restoration",
-            avatar: "E",
-            rating: 4,
-            time: "1 month ago",
-            text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
-        }
-    ];
+    // const reviews = [
+    //     {
+    //         name: "Sarah Johnson",
+    //         service: "Pipe Restoration",
+    //         avatar: "S",
+    //         rating: 5,
+    //         time: "2 weeks ago",
+    //         text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
+    //     },
+    //     {
+    //         name: "Michael Chen",
+    //         service: "Pipe Restoration",
+    //         avatar: "M",
+    //         rating: 5,
+    //         time: "1 month ago",
+    //         text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
+    //     },
+    //     {
+    //         name: "Emily Rodriguez",
+    //         service: "Pipe Restoration",
+    //         avatar: "E",
+    //         rating: 4,
+    //         time: "1 month ago",
+    //         text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
+    //     }
+    // ];
 
-    const faqs = [
-        {
-            question: "Do you provide emergency plumbing services on weekends?",
-            answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
-        },
-        {
-            question: "Do you provide emergency plumbing services on weekends?",
-            answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
-        },
-        {
-            question: "Do you provide emergency plumbing services on weekends?",
-            answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
-        },
-        {
-            question: "Do you provide emergency plumbing services on weekends?",
-            answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
-        }
-    ];
+    // const faqs = [
+    //     {
+    //         question: "Do you provide emergency plumbing services on weekends?",
+    //         answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
+    //     },
+    //     {
+    //         question: "Do you provide emergency plumbing services on weekends?",
+    //         answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
+    //     },
+    //     {
+    //         question: "Do you provide emergency plumbing services on weekends?",
+    //         answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
+    //     },
+    //     {
+    //         question: "Do you provide emergency plumbing services on weekends?",
+    //         answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
+    //     }
+    // ];
 
-    const businessHours = [
-        { day: "Monday - Friday", hours: "8:00 AM - 6:00 PM" },
-        { day: "Saturday", hours: "9:00 AM - 4:00 PM" },
-        { day: "Sunday", hours: "Closed" }
-    ];
+    // const businessHours = [
+    //     { day: "Monday - Friday", hours: "8:00 AM - 6:00 PM" },
+    //     { day: "Saturday", hours: "9:00 AM - 4:00 PM" },
+    //     { day: "Sunday", hours: "Closed" }
+    // ];
 
-    const serviceAreas = ["Downtown", "Midtown", "North Side", "Business District"];
+    // const serviceAreas = ["Downtown", "Midtown", "North Side", "Business District"];
+
+    const handleStarClick = (index) => {
+        const updatedStars = ratingStars.map((_, i) => i <= index);
+        setRatingStars(updatedStars);
+    };
+
 
     return (
         <>
@@ -314,10 +346,11 @@ const Service = () => {
                                         onChange={handleInputChange}
                                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
                                     >
-                                        <option>Junk Removal</option>
-                                        <option>Furniture Delivery</option>
-                                        <option>Appliance Assembly</option>
-                                        <option>Moving Services</option>
+                                        {Object.entries(business?.services || {}).map(
+                                            ([key, service]) => (
+                                                <option key={key}>{service.name}</option>
+
+                                            ))}
                                     </select>
                                 </div>
                             </div>
@@ -409,7 +442,7 @@ const Service = () => {
                     <div className="p-8 relative max-w-7xl mx-auto">
                         <div className="absolute -top-12 left-8 bg-white p-4 rounded-lg shadow-md">
                             <div className="bg-cyan-500 w-24 h-24 rounded-lg flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                                Elite
+                                <img src={business.businessLogo} alt='image' />
                             </div>
                         </div>
                         <div className="mt-14">
@@ -421,7 +454,7 @@ const Service = () => {
                                     </p>
                                     <div className="flex items-center mt-2">
                                         <div className="flex text-orange-400">★★★★★</div>
-                                        <span className="text-sm text-gray-500 ml-2">(128 reviews)</span>
+                                        <span className="text-sm text-gray-500 ml-2">({getreviews.count} reviews)</span>
                                     </div>
                                 </div>
                                 <button className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600" onClick={toggleForm}>
@@ -429,9 +462,8 @@ const Service = () => {
                                 </button>
                             </div>
                             <p className="text-gray-600 mb-6">
-                                Professional plumbing services with over 15 years of experience. We specialize in residential and
-                                commercial plumbing, including repairs, installations, and emergency services. Available 24/7 for your
-                                plumbing needs.
+
+                                {business.businessDescription}
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                                 <div className="text-center p-4 bg-gray-50 rounded-lg flex gap-2 items-center">
@@ -440,7 +472,7 @@ const Service = () => {
                                     </div>
                                     <div className="mx-2">
                                         <div className="text-xs text-gray-500">Phone</div>
-                                        <div className="font-medium">(555) 123-4567</div>
+                                        <div className="font-medium">{business.phoneNumber}</div>
                                     </div>
                                 </div>
 
@@ -450,7 +482,7 @@ const Service = () => {
                                     </div>
                                     <div className="mx-2">
                                         <div className="text-xs text-gray-500">Email</div>
-                                        <div className="font-medium">info@elite.com</div>
+                                        <div className="font-medium">{business.email}</div>
                                     </div>
                                 </div>
 
@@ -468,22 +500,22 @@ const Service = () => {
                             <div>
                                 <h4 className="font-bold text-gray-900 mb-4">Our Services</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="flex justify-between items-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                                        <span className="font-medium">Emergency Repairs</span>
-                                        <span className="text-gray-600">Starting at $99</span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                                        <span className="font-medium">Drain Cleaning</span>
-                                        <span className="text-gray-600">Starting at $79</span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                                        <span className="font-medium">Water Heater Installation</span>
-                                        <span className="text-gray-600">Starting at $499</span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                                        <span className="font-medium">Pipe Replacement</span>
-                                        <span className="text-gray-600">Custom Quote</span>
-                                    </div>
+
+                                    {Object.entries(business?.services || {}).map(
+                                        ([key, service]) => (
+                                            <div
+                                                key={key}
+                                                className="flex justify-between items-center p-4 bg-gray-50 border border-gray-200 rounded-lg"
+                                            >
+                                                <span className="font-medium">{service.name}</span>
+                                                <span className="text-gray-600">
+                                                    Starting at {service.price}
+                                                </span>
+                                            </div>
+                                        )
+                                    )}
+
+
                                 </div>
                             </div>
 
@@ -511,21 +543,32 @@ const Service = () => {
                                     <h3 className="text-xl font-bold text-gray-900 ">Questions & Answers (5)</h3>
                                 </div>
                                 <div className="space-y-4">
-                                    {faqs.map((faq, index) => (
-                                        <div key={index} className="border-b border-gray-200 pb-4 last:border-0 ">
-                                            <div className="flex gap-3 mb-2">
-                                                <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center flex-shrink-0">
-                                                    <MessageCircle className="w-4 h-4 text-white" />
+
+                                    {Object.entries(business?.questions || {}).map(
+                                        ([key, faq]) => (
+                                            <div
+                                                key={key}
+                                                className="border-b border-gray-200 pb-4 last:border-0"
+                                            >
+                                                <div className="flex gap-3 mb-2">
+                                                    <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center flex-shrink-0">
+                                                        <MessageCircle className="w-4 h-4 text-white" />
+                                                    </div>
+                                                    <p className="font-medium text-gray-900">
+                                                        {faq.question}
+                                                    </p>
                                                 </div>
-                                                <p className="font-medium text-gray-900">{faq.question}</p>
-                                            </div>
-                                            <div className="flex gap-3 ml-9">
-                                                <div className="text-sm text-gray-600">
-                                                    <span className="font-semibold text-gray-900">A</span> {faq.answer}
+
+                                                <div className="flex gap-3 ml-9">
+                                                    <div className="text-sm text-gray-600">
+                                                        <span className="font-semibold text-gray-900">A</span>{' '}
+                                                        {faq.answer}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    )}
+
                                 </div>
                                 <div className="flex justify-center gap-2 mt-6">
                                     <button className="w-8 h-8 bg-cyan-500 text-white rounded flex items-center justify-center">1</button>
@@ -539,34 +582,44 @@ const Service = () => {
                             <div className="bg-white rounded-xl shadow-sm p-6">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-900">Customer Reviews</h3>
-                                    <span className="text-gray-500 text-sm">127 reviews</span>
+                                    <span className="text-gray-500 text-sm">{getreviews.count} reviews</span>
                                 </div>
                                 <div className="space-y-6">
-                                    {reviews.map((review, index) => (
-                                        <div key={index} className="flex gap-4 border border-gray-200 rounded-lg p-4">
-                                            <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center text-cyan-700 font-semibold flex-shrink-0 ">
-                                                {review.avatar}
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-start justify-between mb-1">
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-900">{review.name}</h4>
-                                                        <p className="text-sm text-gray-500">{review.service}</p>
+
+                                    {getreviews?.data?.length > 0 ? (
+                                        getreviews.data.map((review, index) => (
+                                            <div key={index} className="flex gap-4 border border-gray-200 rounded-lg p-4">
+                                                <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center text-cyan-700 font-semibold flex-shrink-0">
+                                                    {review.reviewName?.charAt(0).toUpperCase()}
+                                                </div>
+
+                                                <div className="flex-1">
+                                                    <div className="flex items-start justify-between mb-1">
+                                                        <div>
+                                                            <h4 className="font-semibold text-gray-900">{review.reviewName}</h4>
+                                                        </div>
+                                                        <span className="text-sm text-gray-500">
+                                                            {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ""}
+                                                        </span>
                                                     </div>
-                                                    <span className="text-sm text-gray-500">{review.time}</span>
+
+                                                    <div className="flex gap-1 mb-2">
+                                                        {review.ratingStars?.map((star, i) => (
+                                                            <Star
+                                                                key={i}
+                                                                className={`w-4 h-4 ${star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                                                            />
+                                                        ))}
+                                                    </div>
+
+                                                    <p className="text-gray-600 text-sm">{review.reviewText}</p>
                                                 </div>
-                                                <div className="flex gap-1 mb-2">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <Star
-                                                            key={i}
-                                                            className={`w-4 h-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                                                        />
-                                                    ))}
-                                                </div>
-                                                <p className="text-gray-600 text-sm">{review.text}</p>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    ) : (
+                                        <p>No reviews yet.</p>
+                                    )}
+
                                 </div>
                                 <button className="w-full mt-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
                                     Load More Reviews
@@ -579,7 +632,7 @@ const Service = () => {
                                     value={reviewText}
                                     onChange={(e) => setReviewText(e.target.value)}
                                     placeholder="Write your review"
-                                    className="w-full p-3 border border-gray-300 rounded-lg mb-4 min-h-32 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    className="w-full p-3 border border-gray-300 rounded-lg mb-4 min-h-32 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                                 />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <input
@@ -587,16 +640,48 @@ const Service = () => {
                                         value={reviewName}
                                         onChange={(e) => setReviewName(e.target.value)}
                                         placeholder="Name *"
-                                        className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                        className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                                     />
                                     <input
                                         type="email"
                                         value={reviewEmail}
                                         onChange={(e) => setReviewEmail(e.target.value)}
                                         placeholder="Email *"
-                                        className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                        className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                                     />
                                 </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 font-semibold mb-2">
+                                        Your Rating
+                                    </label>
+
+                                    <div className="flex gap-2 py-2">
+                                        {ratingStars.map((filled, index) => (
+                                            <svg
+                                                key={index}
+                                                onClick={() => handleStarClick(index)}
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill={filled ? "#f97316" : "none"}
+                                                stroke="#f97316"
+                                                strokeWidth="2"
+                                                className="w-4 h-4 cursor-pointer transition-transform hover:scale-110"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.062 6.35a1 1 0 00.95.69h6.678c.969 0 1.371 1.24.588 1.81l-5.404 3.93a1 1 0 00-.364 1.118l2.062 6.35c.3.921-.755 1.688-1.54 1.118l-5.404-3.93a1 1 0 00-1.175 0l-5.404 3.93c-.784.57-1.838-.197-1.54-1.118l2.062-6.35a1 1 0 00-.364-1.118L.721 11.777c-.783-.57-.38-1.81.588-1.81h6.678a1 1 0 00.95-.69l2.062-6.35z"
+                                                />
+                                            </svg>
+                                        ))}
+                                    </div>
+                                </div>
+
+
+
+
+
                                 <div className="mt-4">
                                     <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-lg shadow-md transition-colors"
                                         onClick={() => submitReview()}
@@ -618,13 +703,33 @@ const Service = () => {
                                     <h3 className="font-semibold text-gray-900">Business Hours</h3>
                                 </div>
                                 <div className="space-y-2">
-                                    {businessHours.map((schedule, index) => (
-                                        <div key={index} className="flex justify-between text-sm">
-                                            <span className="text-gray-600">{schedule.day}</span>
-                                            <span className="font-medium text-gray-900">{schedule.hours}</span>
-                                        </div>
-                                    ))}
+                                    {Object.entries(business?.hours || {}).map(([day, schedule]) => {
+                                        const formatTime = (time) => {
+                                            if (!time) return "";
+                                            const [hourStr, minute] = time.split(":");
+                                            let hour = parseInt(hourStr, 10);
+                                            const ampm = hour >= 12 ? "PM" : "AM";
+                                            hour = hour % 12 || 12;
+                                            return `${hour}:${minute} ${ampm}`;
+                                        };
+
+                                        return (
+                                            <div key={day} className="flex justify-between text-sm">
+                                                <span className="text-gray-600 capitalize">{day}</span>
+
+                                                {schedule.closed ? (
+                                                    <span className="text-gray-400">Closed</span>
+                                                ) : (
+                                                    <span className="font-medium text-gray-900">
+                                                        {formatTime(schedule.start)} – {formatTime(schedule.end)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+
                                 </div>
+
                             </div>
 
 
@@ -634,11 +739,15 @@ const Service = () => {
                                     <h3 className="font-semibold text-gray-900">Service Area</h3>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {serviceAreas.map((area, index) => (
-                                        <span key={index} className="px-3 py-1 bg-cyan-50 text-cyan-600 rounded-full text-sm">
+                                    {(business?.serviceAreas || []).map((area, index) => (
+                                        <span
+                                            key={index}
+                                            className="px-3 py-1 bg-cyan-50 text-cyan-600 rounded-full text-sm"
+                                        >
                                             {area}
                                         </span>
                                     ))}
+
                                 </div>
                             </div>
 
@@ -664,7 +773,7 @@ const Service = () => {
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center text-cyan-600">
-                                            {service.icon}
+                                            {service.name}
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2">

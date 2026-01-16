@@ -30,6 +30,7 @@ const BusinessInfoStep = ({
   setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, saveToLocalStorage
 }) => {
 
+
   const handleNext = async () => {
     saveToLocalStorage();
 
@@ -37,12 +38,16 @@ const BusinessInfoStep = ({
       try {
         const { domain } = await generateUniqueDomain(formData.businessName);
         updateField('domain', domain);
+
       } catch (error) {
         console.error('Error generating domain:', error);
       }
     }
     setCurrentStep(currentStep + 1);
   };
+
+
+
 
   const handleBack = () => {
     saveToLocalStorage();
@@ -258,7 +263,7 @@ const BusinessInfoStep = ({
               </p>
             ) : (
               <>
-                <Camera className="text-blue-500 mb-1" size={40} />
+                {/* <Camera className="text-blue-500 mb-1" size={40} /> */}
                 <p className="text-sm text-blue-500">Recommended: 1200×400px</p>
               </>
             )}
@@ -290,6 +295,7 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
 
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState(null);
+  const [sussiondomain, setDomainData] = useState([])
 
   const checkAvailability = async () => {
     if (!formData.domain) return;
@@ -297,12 +303,48 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
     setChecking(true);
     try {
       const result = await checkDomainAvailability(formData.domain);
+      console.log(result.available)
       setAvailable(result.available);
     } catch (error) {
       console.error('Error checking domain:', error);
     }
     setChecking(false);
   };
+
+  useEffect(() => {
+    if (!formData.businessName) return;
+
+    const fetchDomains = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/businesses/generate-domainss",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              businessName: formData.businessName
+            })
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch domains");
+        }
+
+        const data = await response.json();
+        console.log(data.suggestions);
+
+        setDomainData(data.suggestions);
+      } catch (error) {
+        console.error("Error fetching domains:", error);
+      }
+    };
+
+    fetchDomains();
+  }, [formData.businessName]);
+
 
   const handleNext = () => {
     saveToLocalStorage();
@@ -332,13 +374,13 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
         <p className="text-sm text-gray-600 mb-2">Examples</p>
         <div className="space-y-3">
           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-            <Globe className="mr-2" size={16} />simplybooking.org/plumberpro
+            <Globe className="mr-2" size={16} />simplybooking.org/{formData.domain}
           </div>
           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-            <Globe className="mr-2" size={16} />simplybooking.org/smartcleaning
+            <Globe className="mr-2" size={16} />simplybooking.org/{sussiondomain[0]}
           </div>
           <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-            <Globe className="mr-2" size={16} />simplybooking.org/fastcleaning
+            <Globe className="mr-2" size={16} />simplybooking.org/{sussiondomain[1]}
           </div>
         </div>
       </div>
@@ -620,86 +662,42 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
     setCurrentStep(currentStep - 1);
   };
 
+  const SubmitFormData = async () => {
+    try {
 
-  // const SubmitFormData = async () => {
-  //   try {
+      const formDataToSend = new FormData();
+      // Append text data to FormData
+      formDataToSend.append('businessName', formData.businessName);
+      formDataToSend.append('phoneNumber', formData.phoneNumber);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('cityTown', formData.cityTown);
+      formDataToSend.append('businessDescription', formData.businessDescription);
+      formDataToSend.append('domain', formData.domain);
+      formDataToSend.append('userId', formData.userId);
 
-  //     const formDataToSend = new FormData();
-  //     formDataToSend.append('name', formData.name);
-  //     formDataToSend.append('email', formData.email);
-  //     formDataToSend.append('phone', formData.phone);
-  //     formDataToSend.append('service', formData.service);
-  //     formDataToSend.append('address', formData.address);
-  //     formDataToSend.append('details', formData.details);
+      formDataToSend.append('serviceAreas', JSON.stringify(formData.serviceAreas));
+      formDataToSend.append('hours', JSON.stringify(formData.hours));
+      formDataToSend.append('services', JSON.stringify(formData.services));
+      formDataToSend.append('questions', JSON.stringify(formData.questions));
 
-  //     if (formData.photo) {
-  //       formDataToSend.append('photo', formData.photo);
-  //     }
+      if (formData.businessLogo) {
+        formDataToSend.append('businessLogo', formData.businessLogo);
+      }
+      if (formData.businessCoverPhoto) {
+        formDataToSend.append('businessCoverPhoto', formData.businessCoverPhoto);
+      }
 
+      const response = await fetch('http://localhost:5000/api/businesses', {
+        method: 'POST',
+        body: formDataToSend
+      });
+      const data = await response.json();
+      console.log('Business created successfully', data);
 
-
-
-
-
-
-
-  //     console.log(formData)
-  //     const res = await saveBusinessData(formData);
-  //     console.log(res)
-  //     showSuccess("Data Submit successful", res);
-  //   } catch (err) {
-  //     showError(err?.response?.data?.message || "failed");
-  //     console.error("error:", err);
-  //   }
-  // }
-
-
-
-const SubmitFormData = async () => {
-  try {
-    const formDataToSend = new FormData();
-    
-    // Append text data to FormData
-    formDataToSend.append('businessName', formData.businessName);
-    formDataToSend.append('phoneNumber', formData.phoneNumber);
-    formDataToSend.append('email', formData.email);
-    formDataToSend.append('cityTown', formData.cityTown);
-    formDataToSend.append('businessDescription', formData.businessDescription);
-    formDataToSend.append('domain', formData.domain);
-    formDataToSend.append('userId', formData.userId);
-
-    // Append JSON stringified data
-    formDataToSend.append('serviceAreas', JSON.stringify(formData.serviceAreas));
-    formDataToSend.append('hours', JSON.stringify(formData.hours));
-    formDataToSend.append('services', JSON.stringify(formData.services));
-    formDataToSend.append('questions', JSON.stringify(formData.questions));
-
-    // Append files if available
-    if (formData.businessLogo) {
-      formDataToSend.append('businessLogo', formData.businessLogo);
+    } catch (error) {
+      console.error('Error submitting form:', error);
     }
-    if (formData.businessCoverPhoto) {
-      formDataToSend.append('businessCoverPhoto', formData.businessCoverPhoto);
-    }
-
-    // Make the API request with FormData
-    const response = await fetch('http://localhost:5000/api/businesses', {
-      method: 'POST',
-      body: formDataToSend, // Send FormData directly (no need to stringify it)
-    });
-
-    // Check if response is ok
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Business created successfully', data);
-
-  } catch (error) {
-    console.error('Error submitting form:', error);
-  }
-};
+  };
 
 
   return (
@@ -839,7 +837,7 @@ const PricingStep = () => {
           <div className="text-center border-2 border-cyan-500 p-12 rounded-[20px]">
             <h4 className="text-gray-600 text-2xl mb-2 font-bold">ALL IN JUST</h4>
             <div className="text-7xl font-bold text-cyan-500 mb-2">$5.99</div>
-            <p className="text-gray-600">Per month</p>
+            <p className="text-gray-600">Per dayth</p>
           </div>
 
           <div className="space-y-3 p-4 ">
@@ -883,7 +881,6 @@ const Booking = () => {
   const [businessId, setBusinessId] = useState(null);
   const [newServiceArea, setNewServiceArea] = useState('');
 
-
   const user = JSON.parse(localStorage.getItem("user")) || {}; // fallback if no user
   const userId = user.id;
 
@@ -897,13 +894,13 @@ const Booking = () => {
     serviceAreas: [],
     businessDescription: '',
     hours: {
-      mon: { start: '09:00', end: '17:00', closed: false },
-      tue: { start: '09:00', end: '17:00', closed: false },
-      wed: { start: '09:00', end: '17:00', closed: false },
-      thu: { start: '09:00', end: '17:00', closed: false },
-      fri: { start: '09:00', end: '17:00', closed: false },
-      sat: { start: '', end: '', closed: true },
-      sun: { start: '', end: '', closed: true },
+      monday: { start: '09:00', end: '17:00', closed: false },
+      tuesday: { start: '09:00', end: '17:00', closed: false },
+      wednessday: { start: '09:00', end: '17:00', closed: false },
+      thusday: { start: '09:00', end: '17:00', closed: false },
+      friday: { start: '09:00', end: '17:00', closed: false },
+      saturday: { start: '', end: '', closed: true },
+      sunday: { start: '', end: '', closed: true },
     },
     domain: '',
     services: [{ name: '', price: '', customPrice: false }],
@@ -950,9 +947,9 @@ const Booking = () => {
     // formDataCopy.businessLogo = await fileToBase64(formData.businessLogo);
     // formDataCopy.businessCoverPhoto = await fileToBase64(formData.businessCoverPhoto);
 
-    localStorage.setItem('bookingFormData', JSON.stringify(formDataCopy));
-    localStorage.setItem('bookingCurrentStep', currentStep.toString());
-    if (businessId) localStorage.setItem('bookingBusinessId', businessId);
+    // localStorage.setItem('bookingFormData', JSON.stringify(formDataCopy));
+    // localStorage.setItem('bookingCurrentStep', currentStep.toString());
+    // if (businessId) localStorage.setItem('bookingBusinessId', businessId);
   };
 
 

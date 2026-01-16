@@ -4,14 +4,14 @@ const quoteSchema = new mongoose.Schema({
     name: { type: String, required: [true, 'Name is required'], trim: true },
     email: { type: String, required: [true, 'Email is required'], trim: true, lowercase: true, match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email'] },
     phone: { type: String, required: [true, 'Phone is required'], trim: true },
-    service: { type: String, required: [true, 'Service is required'], enum: ['Junk Removal', 'Furniture Delivery', 'Appliance Assembly', 'Moving Services'] },
+    service: { type: String, required: [true, 'Service is required'], trim: true },
     address: { type: String, required: [true, 'Address is required'], trim: true },
     details: { type: String, required: [true, 'Details are required'], trim: true },
     photo: { type: String, default: null },
     status: { type: String, enum: ['pending', 'reviewed', 'quoted', 'completed', 'cancelled'], default: 'pending' },
-    createdAt: {
-        type: Date, default: Date.now
-    }
+    businessId: { type: mongoose.Schema.Types.ObjectId, ref: "Business", required: true },
+
+    createdAt: { type: Date, default: Date.now }
 }, {
     timestamps: true
 });
@@ -20,4 +20,4 @@ const quoteSchema = new mongoose.Schema({
 quoteSchema.index({ email: 1, createdAt: -1 });
 quoteSchema.index({ status: 1 });
 
-module.exports = mongoose.model('client', quoteSchema);
+module.exports = mongoose.model('quote', quoteSchema);

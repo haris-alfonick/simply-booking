@@ -147,8 +147,37 @@ const SignUp = () => {
                                 </button>
                             </div>
                         </div>
+                        <label className="flex items-start mt-2 cursor-pointer select-none">
+                            <div className="flex items-center h-5">
+                                <input
+                                    type="checkbox"
+                                    checked={agreedterms}
+                                    onChange={(e) => setAgreedTerms(e.target.checked)}
+                                    className="w-4 h-4 text-cyan-500 border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 cursor-pointer"
+                                />
+                            </div>
 
-                        <div className="flex items-start mt-2">
+                            <span className="ml-3 text-sm text-gray-600">
+                                I agree to the{' '}
+                                <Link
+                                    to="#"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-blue-500 hover:text-blue-600 font-medium transition-colors"
+                                >
+                                    Terms of Service
+                                </Link>{' '}
+                                and{' '}
+                                <Link
+                                    to="#"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-blue-500 hover:text-blue-600 font-medium transition-colors"
+                                >
+                                    Privacy Policy
+                                </Link>
+                            </span>
+                        </label>
+
+                        {/* <div className="flex items-start mt-2">
                             <div className="flex items-center h-5">
                                 <input
                                     type="checkbox"
@@ -167,7 +196,7 @@ const SignUp = () => {
                                     Privacy Policy
                                 </Link>
                             </label>
-                        </div>
+                        </div> */}
 
                         <button
                             onClick={handleSubmit}
