@@ -1,31 +1,59 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
-const businessSchema = new mongoose.Schema({
-    businessName: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    email: { type: String, unique: true, required: true },
-    cityTown: { type: String, required: true },
-    businessLogo: { type: String, default: null },
-    businessCoverPhoto: { type: String, default: null },
-    // businessLogo: { data: Buffer, contentType: String },
-    // businessCoverPhoto: { data: Buffer, contentType: String },
-    serviceAreas: [String],
-    businessDescription: { type: String, required: true },
-    hours: {
-        monday: { start: String, end: String, closed: Boolean },
-        tuesday: { start: String, end: String, closed: Boolean },
-        wednessday: { start: String, end: String, closed: Boolean },
-        thusday: { start: String, end: String, closed: Boolean },
-        friday: { start: String, end: String, closed: Boolean },
-        saturday: { start: String, end: String, closed: Boolean },
-        sunday: { start: String, end: String, closed: Boolean }
+const hoursSchema = new mongoose.Schema(
+    {
+        start: { type: String },
+        end: { type: String },
+        closed: { type: Boolean, default: false }
     },
-    domain: { type: String, unique: true, required: true },
-    services: [{ name: String, price: String, customPrice: Boolean }],
-    questions: [{ question: String, answer: String }],
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true }
-});
+    { _id: false }
+);
 
-module.exports = mongoose.model('Businesses', businessSchema);
+const serviceSchema = new mongoose.Schema(
+    {
+        name: { type: String, required: true, trim: true },
+        price: { type: String },
+        customPrice: { type: Boolean, default: false }
+    },
+    { _id: false }
+);
+
+const questionSchema = new mongoose.Schema(
+    {
+        question: { type: String, required: true, trim: true },
+        answer: { type: String, trim: true }
+    },
+    { _id: false }
+);
+
+const businessSchema = new mongoose.Schema(
+    {
+        businessName: { type: String, required: true, trim: true },
+        phoneNumber: { type: String, required: true, trim: true },
+        email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+        cityTown: { type: String, required: true, trim: true },
+        businessLogo: { data: Buffer, contentType: String },
+        businessCoverPhoto: { data: Buffer, contentType: String },
+        serviceAreas: [{ type: String, trim: true }],
+        businessDescription: { type: String, required: true, trim: true },
+        hours: {
+            monday: hoursSchema,
+            tuesday: hoursSchema,
+            wednesday: hoursSchema,
+            thursday: hoursSchema,
+            friday: hoursSchema,
+            saturday: hoursSchema,
+            sunday: hoursSchema
+        },
+        domain: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+        services: [serviceSchema],
+        questions: [questionSchema],
+        image1: { data: Buffer, contentType: String },
+        image2: { data: Buffer, contentType: String },
+        image3: { data: Buffer, contentType: String },
+        userId: {type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true}
+    },
+    { timestamps: true }
+);
+
+module.exports = mongoose.model('Business', businessSchema);

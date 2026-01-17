@@ -2,18 +2,23 @@ const express = require('express');
 const router = express.Router();
 
 const { createDomain, checkDomain, uploadImage, createBusiness, updateBusiness, getBusinessById,
-    getDomain, deleteBusiness, 
-    threedomains} = require('../controllers/businessControllers');
+    getDomain, deleteBusiness,
+    threedomains } = require('../controllers/businessControllers');
 const upload = require('../middleware/upload');
 
 router.post('/generate-domain', createDomain);
 router.get('/check-domain/:domain', checkDomain);
 router.post('/upload-image', uploadImage);
-router.post('/', createBusiness,);
-// router.post('/api/businesses', upload.fields([
-//   { name: 'businessLogo', maxCount: 1 },
-//   { name: 'businessCoverPhoto', maxCount: 1 },
-// ]), createBusiness);
+// router.post('/', upload.none(), createBusiness);
+// router.post('/', createBusiness,);
+router.post('/', upload.fields([
+    { name: 'businessLogo', maxCount: 1 },
+    { name: 'businessCoverPhoto', maxCount: 1 },
+    { name: 'image1', maxCount: 1 },
+    { name: 'image2', maxCount: 1 },
+    { name: 'image3', maxCount: 1 },
+
+]), createBusiness);
 router.put('/:id', updateBusiness);
 router.get('/:id', getBusinessById);
 router.get('/domain/:domain', getDomain);

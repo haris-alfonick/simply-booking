@@ -7,39 +7,6 @@ const upload = require('../middleware/upload');
 const app = express();
 app.use('/uploads', express.static('uploads'));
 
-// if (!fs.existsSync('uploads')) { fs.mkdirSync('uploads') }
-
-
-
-// function generateSlug(text) {
-//     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-// }
-
-// async function generateUniqueDomain(businessName) {
-//     const baseSlug = generateSlug(businessName);
-//     let domain = baseSlug;
-//     let counter = 1;
-
-//     // Generate random number between 10-99
-//     const randomNum = Math.floor(Math.random() * 90) + 10;
-//     domain = `${baseSlug}-${randomNum}`;
-
-//     // Check if domain exists, if yes, keep generating
-//     while (await Business.findOne({ domain })) {
-//         const newRandomNum = Math.floor(Math.random() * 90) + 10;
-//         domain = `${baseSlug}-${newRandomNum}`;
-//         counter++;
-//         // Prevent infinite loop
-//         if (counter > 100) {
-//             domain = `${baseSlug}-${Date.now()}`;
-//             break;
-//         }
-//     }
-
-//     return domain;
-// }
-
-
 function generateSlug(text) {
     return text
         .toLowerCase()
@@ -52,7 +19,7 @@ async function generateUniqueDomain(businessName) {
     const domains = new Set(); // ensures uniqueness
     let attempts = 0;
 
-    while (domains.size < 3) {
+    while (domains.size < 4) {
         const randomNum = Math.floor(Math.random() * 90) + 10;
         const domain = `${baseSlug}-${randomNum}`;
 
@@ -73,12 +40,10 @@ async function generateUniqueDomain(businessName) {
     const domainArray = Array.from(domains);
 
     return {
-        selected: domainArray[0],      // 1 for select
-        suggestions: domainArray.slice(1) // 2 for suggestion
+        selected: domainArray[0],
+        suggestions: domainArray.slice(1)
     };
 }
-
-
 
 
 exports.createDomain = async (req, res) => {
@@ -89,7 +54,7 @@ exports.createDomain = async (req, res) => {
         // res.json({ domain, fullUrl: `simplybooking.org/${domain}` });
         res.json({
             domain: domains.selected,
-            suggestions: domains.suggestions, fullUrl: `simplybooking.org/${domain}`
+            suggestions: domains.suggestions, fullUrl: `simplybooking.org/${domains}`
         });
 
 
@@ -126,116 +91,11 @@ exports.uploadImage = upload.single('image'), (req, res) => {
     }
 }
 
-
-// create business logic
-
-
-// exports.createBusiness = async (req, res) => {
-//   try {
-//     // Destructure the necessary fields directly from req.body
-//     const {
-//       email,
-//       businessName,
-//       phoneNumber,
-//       cityTown,
-//       businessDescription,
-//       domain,
-//       userId,
-//       serviceAreas,
-//       hours,
-//       services,
-//       questions
-//     } = req.body;
-
-//     // Email check for duplicates
-//     const existingEmail = await Business.findOne({ email });
-//     if (existingEmail) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Email already registered"
-//       });
-//     }
-
-//     // Domain logic: Check if domain exists
-//     if (domain) {
-//       const existingDomain = await Business.findOne({ domain });
-//       if (existingDomain) {
-//         return res.status(400).json({
-//           success: false,
-//           message: "Domain already exists"
-//         });
-//       }
-//     } else {
-//       // If no domain is provided, generate one from the business name
-//       businessData.domain = await generateUniqueDomain(businessName);
-//     }
-
-//     // Create the business object using the destructured fields
-//     const businessData = {
-//       businessName,
-//       phoneNumber,
-//       email,
-//       cityTown,
-//       businessDescription,
-//       domain: businessData.domain, // Use the domain from above
-//       userId, 
-//       serviceAreas: JSON.parse(serviceAreas),
-//       hours: JSON.parse(hours),
-//       services: JSON.parse(services),
-//       questions: JSON.parse(questions)
-//     };
-
-//     const business = new Business(businessData);
-
-//     // File Upload Handling
-//     if (req.files) {
-//       // Check if businessLogo exists in the uploaded files
-//       if (req.files.businessLogo) {
-//         business.businessLogo = {
-//           data: fs.readFileSync(req.files.businessLogo[0].path), // Multer stores files as arrays
-//           contentType: req.files.businessLogo[0].mimetype
-//         };
-//       }
-
-//       // Check if businessCoverPhoto exists in the uploaded files
-//       if (req.files.businessCoverPhoto) {
-//         business.businessCoverPhoto = {
-//           data: fs.readFileSync(req.files.businessCoverPhoto[0].path),
-//           contentType: req.files.businessCoverPhoto[0].mimetype
-//         };
-//       }
-//     }
-
-//     // Save the business to the database
-//     await business.save();
-
-//     // Respond with success message
-//     res.status(201).json({
-//       success: true,
-//       message: "Business created successfully",
-//       business
-//     });
-
-//   } catch (error) {
-//     console.error("Error creating business:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to create business"
-//     });
-//   }
-// };
-
 exports.createBusiness = async (req, res) => {
     try {
-
-        const { email, businessName, phoneNumber, cityTown, businessDescription, domain, userId, serviceAreas, hours, services, questions } = req.body;
         const businessData = req.body;
-        // console.log(req,"checking data which form")
 
-        // businessData.userId = req.user._id;
-
-        /* ---------- Email Check ---------- */
-        const existingEmail = await Business.findOne({ email });
+        const existingEmail = await Business.findOne({ email: businessData.email });
         if (existingEmail) {
             return res.status(400).json({
                 success: false,
@@ -243,57 +103,104 @@ exports.createBusiness = async (req, res) => {
             });
         }
 
-        // /* ---------- Domain Logic ---------- */
-        if (businessData.domain) {
-            const existingDomain = await Business.findOne({ domain: businessData.domain });
-            if (existingDomain) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Domain already exists"
-                });
-            }
-        } else {
-            businessData.domain = await generateUniqueDomain(businessData.businessName);
-        }
+        const existingDomain = await Business.findOne({ domain: businessData.domain });
 
-        // /* ---------- Create Business ---------- */
+        if (businessData.domain) {
+            if (existingDomain) { return res.status(400).json({ success: false, message: "Domain already exists" }) }
+        } else { businessData.domain = await generateUniqueDomain(businessData.businessName) }
+
+
+        ['services', 'questions', 'serviceAreas', 'hours'].forEach(field => {
+            if (businessData[field]) {
+                try { businessData[field] = JSON.parse(businessData[field]) }
+                catch (e) {
+                    // ignore if already parsed
+                }
+            }
+        });
+
+        const parseIfString = (value) => {
+            if (typeof value === 'string') {
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            }
+            return value;
+        };
+
         const business = new Business(businessData);
 
-        // /* ---------- File Uploads ---------- */
-
         if (req.files) {
-            if (req.files.businessLogo) {
+            if (req.files.businessLogo?.[0]) {
                 business.businessLogo = {
-                    data: fs.readFileSync(req.files.businessLogo.path),
-                    contentType: req.files.businessLogo.type
+                    data: fs.readFileSync(req.files.businessLogo[0].path),
+                    contentType: req.files.businessLogo[0].mimetype
                 };
             }
 
-            if (req.files.businessCoverPhoto) {
+            if (req.files.businessCoverPhoto?.[0]) {
                 business.businessCoverPhoto = {
-                    data: fs.readFileSync(req.files.businessCoverPhoto.path),
-                    contentType: req.files.businessCoverPhoto.type
+                    data: fs.readFileSync(req.files.businessCoverPhoto[0].path),
+                    contentType: req.files.businessCoverPhoto[0].mimetype
                 };
             }
+            if (req.files.image1?.[0]) {
+                business.image1 = {
+                    data: fs.readFileSync(req.files.image1[0].path),
+                    contentType: req.files.image1[0].mimetype
+                };
+            }
+            if (req.files.image2?.[0]) {
+                business.image2 = {
+                    data: fs.readFileSync(req.files.image2[0].path),
+                    contentType: req.files.image2[0].mimetype
+                };
+            }
+            if (req.files.image3?.[0]) {
+                business.image3 = {
+                    data: fs.readFileSync(req.files.image3[0].path),
+                    contentType: req.files.image3[0].mimetype
+                };
+            }
+
+        }
+
+        if (businessData.services) {
+            businessData.services = parseIfString(businessData.services);
+        }
+
+        if (businessData.questions) {
+            businessData.questions = parseIfString(businessData.questions);
+        }
+
+        if (businessData.serviceAreas) {
+            businessData.serviceAreas = parseIfString(businessData.serviceAreas);
+        }
+
+        if (businessData.hours) {
+            businessData.hours = parseIfString(businessData.hours);
         }
 
         await business.save();
 
         res.status(201).json({
             success: true,
-            message: "Business created successfully",
+            message: 'Business created successfully',
             business
         });
 
     } catch (error) {
-        console.error("Error creating business:", error);
+        console.error('Error creating business:', error);
+
         res.status(500).json({
             success: false,
-            message: "Failed to create business"
+            message: 'Failed to create business',
+            error: error.message
         });
     }
 };
-
 
 exports.updateBusiness = async (req, res) => {
     try {
@@ -321,7 +228,7 @@ exports.getBusinessById = async (req, res) => {
         if (!business) {
             return res.status(404).json({ error: 'Business not found' });
         }
-        res.json(business);
+        res.status(200).json(business);
     } catch (error) {
         console.error('Error fetching business:', error);
         res.status(500).json({ error: 'Failed to fetch business' });
@@ -354,24 +261,11 @@ exports.deleteBusiness = async (req, res) => {
     }
 }
 
-
-// routes/domain.js
-
-
 exports.threedomains = async (req, res) => {
     try {
         const { businessName } = req.body;
 
-        // 🔴 Validation
-        if (!businessName) {
-            return res.status(400).json({
-                success: false,
-                message: "businessName is required"
-            });
-        }
-
-        // console.log("Business Name:", businessName);
-
+        if (!businessName) { return res.status(400).json({ success: false, message: "businessName is required" }); }
         const domains = await generateUniqueDomain(businessName);
 
         return res.status(200).json({
@@ -388,67 +282,5 @@ exports.threedomains = async (req, res) => {
         });
     }
 };
-
-
-// exports.threedomains = async (req, res) => {
-//     try {
-//         const { businessName } = req.body;
-
-//         console.log(businessName)
-//         const domains = await generateUniqueDomain(businessName);
-
-//         res.status(200).json({
-//             success: true,
-//             selected: domains.selected,
-//             suggestions: domains.suggestions
-//         });
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: "Failed to generate domains sss"
-//         });
-//     }
-// };
-
-
-
-// router.post("/generate-domains", async (req, res) => {
-//     try {
-//         const { businessName } = req.body;
-
-//         const domains = await generateThreeDomains(businessName);
-
-//         res.status(200).json({
-//             success: true,
-//             selected: domains.selected,
-//             suggestions: domains.suggestions
-//         });
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: "Failed to generate domains"
-//         });
-//     }
-// });
-
-
-
-
-// Upload files to Cloudinary (or S3) and get URLs
-// if (req.files?.businessLogo) {
-//     const file = req.files.businessLogo[0];
-//     const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
-//         if (error) throw error;
-//         businessData.businessLogo = result.secure_url;
-//     });
-// }
-
-// if (req.files?.businessCoverPhoto) {
-//     const file = req.files.businessCoverPhoto[0];
-//     const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
-//         if (error) throw error;
-//         businessData.businessCoverPhoto = result.secure_url;
-//     });
-// }
 
 

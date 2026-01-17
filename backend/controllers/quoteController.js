@@ -3,9 +3,6 @@ const path = require('path');
 const Quote = require('../models/Quote');
 const fs = require('fs').promises;
 
-// @desc    Create new quote request
-// @route   POST /api/quotes
-// @access  Public
 exports.createQuote = async (req, res) => {
   try {
     const { name, email, phone, service, address, details, businessId } = req.body;
@@ -38,7 +35,6 @@ exports.createQuote = async (req, res) => {
   } catch (error) {
     console.error('Error creating quote:', error);
 
-    // Delete uploaded file if quote creation fails
     if (req.file) {
       await fs.unlink(req.file.path).catch(err => console.error('Error deleting file:', err));
     }
@@ -50,9 +46,7 @@ exports.createQuote = async (req, res) => {
   }
 };
 
-// @desc    Get all quotes
-// @route   GET /api/quotes
-// @access  Private (Admin)
+
 exports.getAllQuotes = async (req, res) => {
   try {
     const { status, page = 1, limit = 10 } = req.query;
@@ -86,9 +80,7 @@ exports.getAllQuotes = async (req, res) => {
   }
 };
 
-// @desc    Get single quote by ID
-// @route   GET /api/quotes/:id
-// @access  Private (Admin)
+
 exports.getQuoteById = async (req, res) => {
   try {
     const quote = await Quote.findById(req.params.id);
@@ -114,9 +106,7 @@ exports.getQuoteById = async (req, res) => {
   }
 };
 
-// @desc    Update quote status
-// @route   PUT /api/quotes/:id
-// @access  Private (Admin)
+
 exports.updateQuoteStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -149,9 +139,7 @@ exports.updateQuoteStatus = async (req, res) => {
   }
 };
 
-// @desc    Delete quote
-// @route   DELETE /api/quotes/:id
-// @access  Private (Admin)
+
 exports.deleteQuote = async (req, res) => {
   try {
     const quote = await Quote.findById(req.params.id);

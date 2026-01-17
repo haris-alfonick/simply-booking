@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, MapPinIcon, CheckCircle, XCircle } from 'lucide-react';
-
 import Footer from '../footer/Footer';
 import Navbar from '../navbar/Navbar';
 import axios from 'axios';
@@ -24,7 +23,7 @@ const Service = () => {
         name: '',
         email: '',
         phone: '',
-        service: 'Junk Removal',
+        service: '',
         address: '',
         details: '',
         photo: null
@@ -44,20 +43,13 @@ const Service = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setFormData(prev => ({
-                ...prev,
-                photo: file
-            }));
+            setFormData(prev => ({ ...prev, photo: file }));
         }
     };
 
     const handleSubmit = async (e) => {
         setLoading(true);
         setMessage({ type: '', text: '' });
-
-
-        console.log(formData)
-
 
         try {
             const formDataToSend = new FormData();
@@ -141,13 +133,11 @@ const Service = () => {
         try {
             const { data } = await axios.get(`${API_BASE_URL}/businesses/${params.id}`);
             setBusiness(data);
+            console.log(data)
         } catch (error) {
             console.log(error);
         }
     };
-
-
-
 
     useEffect(() => { if (business?._id) { getReviews(); } }, [business?._id]);
 
@@ -262,6 +252,29 @@ const Service = () => {
         const updatedStars = ratingStars.map((_, i) => i <= index);
         setRatingStars(updatedStars);
     };
+
+    // Function to convert backend image to base64
+    const getBase64Image = (image) => {
+        if (!image || !image.data) return null;
+
+        // Convert the data buffer to base64
+        const base64String = btoa(
+            new Uint8Array(image.data.data).reduce(
+                (data, byte) => data + String.fromCharCode(byte),
+                ''
+            )
+        );
+
+        return `data:${image.contentType};base64,${base64String}`;
+    };
+    const coverPhoto = getBase64Image(business.businessCoverPhoto);
+    const logo = getBase64Image(business.businessLogo);
+    const image1 = getBase64Image(business.image1);
+
+    const image2 = getBase64Image(business.image2);
+
+    const image3 = getBase64Image(business.image3);
+
 
 
     return (
@@ -438,11 +451,12 @@ const Service = () => {
 
                 <section className="bg-white">
 
-                    <div className="bg-cyan-500 h-80"></div>
+                    <div className="bg-cyan-500 h-80">  <img src={coverPhoto} alt='image' className="banner-img h-full w-full" /></div>
                     <div className="p-8 relative max-w-7xl mx-auto">
-                        <div className="absolute -top-12 left-8 bg-white p-4 rounded-lg shadow-md">
+                        <div className="absolute -top-12 left-8 bg-white rounded-lg shadow-md">
                             <div className="bg-cyan-500 w-24 h-24 rounded-lg flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                                <img src={business.businessLogo} alt='image' />
+                                <img src={logo} alt='image' className="banner-img h-full w-full rounded-lg" />
+
                             </div>
                         </div>
                         <div className="mt-14">
@@ -531,7 +545,7 @@ const Service = () => {
                         <div className="lg:col-span-2">
                             <h3 className="text-2xl font-bold text-gray-900 mb-6">Recent Work</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                                {recentWork.map((work, index) => (
+                                {[image1, image2, image3].map((work, index) => (
                                     <div key={index} className="aspect-video rounded-lg overflow-hidden bg-gray-200">
                                         <img src={work} alt={`Work ${index + 1}`} className="w-full h-full object-cover" />
                                     </div>

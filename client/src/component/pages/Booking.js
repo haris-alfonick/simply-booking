@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Globe, FileText, Plus, Trash2, Check, ArrowLeft, ArrowRight, Star, Wrench, Camera, Building2, Lightbulb, Stars } from 'lucide-react';
-import { checkDomainAvailability, generateUniqueDomain, saveBusinessData } from '../api/Api';
+import { API_BASE_URL, checkDomainAvailability, generateUniqueDomain, saveBusinessData } from '../api/Api';
 import { showError, showSuccess } from '../utils/toast';
 import axios from 'axios';
 
@@ -12,10 +12,10 @@ const StepIndicator = ({ currentStep, steps }) => {
       {steps.map((step, index) => (
         <React.Fragment key={step}>
           <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${currentStep > step ? 'bg-green-500 text-white' :
-            currentStep === step && currentStep < 3 ? 'bg-blue-500 text-white' : currentStep === 3 ? 'bg-green-500 text-white' :
+            currentStep === step && currentStep < 4 ? 'bg-blue-500 text-white' : currentStep === 4 ? 'bg-green-500 text-white' :
               'bg-gray-600 text-white'
             }`}>
-            {currentStep > step ? <Check size={20} /> : currentStep === 3 ? <Check size={20} /> : step}
+            {currentStep > step ? <Check size={20} /> : step}
           </div>
           {index < steps.length - 1 && (<div className="w-12 h-0.5 bg-green-300" />)}
         </React.Fragment>
@@ -24,21 +24,53 @@ const StepIndicator = ({ currentStep, steps }) => {
   )
 };
 
+const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceArea, toggleDay, handleFileUpload,
+  setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, saveToLocalStorage }) => {
+  const validateStep = () => {
+    console.log(formData)
+    if (!formData.businessName || !formData.businessName.trim()) {
+      showError('Business name is required');
+      return false;
+    }
+    if (!formData.phoneNumber || !formData.phoneNumber.trim()) {
+      showError('Phone number is required');
+      return false;
+    }
+    if (!formData.email || !formData.email.trim()) {
+      showError('Email is required');
+      return false;
+    }
+    if (!formData.cityTown || !formData.cityTown.trim()) {
+      showError('City/Town is required');
+      return false;
+    }
+    if (!(formData.businessLogo instanceof File)) {
+      showError('logo is required');
+      return false;
+    }
 
-const BusinessInfoStep = ({
-  formData, updateField, newServiceArea, addServiceArea, toggleDay, handleFileUpload,
-  setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, saveToLocalStorage
-}) => {
+    if (!(formData.businessCoverPhoto instanceof File)) {
+      showError('Cover photo is required');
+      return false;
+    }
 
+    return true;
+  };
 
   const handleNext = async () => {
+    if (!validateStep()) return;
+
     saveToLocalStorage();
 
     if (formData.businessName && !formData.domain) {
       try {
-        const { domain } = await generateUniqueDomain(formData.businessName);
-        updateField('domain', domain);
-
+        const response = await fetch(API_BASE_URL + '/businesses/generate-domain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ businessName: formData.businessName })
+        });
+        const data = await response.json();
+        updateField('domain', data.domain);
       } catch (error) {
         console.error('Error generating domain:', error);
       }
@@ -46,257 +78,245 @@ const BusinessInfoStep = ({
     setCurrentStep(currentStep + 1);
   };
 
-
-
-
-  const handleBack = () => {
-    saveToLocalStorage();
-    setCurrentStep(currentStep - 1);
-  };
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-[20px] shadow-lg p-4 md:p-6 lg:p-8">
+    <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-lg p-4 md:p-6 lg:p-8">
       <h1 className="text-3xl font-bold mb-2">Set Up Your Business</h1>
-      <p className="text-gray-600 mb-8">Tell us about your business so customers can find and book with you.</p>
+      <p className="text-gray-600 mb-8">Tell us about your business</p>
 
-      <div className="">
-
-        <div className="flex items-center mb-4">
-          <div className="w-[110px] h-[110px] border-2 border-dashed border-blue-300 rounded-[20px] p-2 text-center cursor-pointer hover:border-blue-400 transition">
-            <label className="cursor-pointer flex flex-col items-center justify-center h-full">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) =>
-                  handleFileUpload("businessLogo", e.target.files[0])
-                }
-              />
-
-              {formData?.businessLogo ? (
-                <img
-                  src={
-                    formData.businessLogo instanceof File
-                      ? URL.createObjectURL(formData.businessLogo) // freshly uploaded
-                      : formData.businessLogo // base64 from localStorage
-                  }
-                  alt="Business Logo"
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              ) : (
-                <>
-                  <Camera className="text-blue-500 mb-1" size={40} />
-                  <p className="text-sm text-blue-500">Logo</p>
-                </>
-              )}
-            </label>
-          </div>
-
-          <div className="text-start ms-4">
-            <p className="font-semibold">Business Logo</p>
-            <p className="text-sm text-gray-500">
-              Upload a square image, at least 200×200px
-            </p>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="flex items-center text-sm font-medium mb-2">
-              <Building2 className="mr-2 text-blue-500" size={18} />
-              Business Name
-            </label>
-            <input
-              type="text"
-              placeholder="Your Business Name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.businessName}
-              onChange={(e) => updateField('businessName', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="flex items-center text-sm font-medium mb-2">
-              <Phone className="mr-2 text-blue-500" size={18} />
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              placeholder="+1 (555) 000-0000"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.phoneNumber}
-              onChange={(e) => updateField('phoneNumber', e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="flex items-center text-sm font-medium mb-2">
-              <Mail className="mr-2 text-blue-500" size={18} />
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="contact@business.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.email}
-              onChange={(e) => updateField('email', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="flex items-center text-sm font-medium mb-2">
-              <MapPin className="mr-2 text-blue-500" size={18} />
-              City / Town
-            </label>
-            <input
-              type="text"
-              placeholder="New York, NY"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.cityTown}
-              onChange={(e) => updateField('cityTown', e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="flex items-center text-sm font-medium mb-2">
-            <MapPin className="mr-2 text-blue-500" size={18} />
-            Service Areas
-          </label>
-          <div className="flex gap-2 mb-2 flex-wrap">
-            {formData.serviceAreas.map((area, index) => (
-              <span key={index} className="px-3 py-1 bg-gray-100 text-cyan-600 rounded-full text-sm flex items-center gap-2">
-                {area}
-                <button
-                  type="button"
-                  onClick={() => removeServiceArea(index)}
-                  className="text-cyan-600 hover:text-cyan-800 font-bold"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Add service area"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={newServiceArea}
-              onChange={(e) => setNewServiceArea(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addServiceArea();
-                }
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="flex items-center text-sm font-medium mb-2">
-            <FileText className="mr-2 text-blue-500" size={18} />
-            Business Description <span className="text-gray-400 ml-1">(optional)</span>
-          </label>
-          <textarea
-            placeholder="Tell customers what makes your business special..."
-            rows="4"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={formData.businessDescription}
-            onChange={(e) => updateField('businessDescription', e.target.value)}
-          />
-        </div>
-
-        <div className="mb-6 bg-gray-100 p-4 rounded-lg">
-          <label className="flex items-center text-sm font-medium mb-4">
-            <Clock className="mr-2 text-blue-500" size={18} />
-            Hours of Operation
-          </label>
-          {Object.entries(formData.hours).map(([day, hours]) => (
-            <div key={day} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4 sm:mb-2 sm:w-full">
-              <button
-                type="button"
-                onClick={() => toggleDay(day)}
-                className={`px-3 py-1 rounded-[10px] font-medium text-sm w-16 text-center transition ${!hours.closed ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'}`}
-              >
-                {day.charAt(0).toUpperCase() + day.slice(1)}
-              </button>
-              {!hours.closed ? (
-                <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                  <input
-                    type="time"
-                    value={hours.start}
-                    onChange={(e) => updateHours(day, 'start', e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded-[10px] focus:ring-2 focus:ring-blue-500 sm:w-32"
-                  />
-                  <span className="text-gray-500">to</span>
-                  <input
-                    type="time"
-                    value={hours.end}
-                    onChange={(e) => updateHours(day, 'end', e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded-[10px] focus:ring-2 focus:ring-blue-500 sm:w-32"
-                  />
-                </div>
-              ) : (
-                <span className="text-gray-400">Closed</span>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center mb-6 cursor-pointer hover:border-blue-400 transition">
-          <label className="cursor-pointer block">
+      <div className="flex items-center mb-4">
+        <div className="w-28 h-28 border-2 border-dashed border-blue-300 rounded-3xl p-2 cursor-pointer hover:border-blue-400 transition">
+          <label className="cursor-pointer flex flex-col items-center justify-center h-full">
             <input
               type="file"
               accept="image/*"
               className="hidden"
-              hidden
-              onChange={(e) => handleFileUpload('businessCoverPhoto', e.target.files[0])}
+              onChange={(e) => handleFileUpload("businessLogo", e.target.files[0])}
             />
-            <Camera className="mx-auto text-blue-500 mb-2" size={40} />
-            <p className="font-semibold">Upload Cover Photo</p>
-            {formData?.businessCoverPhoto ? (
-              <p className="text-sm text-green-600 mt-2">
-                {formData.businessCoverPhoto instanceof File
-                  ? formData.businessCoverPhoto.name
-                  : 'Cover photo selected'}
-              </p>
+            {formData.businessLogo ? (
+              <img
+                src={formData.businessLogo instanceof File ? URL.createObjectURL(formData.businessLogo) : formData.businessLogo}
+                alt="Logo"
+                className="w-full h-full object-cover rounded-2xl"
+              />
             ) : (
               <>
-                {/* <Camera className="text-blue-500 mb-1" size={40} /> */}
-                <p className="text-sm text-blue-500">Recommended: 1200×400px</p>
+                <Camera className="text-blue-500 mb-1" size={40} />
+                <p className="text-sm text-blue-500">Logo</p>
               </>
             )}
-
-
           </label>
         </div>
-        <hr />
-
-        <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
-            <ArrowLeft size={20} />Back</button>
-          <button
-            type="button"
-            onClick={handleNext}
-            className="ml-auto bg-cyan-500 text-white px-2 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
-            Next: Choose Domain<ArrowRight size={18} /></button>
+        <div className="text-start ms-4">
+          <p className="font-semibold">Business Logo</p>
+          <p className="text-sm text-gray-500">At least 200×200px</p>
         </div>
+      </div>
 
+      <div className="grid md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="flex items-center text-sm font-medium mb-2">
+            <Building2 className="mr-2 text-blue-500" size={18} />
+            Business Name <span className="text-red-500 ml-1">*</span>
+          </label>
+          <input
+            type="text"
+            placeholder="Your Business Name"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={formData.businessName}
+            onChange={(e) => updateField('businessName', e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="flex items-center text-sm font-medium mb-2">
+            <Phone className="mr-2 text-blue-500" size={18} />
+            Phone Number <span className="text-red-500 ml-1">*</span>
+          </label>
+          <input
+            type="tel"
+            placeholder="+1 (555) 000-0000"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={formData.phoneNumber}
+            onChange={(e) => updateField('phoneNumber', e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="flex items-center text-sm font-medium mb-2">
+            <Mail className="mr-2 text-blue-500" size={18} />
+            Email <span className="text-red-500 ml-1">*</span>
+          </label>
+          <input
+            type="email"
+            placeholder="contact@business.com"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={formData.email}
+            onChange={(e) => updateField('email', e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="flex items-center text-sm font-medium mb-2">
+            <MapPin className="mr-2 text-blue-500" size={18} />
+            City / Town <span className="text-red-500 ml-1">*</span>
+          </label>
+          <input
+            type="text"
+            placeholder="New York, NY"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={formData.cityTown}
+            onChange={(e) => updateField('cityTown', e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="flex items-center text-sm font-medium mb-2">
+          <MapPin className="mr-2 text-blue-500" size={18} />
+          Service Areas
+        </label>
+        <div className="flex gap-2 mb-2 flex-wrap">
+          {formData.serviceAreas.map((area, index) => (
+            <span key={index} className="px-3 py-1 bg-gray-100 text-cyan-600 rounded-full text-sm flex items-center gap-2">
+              {area}
+              <button
+                type="button"
+                onClick={() => removeServiceArea(index)}
+                className="text-cyan-600 hover:text-cyan-800 font-bold"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Add service area"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={newServiceArea}
+          onChange={(e) => setNewServiceArea(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              addServiceArea();
+            }
+          }}
+        />
+      </div>
+
+      <div className="mb-6">
+        <label className="flex items-center text-sm font-medium mb-2">
+          <FileText className="mr-2 text-blue-500" size={18} />
+          Description <span className="text-gray-400 ml-1">(optional)</span>
+        </label>
+        <textarea
+          placeholder="Tell customers about your business..."
+          rows="4"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={formData.businessDescription}
+          onChange={(e) => updateField('businessDescription', e.target.value)}
+        />
+      </div>
+
+      <div className="mb-6 bg-gray-100 p-4 rounded-lg">
+        <label className="flex items-center text-sm font-medium mb-4">
+          <Clock className="mr-2 text-blue-500" size={18} />
+          Hours of Operation
+        </label>
+        {Object.entries(formData.hours).map(([day, hours]) => (
+          <div key={day} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2">
+            <button
+              type="button"
+              onClick={() => toggleDay(day)}
+              className={'px-3 py-1 rounded-xl font-medium text-sm w-24 text-center transition ' + (!hours.closed ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500')}
+            >
+              {day.charAt(0).toUpperCase() + day.slice(1)}
+            </button>
+            {!hours.closed ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="time"
+                  value={hours.start}
+                  onChange={(e) => updateHours(day, 'start', e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 w-32"
+                />
+                <span className="text-gray-500">to</span>
+                <input
+                  type="time"
+                  value={hours.end}
+                  onChange={(e) => updateHours(day, 'end', e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 w-32"
+                />
+              </div>
+            ) : (
+              <span className="text-gray-400">Closed</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center mb-6 cursor-pointer hover:border-blue-400 transition">
+        <label className="cursor-pointer block">
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleFileUpload('businessCoverPhoto', e.target.files[0])}
+          />
+          <Camera className="mx-auto text-blue-500 mb-2" size={40} />
+          <p className="font-semibold">Upload Cover Photo <span className="text-red-500">*</span></p>
+          {formData.businessCoverPhoto ? (
+            <p className="text-sm text-green-600 mt-2">
+              {formData.businessCoverPhoto instanceof File ? formData.businessCoverPhoto.name : 'Cover photo selected'}
+            </p>
+          ) : (
+            <p className="text-sm text-blue-500">Recommended: 1200×400px</p>
+          )}
+        </label>
+      </div>
+
+      <hr />
+
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={() => handleNext()}
+          className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1"
+        >
+          Next: Choose Domain<ArrowRight size={18} />
+        </button>
       </div>
     </div>
-  )
+  );
 };
 
 const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveToLocalStorage }) => {
-
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState(null);
-  const [sussiondomain, setDomainData] = useState([])
+  const [suggestions, setSuggestions] = useState([]);
 
+  useEffect(() => {
+    if (!formData.businessName) return;
+
+    const fetchDomains = async () => {
+      try {
+        const response = await fetch(API_BASE_URL + '/businesses/generate-domainss', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ businessName: formData.businessName })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setSuggestions(data.suggestions || []);
+        }
+      } catch (error) {
+        console.error('Error fetching domains:', error);
+      }
+    };
+
+    fetchDomains();
+  }, []);
   const checkAvailability = async () => {
     if (!formData.domain) return;
 
@@ -311,219 +331,229 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
     setChecking(false);
   };
 
-  useEffect(() => {
-    if (!formData.businessName) return;
-
-    const fetchDomains = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:5000/api/businesses/generate-domainss",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              businessName: formData.businessName
-            })
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch domains");
-        }
-
-        const data = await response.json();
-        console.log(data.suggestions);
-
-        setDomainData(data.suggestions);
-      } catch (error) {
-        console.error("Error fetching domains:", error);
-      }
-    };
-
-    fetchDomains();
-  }, [formData.businessName]);
-
+  const validateStep = () => {
+    if (!formData.domain || !formData.domain.trim()) {
+      showError('Domain is required');
+      return false;
+    }
+    if (available === false) {
+      showError('This domain is taken');
+      return false;
+    }
+    return true;
+  };
 
   const handleNext = () => {
+    if (!validateStep()) return;
     saveToLocalStorage();
     setCurrentStep(currentStep + 1);
-  };
-  const handleBack = () => {
-    saveToLocalStorage();
-    setCurrentStep(currentStep - 1);
   };
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-      <h1 className="text-3xl font-bold mb-2">Choose Your Business Domain</h1>
-      <p className="text-gray-600 mb-8">This will be your public service booking link</p>
+      <h1 className="text-3xl font-bold mb-2">Choose Your Domain</h1>
+      <p className="text-gray-600 mb-8">Your public booking link</p>
 
-      <label className="block text-sm font-medium mb-2">Your Domain</label>
+      <label className="block text-sm font-medium mb-2">Domain <span className="text-red-500">*</span></label>
       <div className="flex items-center border-4 border-double border-blue-500 rounded-lg overflow-hidden mb-4">
         <span className="px-4 py-3 bg-gray-50 text-blue-600 font-medium border-r">simplybooking.org/</span>
-        <input type="text" placeholder="your-business-12" className="flex-1 px-4 py-3 focus:outline-none" value={formData.domain} onChange={(e) => { updateField('domain', e.target.value); setAvailable(null); }} onBlur={checkAvailability} />
+        <input
+          type="text"
+          placeholder="your-business"
+          className="flex-1 px-4 py-3 focus:outline-none"
+          value={formData.domain}
+          onChange={(e) => {
+            updateField('domain', e.target.value);
+            setAvailable(null);
+          }}
+          onBlur={checkAvailability}
+        />
       </div>
 
-      {checking && <p className="text-sm text-gray-500 mb-4">Checking availability...</p>}
-      {available === true && <p className="text-sm text-green-600 mb-4">✓ Domain available!</p>}
-      {available === false && <p className="text-sm text-red-600 mb-4">✗ Domain already taken</p>}
+      {checking && <p className="text-sm text-gray-500 mb-4">Checking...</p>}
+      {available === true && <p className="text-sm text-green-600 mb-4">✓ Available!</p>}
+      {available === false && <p className="text-sm text-red-600 mb-4">✗ Taken</p>}
 
-      <div className="mb-6 bg-gray-100 rounded-lg p-6">
-        <p className="text-sm text-gray-600 mb-2">Examples</p>
-        <div className="space-y-3">
-          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-            <Globe className="mr-2" size={16} />simplybooking.org/{formData.domain}
-          </div>
-          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-            <Globe className="mr-2" size={16} />simplybooking.org/{sussiondomain[0]}
-          </div>
-          <div className="flex items-center text-sm text-gray-600 bg-white p-2 rounded">
-            <Globe className="mr-2" size={16} />simplybooking.org/{sussiondomain[1]}
-          </div>
+      {suggestions.length > 0 && (
+        <div className="mb-6 bg-gray-100 rounded-lg p-6">
+          <p className="text-sm text-gray-600 mb-2">Suggestions</p>
+          {suggestions.slice(0, 3).map((sug, i) => (
+            <div key={i} className="flex items-center text-sm text-gray-600 bg-white p-2 rounded mb-2">
+              <Globe className="mr-2" size={16} />simplybooking.org/{sug}
+            </div>
+          ))}
         </div>
-      </div>
-
-      <div className="flex mb-6 justify-center">
-        <Lightbulb className='text-yellow-500 mr-1' size={16} />
-        <p className="text-sm text-gray-700">You can change this later anytime in your settings.</p>
-      </div>
+      )}
 
       <hr className="my-6" />
 
-      <div className="flex justify-between items-center">
-        <button type="button" onClick={handleBack} className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
+      <div className="flex justify-between">
+        <button
+          type="button"
+          onClick={() => {
+            saveToLocalStorage();
+            setCurrentStep(currentStep - 1);
+          }}
+          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2"
+        >
           <ArrowLeft size={20} />Back
         </button>
-        <button type="button" onClick={handleNext} disabled={available === false} className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+        <button
+          type="button"
+          onClick={handleNext}
+          disabled={available === false}
+          className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1 disabled:opacity-50"
+        >
           Add Services<ArrowRight size={18} />
         </button>
       </div>
     </div>
-
-  )
+  );
 };
 
+
+
 const AddServicesStep = ({ formData, addService, updateService, removeService, currentStep, setCurrentStep, saveToLocalStorage }) => {
+  const validateStep = () => {
+    if (!formData.services[0].name || !formData.services[0].name.trim()) {
+      showError('At least one service required');
+      return false;
+    }
+
+    for (let i = 0; i < formData.services.length; i++) {
+      const svc = formData.services[i];
+      if (!svc.name || !svc.name.trim()) {
+        showError('Service ' + (i + 1) + ' name required');
+        return false;
+      }
+      if (!svc.customPrice && (!svc.price || isNaN(parseFloat(svc.price)))) {
+        showError('Service ' + (i + 1) + ' needs price');
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleNext = () => {
+    if (!validateStep()) return;
     saveToLocalStorage();
     setCurrentStep(currentStep + 1);
   };
 
-  const handleBack = () => {
-    saveToLocalStorage();
-    setCurrentStep(currentStep - 1);
-  };
   return (
     <div>
       <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
-      <div className="mt-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4 lg:p-8">
-        <h1 className="text-3xl font-bold mb-2">Add Your Services</h1>
-        <p className="text-gray-600 mb-8">Add your services with pricing.You can also seet custom pricing.</p>
+      <div className="mt-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h1 className="text-3xl font-bold mb-2">Add Services</h1>
+        <p className="text-gray-600 mb-8">Add your services with pricing</p>
 
-        <div className="mb-6">
-          <label className="flex items-center text-sm font-medium mb-4">
-            <FileText className="mr-2 text-blue-500" size={18} />
-            Services & Pricing
-          </label>
-
-          {formData.services.map((service, index) => (
-            <div key={index} className="border border-gray-300 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-4 mb-4">
-                <span className="w-8 h-8 flex items-center justify-center rounded-[16px] bg-cyan-100 text-cyan-600 rounded font-semibold">
-                  {index + 1}
-                </span>
-                <input
-                  type="text"
-                  placeholder="e.g., Pipe Fitting"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={service.name}
-                  onChange={(e) => updateService(index, 'name', e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeService(index)}
-                  className="text-gray-400 hover:text-red-500"
-                >
-                  <Trash2 size={20} />
-                </button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:pl-12">
-                {/* /////////////////////////////////////////////////////////////////////////////////////// */}
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="e.g., 50.00"
-                  className="w-full sm:flex-1 px-4 py-2 border border-gray-300 rounded-lg
-                              focus:outline-none focus:ring-2 focus:ring-blue-500
-                               disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  value={service.price}
-                  onChange={(e) => updateService(index, "price", e.target.value)}
-                  disabled={service.customPrice}
-                />
-
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <div
-                    className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${service.customPrice ? "bg-gray-300" : "bg-blue-500"}`}
-                  >
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={service.customPrice}
-                      onChange={(e) =>
-                        updateService(index, "customPrice", e.target.checked)
-                      }
-                    />
-                    <span
-                      className={`absolute top-1/2 left-1 h-4 w-4 bg-white rounded-full shadow transform -translate-y-1/2 transition-transform duration-300 ${service.customPrice ? "translate-x-5" : "translate-x-0"}`}
-                    />
-                  </div>
-
-                  <span className="text-sm text-gray-600 whitespace-nowrap">
-                    Custom Price
-                  </span>
-                </label>
-              </div>
+        {formData.services.map((svc, idx) => (
+          <div key={idx} className="border p-4 rounded-lg mb-4">
+            <div className="flex items-center gap-4 mb-4">
+              <span className="w-8 h-8 flex items-center justify-center rounded-2xl bg-cyan-100 text-cyan-600 font-semibold">
+                {idx + 1}
+              </span>
+              <input
+                type="text"
+                placeholder="Service name"
+                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={svc.name}
+                onChange={(e) => updateService(idx, 'name', e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => removeService(idx)}
+                disabled={formData.services.length === 1}
+                className="text-gray-400 hover:text-red-500"
+              >
+                <Trash2 size={20} />
+              </button>
             </div>
-          ))}
 
+            <div className="flex items-center gap-4 pl-12">
+              <input
+                type="text"
+                placeholder="50.00"
+                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                value={svc.price}
+                onChange={(e) => updateService(idx, "price", e.target.value)}
+                disabled={svc.customPrice}
+              />
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={svc.customPrice}
+                  onChange={(e) => updateService(idx, "customPrice", e.target.checked)}
+                />
+                <span className="text-sm">Custom Price</span>
+              </label>
+            </div>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={addService}
+          className="w-full border-2 border-dashed border-blue-300 text-blue-500 py-3 rounded-lg hover:bg-blue-50 flex items-center justify-center gap-2"
+        >
+          <Plus size={20} /> Add Service
+        </button>
+
+        <hr className="my-6" />
+
+        <div className="flex justify-between">
           <button
             type="button"
-            onClick={addService}
-            className="w-full border-2 border-dashed border-blue-300 text-blue-500 font-bold bg-blue-50 py-3  lg:mb-20 rounded-lg hover:bg-blue-50 flex items-center justify-center gap-2">
-            <Plus size={20} /> Add New Service
+            onClick={() => {
+              saveToLocalStorage();
+              setCurrentStep(currentStep - 1);
+            }}
+            className="flex items-center gap-2 text-gray-700 font-bold"
+          >
+            <ArrowLeft size={20} />Back
           </button>
-        </div>
-
-        <hr />
-        <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
-            <ArrowLeft size={20} />Back</button>
           <button
             type="button"
             onClick={handleNext}
-            className="ml-auto bg-cyan-500 text-white px-4 md:px-6 lg:px-8 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
-            Next Step</button>
+            className="bg-cyan-500 text-white px-8 py-2 rounded-lg hover:bg-cyan-600"
+          >
+            Next
+          </button>
         </div>
-
       </div>
-
     </div>
-  )
+  );
 };
+
+
 
 const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuestion, currentStep, setCurrentStep, saveToLocalStorage }) => {
 
+  const validateStep = () => {
+    if (!formData.questions[0].question || !formData.questions[0].question.trim()) {
+      showError('At least one Quesion and answer is required');
+      return false;
+    }
+
+    for (let i = 0; i < formData.questions.length; i++) {
+      const svc = formData.questions[i];
+      if (!svc.question || !svc.question.trim()) {
+        showError('Question ' + (i + 1) + ' Question required');
+        return false;
+      }
+      if (!svc.answer || !svc.answer.trim()) {
+        showError('answer ' + (i + 1) + ' answer price');
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleNext = () => {
+    if (!validateStep()) return;
     saveToLocalStorage();
     setCurrentStep(currentStep + 1);
   };
-
   const handleBack = () => {
     saveToLocalStorage();
     setCurrentStep(currentStep - 1);
@@ -562,13 +592,11 @@ const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuesti
               </button>
             </div>
             <div className='flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:pl-12'>
-              {/* ////////////////////////////////////////////////////////////////////////////////////////////// */}
               <textarea
                 placeholder="Enter Your Answer (optional)"
                 rows="3"
                 className="w-full sm:flex-1 px-4 py-2 border border-gray-300 rounded-lg
                               focus:outline-none focus:ring-2 focus:ring-blue-500"
-                // "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={question.answer}
                 onChange={(e) => updateQuestion(index, 'answer', e.target.value)}
               />
@@ -588,12 +616,12 @@ const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuesti
         <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
           <button
             type="button"
-            onClick={handleBack}
+            onClick={() => handleBack()}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
             <ArrowLeft size={20} />Back</button>
           <button
             type="button"
-            onClick={handleNext}
+            onClick={() => handleNext()}
             className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
             Save Service</button>
         </div>
@@ -641,7 +669,7 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep, saveToLocal
 
         <button
           type="button"
-          onClick={handleNext}
+          onClick={() => handleNext()}
           className="w-full py-3 rounded-lg hover:bg-gray-100 flex items-center justify-center gap-2 mb-4">
           Continue to Preview <ArrowRight size={20} className='mt-1' /></button>
 
@@ -650,7 +678,7 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep, saveToLocal
   )
 };
 
-const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage, userId }) => {
+const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage, submitFormData }) => {
 
   const handleNext = () => {
     saveToLocalStorage();
@@ -661,44 +689,6 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
     saveToLocalStorage();
     setCurrentStep(currentStep - 1);
   };
-
-  const SubmitFormData = async () => {
-    try {
-
-      const formDataToSend = new FormData();
-      // Append text data to FormData
-      formDataToSend.append('businessName', formData.businessName);
-      formDataToSend.append('phoneNumber', formData.phoneNumber);
-      formDataToSend.append('email', formData.email);
-      formDataToSend.append('cityTown', formData.cityTown);
-      formDataToSend.append('businessDescription', formData.businessDescription);
-      formDataToSend.append('domain', formData.domain);
-      formDataToSend.append('userId', formData.userId);
-
-      formDataToSend.append('serviceAreas', JSON.stringify(formData.serviceAreas));
-      formDataToSend.append('hours', JSON.stringify(formData.hours));
-      formDataToSend.append('services', JSON.stringify(formData.services));
-      formDataToSend.append('questions', JSON.stringify(formData.questions));
-
-      if (formData.businessLogo) {
-        formDataToSend.append('businessLogo', formData.businessLogo);
-      }
-      if (formData.businessCoverPhoto) {
-        formDataToSend.append('businessCoverPhoto', formData.businessCoverPhoto);
-      }
-
-      const response = await fetch('http://localhost:5000/api/businesses', {
-        method: 'POST',
-        body: formDataToSend
-      });
-      const data = await response.json();
-      console.log('Business created successfully', data);
-
-    } catch (error) {
-      console.error('Error submitting form:', error);
-    }
-  };
-
 
   return (
 
@@ -714,8 +704,8 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
               <img
                 src={
                   formData.businessLogo instanceof File
-                    ? URL.createObjectURL(formData.businessLogo) // freshly uploaded
-                    : formData.businessLogo // base64 from localStorage
+                    ? URL.createObjectURL(formData.businessLogo)
+                    : formData.businessLogo
                 }
                 alt="Business Logo"
                 className="w-full h-full object-cover rounded-lg"
@@ -739,7 +729,7 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
                 <span className="text-sm text-gray-500 ml-2">(128 reviews)</span>
               </div>
             </div>
-            <button className="bg-orange-500 text-xs text-white px-4 py-2 rounded-lg hover:bg-orange-600" onClick={() => SubmitFormData()}>
+            <button className="bg-orange-500 text-xs text-white px-4 py-2 rounded-lg hover:bg-orange-600" onClick={() => submitFormData()}>
               Request a Quote
             </button>
           </div>
@@ -811,12 +801,12 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
       <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center">
         <button
           type="button"
-          onClick={handleBack}
+          onClick={() => handleBack()}
           className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 rounded-lg hover:bg-white transition">
           <ArrowLeft size={20} />Back</button>
         <button
           type="button"
-          onClick={handleNext}
+          onClick={() => handleNext()}
           className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
           Next: Choose Plan</button>
       </div>
@@ -824,7 +814,123 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
   )
 };
 
-const PricingStep = () => {
+const RelatedImage = ({
+  formData = {},
+  currentStep,
+  setCurrentStep = () => { },
+  saveToLocalStorage = () => { },
+  handleFileUpload = () => { },
+}) => {
+
+
+  const validateStep = () => {
+    if (!formData.image1 || !(formData.image1 instanceof File)) {
+      showError('Image 1 is required');
+      return false;
+    }
+
+    if (!formData.image2 || !(formData.image2 instanceof File)) {
+      showError('Image 2 is required');
+      return false;
+    }
+
+    if (!formData.image3 || !(formData.image3 instanceof File)) {
+      showError('Image 3 is required');
+      return false;
+    }
+
+    return true;
+  };
+
+
+  const handleNext = async () => {
+    if (!validateStep()) return;
+
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handleBack = () => {
+    saveToLocalStorage();
+    setCurrentStep(currentStep - 1);
+  };
+
+  return (
+    <div>
+      <StepIndicator steps={[1, 2, 3]} currentStep={currentStep} />
+
+      <div className="lg:mt-[100px]">
+        <div className="mb-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-3xl font-bold mb-2">Business Related Image</h1>
+          <label className="block text-sm font-medium mb-4">Add 3 Images</label>
+
+          {[1, 2, 3].map((i) => {
+            const fieldName = `image${i}`;
+            const imageValue = formData?.[fieldName];
+
+            return (
+              <div
+                key={i}
+                className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center mb-6 cursor-pointer hover:border-blue-400 transition"
+              >
+                <label className="cursor-pointer block">
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+
+                    onChange={(e) => handleFileUpload(fieldName, e.target.files[0])}
+                  />
+
+                  {imageValue ? (
+                    <img
+                      src={
+                        imageValue instanceof File
+                          ? URL.createObjectURL(imageValue)
+                          : imageValue
+                      }
+                      alt={`Business Image ${i}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <Camera className="text-blue-500 mb-1 mx-auto" size={40} />
+                      <p className="text-sm text-blue-500">
+                        Upload Image {i} - at least 200×200px
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            );
+          })}
+
+          <div className="max-w-3xl mx-auto mt-6 flex justify-between items-center gap-4">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition"
+            >
+              <ArrowLeft size={20} />
+              Back
+            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleNext}
+                className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition"
+              >
+                Save Service
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+const PricingStep = ({ currentStep, setCurrentStep, submitFormData }) => {
   return (
     <div className="">
       <div className="max-w-2xl mx-auto  rounded-lg  p-8 my-10 text-center">
@@ -862,10 +968,12 @@ const PricingStep = () => {
               <ArrowRight className="text-cyan-500" size={20} />
               <span>No Hidden Fees</span>
             </div>
-            <button className=" bg-cyan-500 text-white py-2 px-4 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-1">
+            <button className=" bg-cyan-500 text-white py-2 px-4 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-1" onClick={() => setCurrentStep(currentStep - 1)}>
               Next: Choose Plan
               <ArrowRight size={20} className='mt-1' />
             </button>
+            <button className=" bg-cyan-500 text-white py-2 px-4 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-1" onClick={() => submitFormData()}>
+              Submit</button>
           </div>
 
 
@@ -876,13 +984,8 @@ const PricingStep = () => {
 };
 
 const Booking = () => {
-
   const [currentStep, setCurrentStep] = useState(1);
-  const [businessId, setBusinessId] = useState(null);
   const [newServiceArea, setNewServiceArea] = useState('');
-
-  const user = JSON.parse(localStorage.getItem("user")) || {}; // fallback if no user
-  const userId = user.id;
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -896,8 +999,8 @@ const Booking = () => {
     hours: {
       monday: { start: '09:00', end: '17:00', closed: false },
       tuesday: { start: '09:00', end: '17:00', closed: false },
-      wednessday: { start: '09:00', end: '17:00', closed: false },
-      thusday: { start: '09:00', end: '17:00', closed: false },
+      wednesday: { start: '09:00', end: '17:00', closed: false },
+      thursday: { start: '09:00', end: '17:00', closed: false },
       friday: { start: '09:00', end: '17:00', closed: false },
       saturday: { start: '', end: '', closed: true },
       sunday: { start: '', end: '', closed: true },
@@ -905,59 +1008,72 @@ const Booking = () => {
     domain: '',
     services: [{ name: '', price: '', customPrice: false }],
     questions: [{ question: '', answer: '' }],
-    userId: userId
+    image1: null,
+    image2: null,
+    image3: null,
+    userId: ''
   });
 
-  const totalSteps = 7;
+  const totalSteps = 8;
 
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user.id || '';
+
     const saved = localStorage.getItem('bookingFormData');
     const savedStep = localStorage.getItem('bookingCurrentStep');
-    const savedId = localStorage.getItem('bookingBusinessId');
 
     if (saved) {
-      setFormData(JSON.parse(saved));
+      const parsedData = JSON.parse(saved);
+      setFormData({ ...parsedData, userId });
+    } else {
+      setFormData(prev => ({ ...prev, userId }));
     }
+
     if (savedStep) {
-      setCurrentStep(parseInt(savedStep));
+      setCurrentStep(Number(savedStep));
     }
-    if (savedId) {
-      setBusinessId(savedId);
-    }
+
+    setIsHydrated(true); // only after loading from localStorage
   }, []);
 
-  // Save to localStorage
+  useEffect(() => {
+    if (!isHydrated) return; // don't save before hydration
+    if (!formData.businessName) return; // optional: only save if valid
+    saveToLocalStorage();
+  }, [formData, isHydrated]);
 
 
-  const fileToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      if (!file || !(file instanceof File)) return resolve(file); // already Base64 or empty
+
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      if (!(file instanceof File)) {
+        resolve(file);
+        return;
+      }
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
+      reader.onerror = () => reject(new Error('Failed to read file'));
+
       reader.readAsDataURL(file);
     });
-
-
-
-  const saveToLocalStorage = async () => {
-    const formDataCopy = { ...formData };
-
-    // formDataCopy.businessLogo = await fileToBase64(formData.businessLogo);
-    // formDataCopy.businessCoverPhoto = await fileToBase64(formData.businessCoverPhoto);
-
-    // localStorage.setItem('bookingFormData', JSON.stringify(formDataCopy));
-    // localStorage.setItem('bookingCurrentStep', currentStep.toString());
-    // if (businessId) localStorage.setItem('bookingBusinessId', businessId);
   };
 
-
-  useEffect(() => {
-    if (formData.businessName) {
-      saveToLocalStorage();
+  const saveToLocalStorage = async () => {
+    try {
+      const formDataCopy = { ...formData };
+      const imageFields = ['businessLogo', 'businessCoverPhoto', 'image1', 'image2', 'image3'];
+      for (const field of imageFields) { formDataCopy[field] = await fileToBase64(formData[field]); }
+      localStorage.setItem('bookingFormData', JSON.stringify(formDataCopy));
+      localStorage.setItem('bookingCurrentStep', String(currentStep));
+    } catch (error) {
+      console.error('Error saving form data to localStorage:', error);
     }
-  }, [formData]);
+  };
+
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -968,16 +1084,6 @@ const Booking = () => {
       setFormData(prev => ({ ...prev, [field]: file }));
     }
   };
-
-
-  // const handleFileChange = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     setFormData(prev => ({ ...prev, photo: file }));
-  //   }
-  // };
-
-
 
   const addServiceArea = () => {
     if (newServiceArea.trim()) {
@@ -1003,10 +1109,7 @@ const Booking = () => {
   const updateHours = (day, field, value) => {
     updateField('hours', {
       ...formData.hours,
-      [day]: {
-        ...formData.hours[day],
-        [field]: value
-      }
+      [day]: { ...formData.hours[day], [field]: value }
     });
   };
 
@@ -1042,11 +1145,60 @@ const Booking = () => {
     }
   };
 
+
+  const submitFormData = async () => {
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('businessName', formData.businessName);
+      formDataToSend.append('phoneNumber', formData.phoneNumber);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('cityTown', formData.cityTown);
+      formDataToSend.append('businessDescription', formData.businessDescription);
+      formDataToSend.append('domain', formData.domain);
+      formDataToSend.append('userId', formData.userId);
+      formDataToSend.append('serviceAreas', JSON.stringify(formData.serviceAreas));
+      formDataToSend.append('hours', JSON.stringify(formData.hours));
+      formDataToSend.append('services', JSON.stringify(formData.services));
+      formDataToSend.append('questions', JSON.stringify(formData.questions));
+
+      if (formData.businessLogo) {
+        formDataToSend.append('businessLogo', formData.businessLogo);
+      }
+      if (formData.businessCoverPhoto) {
+        formDataToSend.append('businessCoverPhoto', formData.businessCoverPhoto);
+      }
+      for (let i = 1; i <= 5; i++) {
+        if (formData[`image${i}`]) {
+          formDataToSend.append(`image${i}`, formData[`image${i}`]);
+        }
+      }
+
+      console.log(formData)
+
+      const response = await fetch(API_BASE_URL + '/businesses', {
+        method: 'POST',
+        body: formDataToSend
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showSuccess(data.message);
+        localStorage.removeItem('bookingFormData');
+        localStorage.removeItem('bookingCurrentStep');
+      } else {
+        showError(data.message);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      showError('Error submitting form');
+    }
+  };
   const ProgressBar = () => (
     <div className="w-full bg-gray-200 h-1 mb-8 rounded-full overflow-hidden">
       <div
         className="bg-blue-500 h-1 transition-all duration-300"
-        style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+        style={{ width: ((currentStep / totalSteps) * 100) + '%' }}
       />
     </div>
   );
@@ -1062,13 +1214,15 @@ const Booking = () => {
       case 2: return <DomainStep formData={formData} updateField={updateField} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
       case 3: return <AddServicesStep formData={formData} addService={addService} updateService={updateService} removeService={removeService} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
       case 4: return <QuestionnaireStep formData={formData} addQuestion={addQuestion} updateQuestion={updateQuestion} removeQuestion={removeQuestion} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
-      case 5: return <ServiceCreatedStep formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} saveToLocalStorage={saveToLocalStorage} />;
-      case 6: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} userId={userId} />;
-      case 7: return <PricingStep />;
+      case 5: return <RelatedImage handleFileUpload={handleFileUpload} formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} saveToLocalStorage={saveToLocalStorage} />;
+
+      case 6: return <ServiceCreatedStep formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} saveToLocalStorage={saveToLocalStorage} />;
+
+      case 7: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage}  />;
+      case 8: return <PricingStep currentStep={currentStep} setCurrentStep={setCurrentStep} submitFormData={submitFormData} />;
       default: return <BusinessInfoStep />;
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8 px-4">
       <div className="max-w-6xl mx-auto">
@@ -1077,11 +1231,10 @@ const Booking = () => {
             S
           </div>
           <h1 className="text-2xl font-bold">SimplyBooking</h1>
-          <span className="ml-auto text-sm text-gray-600">Step {currentStep} of {totalSteps} - {currentStep === 1 ? 'Business Info' : currentStep === 2 ? 'Domain' : currentStep === 3 ? 'Services' : currentStep === 4 ? 'Services' : currentStep === 5 ? 'Services' : currentStep === 6 ? 'Preview' : 'Preview'}</span>
+          <span className="ml-auto text-sm text-gray-600">Step {currentStep} of {totalSteps} - {currentStep === 1 ? 'Business Info' : currentStep === 2 ? 'Domain' : currentStep === 3 ? 'Services' : currentStep === 4 ? 'Services' : currentStep === 5 ? 'Services' : currentStep === 6 ? 'Related Image' : currentStep === 6 ? 'Preview' : 'Preview'}</span>
         </div>
         <ProgressBar />
         {renderStep()}
-
       </div>
     </div >
   );
@@ -1096,17 +1249,3 @@ export default Booking;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 
