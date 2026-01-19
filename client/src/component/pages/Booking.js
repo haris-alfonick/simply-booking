@@ -474,10 +474,10 @@ const AddServicesStep = ({ formData, addService, updateService, removeService, c
               <input
                 type="text"
                 placeholder="50.00"
-                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 "
                 value={svc.price}
                 onChange={(e) => updateService(idx, "price", e.target.value)}
-                disabled={svc.customPrice}
+                disabled={!svc.customPrice}
               />
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -984,7 +984,7 @@ const PricingStep = ({ currentStep, setCurrentStep, submitFormData }) => {
 };
 
 const Booking = () => {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(3);
   const [newServiceArea, setNewServiceArea] = useState('');
 
   const [formData, setFormData] = useState({
@@ -1172,8 +1172,6 @@ const Booking = () => {
           formDataToSend.append(`image${i}`, formData[`image${i}`]);
         }
       }
-
-      console.log(formData)
 
       const response = await fetch(API_BASE_URL + '/businesses', {
         method: 'POST',

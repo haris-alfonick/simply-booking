@@ -78,5 +78,13 @@ export const login = async (user) => {
     throw error;
   }
 };
+export const getQuotes = async ({ businessId ="696b9741be003a82e3e253e8", page = 1, limit = 10, status }) => {
+  const params = new URLSearchParams({
+    businessId, page, limit, ...(status && { status })
+  });
 
-export default api;
+  const res = await fetch(`${API_BASE_URL}/quotes?${params}`);
+  return await res.json();
+};
+
+

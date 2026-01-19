@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Menu, X, Search, Bell, Calendar as CalendarIcon, Briefcase, Users, Settings, HelpCircle, Download, LayoutDashboard, Calendar, ChevronLeft, ChevronRight, User, Mail, Phone } from 'lucide-react';
+import { API_BASE_URL, getQuotes } from '../api/Api';
 
-const RenderDashboard = ({ setSelectedJob }) => {
+const RenderDashboard = ({ setSelectedJob, quotes, jobsOverview }) => {
+
 
     const jobs = [
         { id: 1, client: 'Emma Davis', email: 'sarah.j@email.com', service: 'Plumbing Repair', location: 'Los Angeles, CA', date: '2025-12-30', status: 'Cancelled', price: '$450' },
@@ -9,14 +11,21 @@ const RenderDashboard = ({ setSelectedJob }) => {
         { id: 3, client: 'John Doe', email: 'Doe.j@email.com', service: 'Lawn Care', location: 'Los Angeles, CA', date: '2025-01-15', status: 'Pending', price: '$150' },
     ];
 
-    const jobsOverview = [
-        { type: 'Job Requests', count: 2, color: 'blue' },
-        { type: 'Pending Jobs', count: 2, color: 'yellow' },
-        { type: 'Upcoming Jobs', count: 2, color: 'cyan' },
-        { type: 'Completed', count: 2, color: 'green' },
-        { type: 'Cancelled', count: 2, color: 'red' },
-    ];
-    const stats = { totalJobs: 8, pendingJobs: 8, upcoming: 8, clients: 8 };
+    // const jobsOverview = [
+    //     { type: 'Job Requests', count: 2, color: 'blue' },
+    //     { type: 'Pending Jobs', count: 2, color: 'yellow' },
+    //     { type: 'Upcoming Jobs', count: 2, color: 'cyan' },
+    //     { type: 'Completed', count: 2, color: 'green' },
+    //     { type: 'Cancelled', count: 2, color: 'red' },
+    // ];
+
+
+
+
+
+
+
+
     return (
         <div className="space-y-6 w-5xl">
             <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-6 rounded-lg">
@@ -24,13 +33,8 @@ const RenderDashboard = ({ setSelectedJob }) => {
                 <p className="text-gray-600 mt-1">Here's what happening with your SimplyBooking platform today</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                    { label: 'Total Jobs', value: stats.totalJobs, icon: Calendar, color: 'bg-blue-50 text-blue-600' },
-                    { label: 'Pending Jobs', value: stats.pendingJobs, icon: Calendar, color: 'bg-yellow-50 text-yellow-600' },
-                    { label: 'Upcoming', value: stats.upcoming, icon: Calendar, color: 'bg-cyan-50 text-cyan-600' },
-                    { label: 'clients', value: stats.clients, icon: Calendar, color: 'bg-purple-50 text-purple-600' },
-                ].map((stat, idx) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {jobsOverview.map((stat, idx) => (
                     <div key={idx} className="bg-white p-6 rounded-lg shadow-sm">
                         <div className="flex items-center">
                             <div className={`p-3 rounded-lg ${stat.color}`}>
@@ -55,33 +59,35 @@ const RenderDashboard = ({ setSelectedJob }) => {
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <tbody>
-                                {jobs.map((job) => (
-                                    <tr key={job.id} className="border-b hover:bg-gray-50">
+                                {quotes?.data?.map(job => (
+                                    <tr key={job._id} className="border-b hover:bg-gray-50">
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center text-cyan-600 font-semibold">
-                                                    {job.client.charAt(0)}
+                                                    {job.name.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium">{job.client}</p>
+                                                    <p className="font-medium">{job.name}</p>
                                                     <p className="text-sm text-gray-500">{job.service}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-4 text-sm text-gray-600">{job.location}<br />{job.date}</td>
-                                        <td className="p-4">
+                                        <td className="p-4 text-sm text-gray-600">{job.address}<br />{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : ""}</td>
+                                        <td className="p-4 text-right">
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${job.status === 'Cancelled' ? 'bg-red-100 text-red-600' : 'bg-cyan-100 text-cyan-600'
                                                 }`}>
                                                 {job.status}
                                             </span>
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-4 text-right">
                                             <button
                                                 onClick={() => setSelectedJob(job)}
-                                                className="text-cyan-600 bg-blue-100 p-2 rounded-lg hover:underline text-sm">
+                                                className="text-cyan-600 bg-blue-100 p-2 rounded-lg hover:underline text-sm"
+                                            >
                                                 View Details
                                             </button>
                                         </td>
+
                                     </tr>
                                 ))}
                             </tbody>
@@ -96,9 +102,9 @@ const RenderDashboard = ({ setSelectedJob }) => {
                             <div key={idx} className="flex items-center justify-between bg-gray-100 p-2 rounded-lg">
                                 <div className="flex items-center gap-2">
                                     <div className={`w-2 h-2 rounded-full bg-${item.color}-500`}></div>
-                                    <span className="text-sm">{item.type}</span>
+                                    <span className="text-sm">{item.label}</span>
                                 </div>
-                                <span className="font-semibold">{String(item.count).padStart(2, '0')}</span>
+                                <span className="font-semibold">{String(item.value).padStart(2, '0')}</span>
                             </div>
                         ))}
                     </div>
@@ -112,10 +118,10 @@ const RenderDashboard = ({ setSelectedJob }) => {
                             <CalendarIcon className="w-4 h-4" />
                             Check Calendar
                         </button>
-                        <button className="w-full py-2 text-center bg-gray-100 rounded-lg text-sm hover:bg-gray-50 rounded flex items-center gap-2 px-2">
+                        {/* <button className="w-full py-2 text-center bg-gray-100 rounded-lg text-sm hover:bg-gray-50 rounded flex items-center gap-2 px-2">
                             <Users className="w-4 h-4" />
                             Manage Clients
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
@@ -124,7 +130,7 @@ const RenderDashboard = ({ setSelectedJob }) => {
     )
 }
 
-const RenderJobs = ({ setSelectedJob }) => {
+const RenderJobs = ({ setSelectedJob, quotes, jobsOverview }) => {
 
     const jobRequests = [
         { id: 1, client: 'Sarah Johnson', email: 'sarah.j@email.com', phone: '(555) 123-4567', service: 'Home Cleaning', submitted: '2024-01-15', price: '$450', location: 'Los Angeles, CA', propertySize: '3 bedroom house, ~2000 sqft', frequency: 'One-time deep clean', requirements: 'Pet-friendly products needed', photos: 2 },
@@ -143,27 +149,42 @@ const RenderJobs = ({ setSelectedJob }) => {
                 </button>
             </div>
 
+            {/* 
+            const stats = {totalJobs: quotes?.pagination?.total, pendingJobs: quotes?.counts?.pending, upcoming: quotes?.counts?.upcoming, clients: quotes?.pagination?.total };
+
+            const jobsOverview = [
+            {label: 'Total Jobs', value: stats.totalJobs, icon: Calendar, color: 'bg-blue-50 text-blue-600' },
+            {label: 'Pending Jobs', value: stats.pendingJobs, icon: Calendar, color: 'bg-yellow-50 text-yellow-600' },
+            {label: 'Upcoming', value: stats.upcoming, icon: Calendar, color: 'bg-cyan-50 text-cyan-600' },
+        // {label: 'clients', value: stats.clients, icon: Calendar, color: 'bg-purple-50 text-purple-600' },
+            ] */}
+
             <div className="bg-white rounded-lg shadow-sm">
                 <div className="p-4 border-b flex flex-wrap gap-2">
-                    <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium">Job Requests</button>
+                    {
+                        jobsOverview.map((stat, idx) => (
+                            <button key={idx} className="px-4 py-2 hover:bg-gray-50 rounded-lg text-sm">{stat.label} ({stat.value})</button>
+                        ))
+                    }
+                    {/* <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium">Job Requests</button>
                     <button className="px-4 py-2 hover:bg-gray-50 rounded-lg text-sm">Pending Jobs (02)</button>
                     <button className="px-4 py-2 hover:bg-gray-50 rounded-lg text-sm">Upcoming Jobs (02)</button>
                     <button className="px-4 py-2 hover:bg-gray-50 rounded-lg text-sm">Completed Jobs (0)</button>
-                    <button className="px-4 py-2 hover:bg-gray-50 rounded-lg text-sm">Cancelled Jobs (0)</button>
+                    <button className="px-4 py-2 hover:bg-gray-50 rounded-lg text-sm">Cancelled Jobs (0)</button> */}
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <tbody>
-                            {jobRequests.map((job) => (
+                            {quotes?.data?.map(job => (
                                 <tr key={job.id} className="border-b hover:bg-gray-50">
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center text-cyan-600 font-semibold">
-                                                {job.client.charAt(0)}
+                                                {job.name.charAt(0)}
                                             </div>
                                             <div>
-                                                <p className="font-medium">{job.client}</p>
+                                                <p className="font-medium">{job.name}</p>
                                                 <p className="text-sm text-gray-500">{job.email}</p>
                                             </div>
                                         </div>
@@ -174,15 +195,15 @@ const RenderJobs = ({ setSelectedJob }) => {
                                     </td>
                                     <td className="p-4">
                                         <p className="text-sm font-medium">Submitted On</p>
-                                        <p className="text-sm text-gray-600">{job.submitted}</p>
+                                        <p className="text-sm text-gray-600">{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : ""}</p>
                                     </td>
                                     <td className="p-4">
                                         <p className="text-sm font-medium">Price</p>
-                                        <p className="text-sm text-gray-600">{job.price}</p>
+                                        <p className="text-sm text-gray-600">{job.price === 0 ? 'Pending' : job.price}</p>
                                     </td>
                                     <td className="p-4">
                                         <p className="text-sm font-medium">Location</p>
-                                        <p className="text-sm text-gray-600">{job.location}</p>
+                                        <p className="text-sm text-gray-600">{job.address}</p>
                                     </td>
                                     <td className="p-4">
                                         <button className="bg-cyan-100 px-4 py-2 rounded-[20px] text-yellow-500 hover:underline text-sm font-medium mr-2">Request</button>
@@ -204,7 +225,7 @@ const RenderJobs = ({ setSelectedJob }) => {
     )
 };
 
-const RenderCalendar = () => {
+const RenderCalendar = ({ quotes }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isFormVisible, setIsFormVisible] = useState(false);
 
@@ -227,7 +248,6 @@ const RenderCalendar = () => {
         { id: 2, day: 7, time: '10:00 AM', name: 'abid Johnson', service: 'Landscaping', amount: 160, status: 'Upcoming' },
         { id: 3, day: 8, time: '11:00 AM', name: 'asif Johnson', service: 'Landscaping', amount: 170, status: 'Upcoming' },
         { id: 4, day: 9, time: '12:00 PM', name: 'amir Johnson', service: 'Landscaping', amount: 200, status: 'Upcoming' },
-
     ];
 
 
@@ -275,9 +295,9 @@ const RenderCalendar = () => {
         <div className="space-y-6">
             {isFormVisible && (
 
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 p-8 flex items-center justify-center">
-                    <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl relative max-h-[90vh] overflow-y-auto">
-                        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 pt-6">
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 p-8 flex items-center justify-center ">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl relative">
+                        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 pt-6 rounded-lg">
                             <div>
                                 <div className="flex items-center gap-3">
                                     <h2 className="text-xl font-semibold text-gray-800">{jobData.title}</h2>
@@ -326,27 +346,20 @@ const RenderCalendar = () => {
                             </div>
 
                             <div className="mb-6 border p-4 rounded-lg">
-                                <h3 className="text-sm font-semibold text-gray-800 mb-3">Questionnaire Responses</h3>
+                                <h3 className="text-sm font-semibold text-gray-800 mb-3">Other Information</h3>
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="text-xs font-medium text-gray-600 block mb-1">Property size</label>
-                                        <div className="bg-gray-100 rounded px-3 py-2 text-sm text-gray-700">
+                                        <label className="text-xs font-medium text-gray-600 block mb-1">Address</label>
+                                        <div className="border rounded px-3 py-2 text-sm text-gray-700 h-16" rows={3}>
                                             {jobData.questionnaire.propertySize}
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="text-xs font-medium text-gray-600 block mb-1">Cleaning frequency</label>
-                                        <div className="bg-gray-100 rounded px-3 py-2 text-sm text-gray-700">
-                                            {jobData.questionnaire.cleaningFrequency}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-xs font-medium text-gray-600 block mb-1">Special requirements</label>
-                                        <div className="bg-gray-100 rounded px-3 py-2 text-sm text-gray-700">
-                                            {jobData.questionnaire.specialRequirements}
+                                        <label className="text-xs font-medium text-gray-600 block mb-1">Problem description</label>
+                                        <div className="border rounded px-3 py-2 text-sm text-gray-700 h-20" rows={3}>
+                                            {jobData.questionnaire.propertySize}
                                         </div>
                                     </div>
                                 </div>
@@ -370,6 +383,26 @@ const RenderCalendar = () => {
                                     ))}
                                 </div>
                             </div>
+
+                            <div className="my-6 border p-4 rounded-lg">
+                                <h3 className="text-sm font-semibold text-gray-800 mb-3">Send Estimate</h3>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-600 block mb-1">Price ($)</label>
+                                        {/* <div className="bg-gray-100 rounded px-3 py-2 text-sm text-gray-700"> */}
+                                        <input placeholder='Enter estimate price ' className='w-full h-full rounded px-3 py-2 border text-sm text-gray-700' />                                        </div>
+                                    {/* </div> */}
+
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-600 block mb-1">Cleaning frequency</label>
+                                        {/* <div className="w-full"> */}
+                                        <textarea rows={3} className='w-full h-full rounded px-3 py-2 border text-sm text-gray-700' />
+                                        {/* </div> */}
+                                    </div>
+                                    <button className='px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm'>Send Estimated to Client</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -388,7 +421,7 @@ const RenderCalendar = () => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm">
+            <div className="bg-white rounded-lg shadow-sm border">
                 <div className="p-4 border-b flex flex-wrap gap-2">
                     <button
                         onClick={() => setCalendarView('day')}
@@ -430,35 +463,46 @@ const RenderCalendar = () => {
                         {/* Time Slots */}
                         <div className="space-y-2">
                             {timeSlots.map((time) => {
-                                const appointment = appointments.find(
-                                    (appt) => appt.time === time
-                                );
+                                const appointment = quotes?.data.find((appt) => {
+                                    const createdTime = new Date(appt.createdAt).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    });
+
+                                    return createdTime === time;
+                                });
 
                                 return (
-                                    <div key={time} className="flex items-center border-b py-3">
+                                    <div key={time} className="flex items-center border-b py-3 ">
+                                        {/* Time slot */}
                                         <span className="w-24 text-sm text-gray-600">{time}</span>
 
                                         {appointment && (
-                                            <div className="flex-1 bg-white-50 p-3 rounded ml-4 overflow-x-auto">
-                                                <div className="flex justify-between items-start">
-                                                    <div className='text-center'>
+                                            <div className="flex-1 bg-white p-3 rounded ml-4 overflow-x-auto">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="text-center">
                                                         <p className="font-medium">{appointment.name}</p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {new Date(appointment.createdAt).toLocaleTimeString("en-GB", {
+                                                                hour: "2-digit",
+                                                                minute: "2-digit",
+                                                            })}
+                                                        </p>
                                                     </div>
 
-                                                    <div>
-                                                        <p className="text-sm text-gray-600">{appointment.service}</p>
-                                                    </div>
+                                                    <p className="text-sm text-gray-600">{appointment.service}</p>
 
-                                                    <div className="text-right">
-                                                        <p className="font-medium text-green-600">${appointment.amount.toFixed(2)}</p>
-                                                    </div>
+                                                    <p className="font-medium text-green-600">
+                                                        ${appointment.amount.toFixed(2)}
+                                                    </p>
 
-                                                    <div className="text-end">
-                                                        <span className="text-xs bg-cyan-100 text-cyan-600 px-2 py-1 rounded-full">{appointment.status}</span>
-                                                    </div>
+                                                    <span className="text-xs bg-cyan-100 text-cyan-600 px-2 py-1 rounded-full">
+                                                        {appointment.price}
+                                                    </span>
 
-                                                    <button className="ml-4 border px-2 py-1 rounded-lg text-cyan-600 hover:underline text-sm"
-                                                        onClick={() => { setIsFormVisible(!isFormVisible) }}
+                                                    <button
+                                                        className="ml-4 border px-2 py-1 rounded-lg text-cyan-600 hover:underline text-sm"
+                                                        onClick={() => setIsFormVisible(!isFormVisible)}
                                                     >
                                                         View
                                                     </button>
@@ -469,6 +513,7 @@ const RenderCalendar = () => {
                                 );
                             })}
                         </div>
+
                     </div>
                 )}
 
@@ -491,7 +536,9 @@ const RenderCalendar = () => {
                         <div className="grid grid-cols-7 gap-2">
                             {days.map((day, idx) => (
                                 <div key={idx} className="text-center">
-                                    <p className="text-sm font-medium text-gray-600">{day.name}</p>
+                                    <p className="text-sm font-medium text-gray-600">
+
+                                    </p>
 
                                     <p
                                         className={`text-2xl font-bold mt-2 ${idx === selectedDayIndex
@@ -506,13 +553,18 @@ const RenderCalendar = () => {
                         </div>
 
                         <div className="mt-6 grid grid-cols-7 gap-2">
-                            {appointments.map((appt) => (
+                            {quotes?.data?.map((appt) => (
                                 <div
                                     key={appt.id}
                                     className={` col-start-${appt.day} bg-green-50 border-green-500 p-3 rounded-lg border`}
                                     onClick={() => setIsFormVisible(!isFormVisible)}
                                 >
-                                    <p className="text-xs text-green-500 font-medium">{appt.time}</p>
+                                    <p className="text-xs text-green-500 font-medium">
+                                        {new Date(appt.createdAt).toLocaleTimeString("en-GB", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        })}
+                                    </p>
                                     <p className="text-sm text-green-500 font-medium mt-1">{appt.name}</p>
                                     <p className="text-xs text-green-500 text-gray-600">{appt.service}</p>
                                 </div>
@@ -545,7 +597,7 @@ const RenderCalendar = () => {
                             ))}
                             {Array.from({ length: daysInMonth }).map((_, idx) => {
                                 const day = idx + 1;
-                                const hasEvent = monthEvents.find(e => e.date === day);
+                                const hasEvent = quotes?.data?.find(e => e.date === day);
                                 return (
                                     <div key={day} className="aspect-[6/2] border rounded-lg p-2 hover:bg-gray-50" onClick={() => setIsFormVisible(!isFormVisible)}>
                                         <p className={`text-sm ${day === 20 ? 'bg-cyan-500 text-white w-6 h-6 flex items-center justify-center rounded-full' : ''}`}>
@@ -553,7 +605,12 @@ const RenderCalendar = () => {
                                         </p>
                                         {hasEvent && (
                                             <div className="mt-1">
-                                                <p className="text-xs text-cyan-600 font-medium">{hasEvent.time}</p>
+                                                <p className="text-xs text-cyan-600 font-medium">
+                                                    {new Date(hasEvent.createdAt).toLocaleTimeString("en-GB", {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                </p>
                                                 <p className="text-xs text-gray-600 truncate">{hasEvent.service}</p>
                                             </div>
                                         )}
@@ -761,9 +818,10 @@ const RenderClients = ({ setSelectedClient }) => {
                             <div className="flex items-center justify-between pt-4 border-t">
                                 <span className="text-sm text-gray-600">📋 {client.totalJobs} jobs</span>
                                 <button
-                                    onClick={() =>
-                                        // setSelectedClient(client),
-                                        setisclientVisible(!isclientVisible)}
+                                    onClick={() => {
+                                        setSelectedClient(client);
+                                        setisclientVisible(!isclientVisible)
+                                    }}
                                     className="text-cyan-600 hover:underline text-sm font-medium">
                                     View Profile
                                 </button>
@@ -781,9 +839,41 @@ const ClientDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [selectedClient, setSelectedClient] = useState(null);
     const [selectedJob, setSelectedJob] = useState(null);
+    const [quotes, setQuotes] = useState([]);
+
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [status, setStatus] = useState("");
+    const [loading, setLoading] = useState(false);
+    // const [counts, setcounts] = useState(1);
 
     const user = JSON.parse(localStorage.getItem("user"))
-    // console.log(user)
+
+    const fetchQuotes = async () => {
+        setLoading(true);
+        try {
+            const res = await getQuotes({ businessId: "696b9741be003a82e3e253e8", page, limit: 10, status });
+            setQuotes(res);
+            setTotalPages(res.totalPages);
+            console.log(res.data)
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchQuotes() }, [page, status]);
+
+    const stats = { totalJobs: quotes?.pagination?.total, pendingJobs: quotes?.counts?.pending, upcoming: quotes?.counts?.upcoming, clients: quotes?.pagination?.total };
+
+    const jobsOverview = [
+        { label: 'Total Jobs', value: stats.totalJobs, icon: Calendar, color: 'bg-blue-50 text-blue-600' },
+        { label: 'Pending Jobs', value: stats.pendingJobs, icon: Calendar, color: 'bg-yellow-50 text-yellow-600' },
+        { label: 'Upcoming', value: stats.upcoming, icon: Calendar, color: 'bg-cyan-50 text-cyan-600' },
+        // { label: 'clients', value: stats.clients, icon: Calendar, color: 'bg-purple-50 text-purple-600' },
+    ]
+
 
     return (
         <>
@@ -803,7 +893,7 @@ const ClientDashboard = () => {
                             { icon: LayoutDashboard, label: 'Dashboard', view: 'dashboard' },
                             { icon: Briefcase, label: 'Jobs', view: 'jobs' },
                             { icon: CalendarIcon, label: 'Calendar', view: 'calendar' },
-                            { icon: Users, label: 'Clients', view: 'clients' },
+                            // { icon: Users, label: 'Clients', view: 'clients' },
                         ].map((item) => (
                             <button
                                 key={item.view}
@@ -865,10 +955,10 @@ const ClientDashboard = () => {
                     </header>
 
                     <main className="flex-1 overflow-auto p-6">
-                        {currentView === 'dashboard' && <RenderDashboard setSelectedJob={setSelectedJob} />}
-                        {currentView === 'jobs' && <RenderJobs setSelectedJob={setSelectedJob} />}
+                        {currentView === 'dashboard' && <RenderDashboard setSelectedJob={setSelectedJob} quotes={quotes} jobsOverview={jobsOverview} />}
+                        {currentView === 'jobs' && <RenderJobs setSelectedJob={setSelectedJob} quotes={quotes} jobsOverview={jobsOverview} />}
                         {currentView === 'calendar' && <RenderCalendar setSelectedClient={setSelectedClient} />}
-                        {currentView === 'clients' && <RenderClients selectedClient={selectedClient} setSelectedClient={setSelectedClient} />}
+                        {/* {currentView === 'clients' && <RenderClients selectedClient={selectedClient} setSelectedClient={setSelectedClient} />} */}
                     </main>
 
                 </div>

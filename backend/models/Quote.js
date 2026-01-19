@@ -8,13 +8,14 @@ const quoteSchema = new mongoose.Schema({
     address: { type: String, required: [true, 'Address is required'], trim: true },
     details: { type: String, required: [true, 'Details are required'], trim: true },
     photo: { type: String, default: null },
-    status: { type: String, enum: ['pending', 'reviewed', 'quoted', 'completed', 'cancelled'], default: 'pending' },
+    status: { type: String, enum: ['pending', 'reviewed', 'quoted', 'completed', 'cancelled', 'request', 'upcoming'], default: 'pending' },
     businessId: { type: mongoose.Schema.Types.ObjectId, ref: "Business", required: true },
-
+    price: { type: Number, default: 0 },
+    notes: { type: String, default: "" },
+    data: { type: String, default: "" },
+    time: { type: String, default: "00:00" },
     createdAt: { type: Date, default: Date.now }
-}, {
-    timestamps: true
-});
+}, { timestamps: true });
 
 // Index for faster queries
 quoteSchema.index({ email: 1, createdAt: -1 });

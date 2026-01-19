@@ -49,33 +49,64 @@ exports.createQuote = async (req, res) => {
 
 exports.getAllQuotes = async (req, res) => {
   try {
-    const { status, page = 1, limit = 10 } = req.query;
+    const {businessId, status, page = 1, limit = 10 } = req.query;
 
-    const query = {};
+    const query = {businessId};
     if (status) {
       query.status = status;
     }
 
     const quotes = await Quote.find(query)
       .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .limit(Number(limit))
+      .skip((page - 1) * limit)
+      // .populate("businessId");
 
-    const count = await Quote.countDocuments(query);
+    const total = await Quote.countDocuments(query);
+
+    const statusCounts = await Quote.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const counts = {
+      totalRequests: 0,
+      pending: 0,
+      cancelled: 0,
+      upcoming: 0,
+      completed: 0
+    };
+
+    statusCounts.forEach(item => {
+      counts.totalRequests += item.count;
+
+      if (item._id === "pending") counts.pending = item.count;
+      if (item._id === "cancelled") counts.cancelled = item.count;
+      if (item._id === "upcoming") counts.upcoming = item.count;
+      if (item._id === "completed") counts.completed = item.count;
+    });
 
     res.status(200).json({
       success: true,
       data: quotes,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
-      total: count
+      pagination: {
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: Number(page),
+        limit: Number(limit)
+      },
+      counts
     });
 
   } catch (error) {
-    console.error('Error fetching quotes:', error);
+    console.error("Error fetching quotes:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error occurred'
+      message: "Server error occurred"
     });
   }
 };
