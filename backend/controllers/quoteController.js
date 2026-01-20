@@ -49,9 +49,9 @@ exports.createQuote = async (req, res) => {
 
 exports.getAllQuotes = async (req, res) => {
   try {
-    const {businessId, status, page = 1, limit = 10 } = req.query;
+    const { businessId, status, page, limit = 10 } = req.query;
 
-    const query = {businessId};
+    const query = { businessId };
     if (status) {
       query.status = status;
     }
@@ -60,7 +60,7 @@ exports.getAllQuotes = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(Number(limit))
       .skip((page - 1) * limit)
-      // .populate("businessId");
+    // .populate("businessId");
 
     const total = await Quote.countDocuments(query);
 
@@ -78,7 +78,8 @@ exports.getAllQuotes = async (req, res) => {
       pending: 0,
       cancelled: 0,
       upcoming: 0,
-      completed: 0
+      completed: 0,
+      request: 0
     };
 
     statusCounts.forEach(item => {
@@ -88,6 +89,7 @@ exports.getAllQuotes = async (req, res) => {
       if (item._id === "cancelled") counts.cancelled = item.count;
       if (item._id === "upcoming") counts.upcoming = item.count;
       if (item._id === "completed") counts.completed = item.count;
+      if (item._id === "request") counts.request = item.count;
     });
 
     res.status(200).json({
@@ -112,30 +114,30 @@ exports.getAllQuotes = async (req, res) => {
 };
 
 
-exports.getQuoteById = async (req, res) => {
-  try {
-    const quote = await Quote.findById(req.params.id);
+// exports.getQuoteById = async (req, res) => {
+//   try {
+//     const quote = await Quote.findById(req.params.id);
 
-    if (!quote) {
-      return res.status(404).json({
-        success: false,
-        message: 'Quote not found'
-      });
-    }
+//     if (!quote) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Quote not found'
+//       });
+//     }
 
-    res.status(200).json({
-      success: true,
-      data: quote
-    });
+//     res.status(200).json({
+//       success: true,
+//       data: quote
+//     });
 
-  } catch (error) {
-    console.error('Error fetching quote:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error occurred'
-    });
-  }
-};
+//   } catch (error) {
+//     console.error('Error fetching quote:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Server error occurred'
+//     });
+//   }
+// };
 
 
 exports.updateQuoteStatus = async (req, res) => {
@@ -203,3 +205,75 @@ exports.deleteQuote = async (req, res) => {
     });
   }
 };
+
+
+exports.getSearchQuotes = async (req, res) => {
+
+  try {
+    const { businessId, search, status, page, limit = 10, } = req.query;
+
+    const query = { businessId };
+    if (search) { query.name = { $regex: search, $options: 'i' } }
+    // if (status) { query.status = status }
+
+    const quotes = await Quote.find(query)
+      .sort({ createdAt: -1 })
+      .limit(Number(limit))
+      .skip((page - 1) * limit);
+
+    const total = await Quote.countDocuments(query);
+
+    const statusCounts = await Quote.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const counts = {
+      totalRequests: 0,
+      pending: 0,
+      cancelled: 0,
+      upcoming: 0,
+      completed: 0,
+      request: 0
+    };
+
+    statusCounts.forEach(item => {
+      counts.totalRequests += item.count;
+
+      if (item._id === "pending") counts.pending = item.count;
+      if (item._id === "cancelled") counts.cancelled = item.count;
+      if (item._id === "upcoming") counts.upcoming = item.count;
+      if (item._id === "completed") counts.completed = item.count;
+      if (item._id === "request") counts.request = item.count;
+    });
+
+    res.status(200).json({
+      success: true,
+      data: quotes,
+      pagination: {
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: Number(page),
+        limit: Number(limit)
+      },
+      counts
+    });
+
+  } catch (error) {
+    console.error("Error fetching quotes:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error occurred"
+    });
+  }
+};
+
+
+
+
+
+
