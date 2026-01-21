@@ -45,7 +45,6 @@ async function generateUniqueDomain(businessName) {
     };
 }
 
-
 exports.createDomain = async (req, res) => {
     try {
         const { businessName } = req.body;
@@ -282,5 +281,7 @@ exports.threedomains = async (req, res) => {
         });
     }
 };
+
+
 
 

@@ -1,13 +1,173 @@
 import React, { useEffect, useState } from 'react'
-import { Menu, X, Search, Bell, Calendar as CalendarIcon, Briefcase, Users, Settings, HelpCircle, Download, LayoutDashboard, Calendar, ChevronLeft, ChevronRight, User, Mail, Phone } from 'lucide-react';
+import {
+    Menu, X, Search, Bell, Calendar as CalendarIcon, Briefcase, Users, Settings, HelpCircle, Download, LayoutDashboard,
+    Calendar, ChevronLeft, ChevronRight, User, Mail, Phone,
+    CircleAlert
+} from 'lucide-react';
 import { API_BASE_URL, getQuotes } from '../api/Api';
+import { showSuccess } from '../utils/toast';
 
-const RenderDashboard = ({ setSelectedJob, quotes, jobsOverview, setCurrentView, setJobsView, page, setPage, setStatus, selectedJob }) => {
+const RenderDashboard = ({ setSelectedJob, quotes, jobsOverview, setCurrentView, setJobsView, page, setPage, setStatus, selectedJob,
+    totalPages, isModalOpen, handleClose, getBase64Image, handleEditClick, handleInputChange, handleSubmit, user
+
+}) => {
 
     return (
         <div className="space-y-6 w-5xl">
+
+            {isModalOpen && selectedJob && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 p-8 flex items-center justify-center">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl relative">
+                        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 pt-6 rounded-lg">
+                            <div>
+                                <div className="flex items-center gap-3">
+                                    <h2 className="text-xl font-semibold text-gray-800">{selectedJob.service}</h2>
+                                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                                        {selectedJob.status}
+                                    </span>
+                                </div>
+                                <p className="text-sm text-gray-500 mt-1">{selectedJob.name}</p>
+                            </div>
+                            <button
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                onClick={handleClose}
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div className="rounded-lg p-4 border">
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Client Information</h3>
+
+                                    <div className="space-y-2.5">
+                                        <div className="flex items-center space-x-2 text-sm text-gray-700">
+                                            <User size={16} className="text-gray-400" />
+                                            <span>{selectedJob.name}</span>
+                                        </div>
+
+                                        <div className="flex items-center space-x-2 text-sm text-gray-700">
+                                            <Mail size={16} className="text-gray-400" />
+                                            <span>{selectedJob.email}</span>
+                                        </div>
+
+                                        <div className="flex items-center space-x-2 text-sm text-gray-700">
+                                            <Phone size={16} className="text-gray-400" />
+                                            <span>{selectedJob.phone}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-lg p-4 border">
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Job Details</h3>
+
+                                    <div className="flex items-center space-x-2 text-sm text-gray-700">
+                                        <Calendar size={16} className="text-gray-400" />
+                                        <span>Submitted: {new Date(selectedJob.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mb-6 border p-4 rounded-lg">
+                                <h3 className="text-sm font-semibold text-gray-800 mb-3">Other Information</h3>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-600 block mb-1">Address</label>
+                                        <div className="border rounded px-3 py-2 text-sm text-gray-700 h-16">
+                                            {selectedJob.address}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-600 block mb-1">Problem description</label>
+                                        <div className="border rounded px-3 py-2 text-sm text-gray-700 h-20">
+                                            {selectedJob.details}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {selectedJob.status !== 'pending' ? <>
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Uploaded Photos</h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                        <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden hover:opacity-90 transition-opacity cursor-pointer">
+                                            <img
+                                                src={`${API_BASE_URL}/quotes/image/${selectedJob.photo}`}
+                                                alt={`Uploaded photo`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="my-6 border p-4 rounded-lg">
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Send Estimate</h3>
+
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-600 block mb-1">Price ($)</label>
+                                                <input
+                                                    type="number"
+                                                    name="price"
+                                                    value={selectedJob.price}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Enter estimate price"
+                                                    className="w-full h-full rounded px-3 py-2 border text-sm text-gray-700"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-600 block mb-1">Notes (Optional)</label>
+                                                <textarea
+                                                    name="notes"
+                                                    value={selectedJob.notes}
+                                                    onChange={handleInputChange}
+                                                    rows={3}
+                                                    className="w-full h-full rounded px-3 py-2 border text-sm text-gray-700"
+                                                />
+                                            </div>
+
+                                            <button type="submit" className="px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm">
+                                                Send Estimate to Client
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </> : <>
+                                <div className="mb-6 border p-4 rounded-lg">
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Estimate Summary</h3>
+                                    <div className="border rounded bg-gray-50 px-3 py-2 text-sm text-gray-700 h-20">
+
+                                        <h1 className="text-lg font-semibold text-gray-800 mb-3">{selectedJob.price}</h1>
+                                        {selectedJob.notes}
+                                    </div>
+                                    <div className="border rounded text-blue-500 flex items-center bg-blue-50 px-3 py-2 text-sm text-gray-700 mt-3 ">
+                                        <CircleAlert className="w-4 h-4 me-2 text-blue-500" /> <p className='text-blue-500'>Waiting for client to accept the estimated</p>
+                                    </div>
+                                </div>
+                            </>}
+
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+            )}
+
+
+
+
+
+
+
             <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-6 rounded-lg">
-                <h1 className="text-2xl font-bold text-gray-800">Welcome Back, Admin</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Welcome Back, {user.fullname}</h1>
                 <p className="text-gray-600 mt-1">Here's what happening with your SimplyBooking platform today</p>
             </div>
 
@@ -37,8 +197,8 @@ const RenderDashboard = ({ setSelectedJob, quotes, jobsOverview, setCurrentView,
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <tbody>
-                                {quotes?.data?.map(job => (
-                                    <tr key={job._id} className="border-b hover:bg-gray-50">
+                                {quotes?.data?.map((job, idx) => {
+                                    if (idx < 5) return <tr key={job._id} className="border-b hover:bg-gray-50">
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center text-cyan-600 font-semibold">
@@ -59,7 +219,7 @@ const RenderDashboard = ({ setSelectedJob, quotes, jobsOverview, setCurrentView,
                                         </td>
                                         <td className="p-4 text-right">
                                             <button
-                                                onClick={() => setSelectedJob(job)}
+                                                onClick={() => handleEditClick(job)}
                                                 className="text-cyan-600 bg-blue-100 p-2 rounded-lg hover:underline text-sm"
                                             >
                                                 View Details
@@ -67,18 +227,12 @@ const RenderDashboard = ({ setSelectedJob, quotes, jobsOverview, setCurrentView,
                                         </td>
 
                                     </tr>
-                                ))}
+                                })}
 
                             </tbody>
 
                         </table>
-                        <div className="flex justify-center gap-2 my-4">
-                            <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200 flex items-center justify-center" onClick={() => setPage(page - 1)}><ChevronLeft className="w-4 h-4" /></button>
-                            <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200">{page}</button>
-                            <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200" onClick={() => setPage(page + 1)}>
-                                <ChevronRight className="w-4 h-4" />
-                            </button>
-                        </div>
+
                     </div>
                 </div>
 
@@ -117,69 +271,10 @@ const RenderDashboard = ({ setSelectedJob, quotes, jobsOverview, setCurrentView,
     )
 }
 
-const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, status, setStatus, getBase64Image }) => {
+const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, status, setStatus, getBase64Image, totalPages,
+    isModalOpen, handleClose, handleEditClick, handleInputChange, handleSubmit, selectedJob
+}) => {
 
-    const [selectedJob, setSelectedJob] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        service: '',
-        address: '',
-        details: '',
-        photo: null,
-        price: 0,
-        notes: "",
-        date: "",
-        time: "",
-    });
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const jobData = {
-        title: 'Landscaping',
-        status: 'Upcoming',
-        clientName: 'Emma Davis',
-        clientInfo: {
-            name: 'Sarah Johnson',
-            email: 'sarah.j@email.com',
-            phone: '(555) 123-4567'
-        },
-        jobDetails: {
-            submitted: '1/15/2024'
-        },
-        questionnaire: {
-            propertySize: '3 bedroom house, ~2000 sqft',
-            cleaningFrequency: 'One-time deep clean',
-            specialRequirements: 'Pet-friendly products needed'
-        },
-        photos: [
-            'https:images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&h=300&fit=crop',
-            'https:images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop'
-        ]
-    };
-
-    const handleEditClick = (job) => {
-        console.log(job)
-        setSelectedJob(job);
-        setIsModalOpen(true);
-    };
-
-    const handleClose = () => {
-        setIsModalOpen(false);
-        setSelectedJob(null);
-    };
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setSelectedJob((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Form Submitted:', selectedJob);
-        setIsModalOpen(false);
-    }
 
     return (
         <div className="space-y-6">
@@ -258,171 +353,72 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, statu
                                 </div>
                             </div>
 
-                            <div>
-                                <h3 className="text-sm font-semibold text-gray-800 mb-3">Uploaded Photos</h3>
-
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                    <div
-
-                                        className="aspect-video bg-gray-200 rounded-lg overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
-                                    >
-                                        <img
-                                            src={getBase64Image(selectedJob.photo)}
-                                            alt={`Uploaded photo`}
-                                            className="w-full h-full object-cover"
-                                        />
+                            {selectedJob.status !== 'pending' ? <>
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Uploaded Photos</h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                        <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden hover:opacity-90 transition-opacity cursor-pointer">
+                                            <img
+                                                src={`${API_BASE_URL}/quotes/image/${selectedJob.photo}`}
+                                                alt={`Uploaded photo`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="my-6 border p-4 rounded-lg">
-                                <h3 className="text-sm font-semibold text-gray-800 mb-3">Send Estimate</h3>
+                                <div className="my-6 border p-4 rounded-lg">
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Send Estimate</h3>
 
-                                <form onSubmit={handleSubmit}>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-xs font-medium text-gray-600 block mb-1">Price ($)</label>
-                                            <input
-                                                type="number"
-                                                name="price"
-                                                value={selectedJob.price}
-                                                onChange={handleInputChange}
-                                                placeholder="Enter estimate price"
-                                                className="w-full h-full rounded px-3 py-2 border text-sm text-gray-700"
-                                            />
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-600 block mb-1">Price ($)</label>
+                                                <input
+                                                    type="number"
+                                                    name="price"
+                                                    value={selectedJob.price}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Enter estimate price"
+                                                    className="w-full h-full rounded px-3 py-2 border text-sm text-gray-700"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-600 block mb-1">Notes (Optional)</label>
+                                                <textarea
+                                                    name="notes"
+                                                    value={selectedJob.notes}
+                                                    onChange={handleInputChange}
+                                                    rows={3}
+                                                    className="w-full h-full rounded px-3 py-2 border text-sm text-gray-700"
+                                                />
+                                            </div>
+
+                                            <button type="submit" className="px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm">
+                                                Send Estimate to Client
+                                            </button>
                                         </div>
+                                    </form>
+                                </div>
+                            </> : <>
+                                <div className="mb-6 border p-4 b rounded-lg">
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Estimate Summary</h3>
+                                    <div className="border rounded bg-gray-50 px-3 py-2 text-sm text-gray-700 h-20">
 
-                                        <div>
-                                            <label className="text-xs font-medium text-gray-600 block mb-1">Cleaning frequency</label>
-                                            <textarea
-                                                name="cleaningFrequency"
-                                                value={selectedJob.notes}
-                                                onChange={handleInputChange}
-                                                rows={3}
-                                                className="w-full h-full rounded px-3 py-2 border text-sm text-gray-700"
-                                            />
-                                        </div>
-
-                                        <button type="submit" className="px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm">
-                                            Send Estimate to Client
-                                        </button>
+                                        <h1 className="text-lg font-semibold text-gray-800 mb-3">{selectedJob.price}</h1>
+                                        {selectedJob.notes}
                                     </div>
-                                </form>
-                            </div>
+                                    <div className="border rounded text-blue-500 flex items-center bg-blue-50 px-3 py-2 text-sm text-gray-700 mt-3 ">
+                                        <CircleAlert className="w-4 h-4 me-2 text-blue-500" /> <p className='text-blue-500'>Waiting for client to accept the estimated</p>
+                                    </div>
+                                </div>
+                            </>}
+
                         </div>
                     </div>
                 </div>
-                // <div className="fixed inset-0 bg-gray-500 bg-opacity-50 p-8 flex items-center justify-center ">
-                //     <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl relative">
-                //         <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 pt-6 rounded-lg">
-                //             <div>
-                //                 <div className="flex items-center gap-3">
-                //                     <h2 className="text-xl font-semibold text-gray-800">{jobData.title}</h2>
-                //                     <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                //                         {jobData.status}
-                //                     </span>
-                //                 </div>
-                //                 <p className="text-sm text-gray-500 mt-1">{jobData.clientName}</p>
-                //             </div>
-                //             <button className="text-gray-400 hover:text-gray-600 transition-colors" onClick={() => setIsModalOpen(!isModalOpen)}>
-                //                 <X size={24} />
-                //             </button>
-                //         </div>
 
-                //         <div className="p-6">
-                //             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                //                 <div className=" rounded-lg p-4 border">
-                //                     <h3 className="text-sm font-semibold text-gray-800 mb-3">Client Information</h3>
-
-                //                     <div className="space-y-2.5">
-                //                         <div className="flex items-center space-x-2 text-sm text-gray-700">
-                //                             <User size={16} className="text-gray-400" />
-                //                             <span>{jobData.clientInfo.name}</span>
-                //                         </div>
-
-                //                         <div className="flex items-center space-x-2 text-sm text-gray-700">
-                //                             <Mail size={16} className="text-gray-400" />
-                //                             <span>{jobData.clientInfo.email}</span>
-                //                         </div>
-
-                //                         <div className="flex items-center space-x-2 text-sm text-gray-700">
-                //                             <Phone size={16} className="text-gray-400" />
-                //                             <span>{jobData.clientInfo.phone}</span>
-                //                         </div>
-                //                     </div>
-                //                 </div>
-
-                //                 <div className=" rounded-lg p-4 border">
-                //                     <h3 className="text-sm font-semibold text-gray-800 mb-3">Job Details</h3>
-
-                //                     <div className="flex items-center space-x-2 text-sm text-gray-700">
-                //                         <Calendar size={16} className="text-gray-400" />
-                //                         <span>Submitted: {jobData.jobDetails.submitted}</span>
-                //                     </div>
-                //                 </div>
-                //             </div>
-
-                //             <div className="mb-6 border p-4 rounded-lg">
-                //                 <h3 className="text-sm font-semibold text-gray-800 mb-3">Other Information</h3>
-
-                //                 <div className="space-y-4">
-                //                     <div>
-                //                         <label className="text-xs font-medium text-gray-600 block mb-1">Address</label>
-                //                         <div className="border rounded px-3 py-2 text-sm text-gray-700 h-16" rows={3}>
-                //                             {jobData.questionnaire.propertySize}
-                //                         </div>
-                //                     </div>
-
-                //                     <div>
-                //                         <label className="text-xs font-medium text-gray-600 block mb-1">Problem description</label>
-                //                         <div className="border rounded px-3 py-2 text-sm text-gray-700 h-20" rows={3}>
-                //                             {jobData.questionnaire.propertySize}
-                //                         </div>
-                //                     </div>
-                //                 </div>
-                //             </div>
-
-                //             <div>
-                //                 <h3 className="text-sm font-semibold text-gray-800 mb-3">Uploaded Photos</h3>
-
-                //                 <div className="grid gird-col-2 sm:grid-cols-3  gap-4">
-                //                     {jobData.photos.map((photo, index) => (
-                //                         <div
-                //                             key={index}
-                //                             className="aspect-video bg-gray-200 rounded-lg overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
-                //                         >
-                //                             <img
-                //                                 src={photo}
-                //                                 alt={`Uploaded photo ${index + 1}`}
-                //                                 className="w-full h-full object-cover"
-                //                             />
-                //                         </div>
-                //                     ))}
-                //                 </div>
-                //             </div>
-
-                //             <div className="my-6 border p-4 rounded-lg">
-                //                 <h3 className="text-sm font-semibold text-gray-800 mb-3">Send Estimate</h3>
-
-                //                 <div className="space-y-4">
-                //                     <div>
-                //                         <label className="text-xs font-medium text-gray-600 block mb-1">Price ($)</label>
-                //                         {/* <div className="bg-gray-100 rounded px-3 py-2 text-sm text-gray-700"> */}
-                //                         <input placeholder='Enter estimate price ' className='w-full h-full rounded px-3 py-2 border text-sm text-gray-700' />                                        </div>
-                //                     {/* </div> */}
-
-                //                     <div>
-                //                         <label className="text-xs font-medium text-gray-600 block mb-1">Cleaning frequency</label>
-                //                         {/* <div className="w-full"> */}
-                //                         <textarea rows={3} className='w-full h-full rounded px-3 py-2 border text-sm text-gray-700' />
-                //                         {/* </div> */}
-                //                     </div>
-                //                     <button className='px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm'>Send Estimated to Client</button>
-                //                 </div>
-                //             </div>
-                //         </div>
-                //     </div>
-                // </div>
 
 
             )}
@@ -529,7 +525,6 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, statu
 
                                             <td className="p-4">
                                                 <button
-                                                    // onClick={() => setSelectedJob(job)}
                                                     onClick={() => handleEditClick(job)}
                                                     className="text-cyan-600 bg-blue-100 p-2 rounded-lg hover:underline text-sm"
                                                 >
@@ -594,9 +589,8 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, statu
                                                 </button>
                                             </td>
 
-                                           <td className="p-4">
+                                            <td className="p-4">
                                                 <button
-                                                    // onClick={() => setSelectedJob(job)}
                                                     onClick={() => handleEditClick(job)}
                                                     className="text-cyan-600 bg-blue-100 p-2 rounded-lg hover:underline text-sm"
                                                 >
@@ -811,9 +805,9 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, statu
                         )}
                     </table>
                     <div className="flex justify-center gap-2 my-4">
-                        <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200 flex items-center justify-center" onClick={() => setPage(page - 1)}><ChevronLeft className="w-4 h-4" /></button>
-                        <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200">{page}</button>
-                        <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200" onClick={() => setPage(page + 1)}>
+                        <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200 flex items-center justify-center" onClick={() => setPage(page - 1)} disabled={page === 1}><ChevronLeft className="w-4 h-4" /></button>
+                        <span className=" px-4 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200">Page {page} of {totalPages}</span>
+                        <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
                             <ChevronRight className="w-4 h-4" />
                         </button>
                     </div>
@@ -1454,30 +1448,50 @@ const ClientDashboard = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [status, setStatus] = useState("");
-    // const [counts, setcounts] = useState(1);
     const [search, setSearch] = useState("");
 
 
     const user = JSON.parse(localStorage.getItem("user"));
 
+    // ////////////////////////////////////////////
+
     const handleEditClick = (job) => {
         console.log(job)
-        setSelectedJob(job); // Set the user to be edited
-        setIsModalOpen(true); // Open the modal
+        setSelectedJob(job);
+        setIsModalOpen(true);
     };
 
+    const handleClose = () => {
+        setIsModalOpen(false);
+        setSelectedJob(null);
+    };
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setSelectedJob((prevState) => ({
             ...prevState,
-            [name]: value
+            [name]: value,
         }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        await fetch(`${API_BASE_URL}/quotes/send-estimate/${selectedJob._id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                price: selectedJob.price,
+                notes: selectedJob.notes,
+            }),
+        });
+
+        showSuccess("Estimate sent to client");
+        setIsModalOpen(false);
+        setSelectedJob(null);
     };
 
     const getBase64Image = (image) => {
         if (!image || !image.data) return null;
-
-        // Convert the data buffer to base64
         const base64String = btoa(
             new Uint8Array(image.data.data).reduce(
                 (data, byte) => data + String.fromCharCode(byte),
@@ -1491,14 +1505,15 @@ const ClientDashboard = () => {
     const fetchQuotes = async () => {
         try {
             const res = await getQuotes({ businessId: "696b9741be003a82e3e253e8", page, limit: 10, status });
+            console.log(res)
             setQuotes(res);
-            setTotalPages(res.totalPages);
+            setTotalPages(res.pagination.totalPages);
         } catch (err) {
             console.error(err);
         }
     };
 
-    useEffect(() => { fetchQuotes() }, [page, status, currentView,]);
+    useEffect(() => { fetchQuotes() }, [page, status, currentView, jobsView]);
 
     useEffect(() => {
         if (search === null || search === "") { fetchQuotes() } else { handleSearch() }
@@ -1533,6 +1548,8 @@ const ClientDashboard = () => {
         { label: 'Pending Jobs', value: stats.pending, icon: Calendar, color: 'bg-yellow-50 text-yellow-600', jobview: "pending" },
         { label: 'Upcoming', value: stats.upcoming, icon: Calendar, color: 'bg-cyan-50 text-cyan-600', jobview: "upcoming" },
         { label: 'Completed', value: stats.completed, icon: Calendar, color: 'bg-purple-50 text-purple-600', jobview: "completed" },
+        // { label: 'Request', value: stats.request, icon: Calendar, color: 'bg-purple-50 text-purple-600', jobview: "request" },
+
     ]
 
 
@@ -1600,10 +1617,6 @@ const ClientDashboard = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <button className="relative p-2 hover:bg-gray-100 rounded-lg">
-                                    <Bell className="w-5 h-5" />
-                                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                                </button>
                                 <div className="flex items-center gap-3">
                                     <div className="text-right hidden sm:block">
                                         <p className="text-sm font-medium">{user.fullname}</p>
@@ -1617,12 +1630,32 @@ const ClientDashboard = () => {
                         </div>
                     </header>
 
+
+
+
                     <main className="flex-1 overflow-auto p-6">
                         {currentView === 'dashboard' && <RenderDashboard setSelectedJob={setSelectedJob} quotes={quotes} jobsOverview={jobsOverview} setCurrentView={setCurrentView}
-                            setJobsView={setJobsView} page={page} setPage={setPage} setStatus={setStatus} selectedJob={selectedJob} />}
+                            setJobsView={setJobsView} page={page} setPage={setPage} setStatus={setStatus} selectedJob={selectedJob} totalPages={totalPages}
+                            setIsModalOpen={setIsModalOpen} handleClose={handleClose} getBase64Image={getBase64Image} handleSubmit={handleSubmit} handleEditClick={handleEditClick}
+                            handleInputChange={handleInputChange} isModalOpen={isModalOpen} user={user}
+
+
+                        />}
+
+
+
+
                         {currentView === 'jobs' && <RenderJobs setSelectedJob={setSelectedJob} quotes={quotes} jobsOverview={jobsOverview} stats={stats} setStatus={setStatus}
                             jobsView={jobsView} setJobsView={setJobsView} page={page} setPage={setPage} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen}
-                            handleEditClick={handleEditClick} selectedJob={selectedJob} getBase64Image={getBase64Image} />}
+                            handleEditClick={handleEditClick} selectedJob={selectedJob} getBase64Image={getBase64Image} totalPages={totalPages}
+                            handleClose={handleClose} handleSubmit={handleSubmit}
+                            handleInputChange={handleInputChange}
+
+                        />}
+
+
+
+
                         {currentView === 'calendar' && <RenderCalendar setSelectedClient={setSelectedClient} page={page} setPage={setPage} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} selectedJob={selectedJob} />}
                         {/* {currentView === 'clients' && <RenderClients selectedClient={selectedClient} setSelectedClient={setSelectedClient} />} */}
                     </main>

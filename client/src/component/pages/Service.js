@@ -77,7 +77,7 @@ const Service = () => {
                     name: '',
                     email: '',
                     phone: '',
-                    service: 'Junk Removal',
+                    service: '',
                     address: '',
                     details: '',
                     photo: null
@@ -359,6 +359,7 @@ const Service = () => {
                                         onChange={handleInputChange}
                                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
                                     >
+                                        <option >Select Service</option>
                                         {Object.entries(business?.services || {}).map(
                                             ([key, service]) => (
                                                 <option key={key}>{service.name}</option>
