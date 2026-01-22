@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createQuote, getAllQuotes, getQuoteById, imageQuotes, updateQuoteStatus, deleteQuote, getSearchQuotes, sendEstimateToClient, emailQuotesConfirmation, thankYou }
+const { createQuote, getAllQuotes, getQuoteById, imageQuotes, updateQuoteStatus, deleteQuote, getSearchQuotes, sendEstimateToClient, emailQuotesConfirmation, thankYou, updateQuote }
     = require('../controllers/quoteController')
 const upload = require('../middleware/upload');
 
@@ -18,7 +18,7 @@ router.get('/quote-response/:id', emailQuotesConfirmation);
 router.get('/thank-you', thankYou);
 
 router.get('/image/:filename', imageQuotes);
-
+router.put('/update/:id', updateQuote);
 
 
 module.exports = router;

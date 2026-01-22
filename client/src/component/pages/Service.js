@@ -133,7 +133,7 @@ const Service = () => {
         try {
             const { data } = await axios.get(`${API_BASE_URL}/businesses/${params.id}`);
             setBusiness(data);
-            console.log(data)
+            // console.log(data)
         } catch (error) {
             console.log(error);
         }
@@ -147,7 +147,7 @@ const Service = () => {
                 `${API_BASE_URL}/reviews/get-reviews-business`,
                 { businessId: business._id }
             );
-            console.log(data)
+            // console.log(data)
             setgetreviews(data);
         } catch (error) {
             console.error("Failed to fetch reviews:", error);
@@ -463,7 +463,7 @@ const Service = () => {
                         <div className="mt-14">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-gray-900">Elite Plumbing Services</h3>
+                                    <h3 className="text-2xl font-bold text-gray-900">{business.businessName}</h3>
                                     <p className="text-gray-500 flex items-center mt-1">
                                         Los Angeles, CA
                                     </p>

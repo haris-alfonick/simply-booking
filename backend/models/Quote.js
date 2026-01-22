@@ -22,3 +22,4 @@ quoteSchema.index({ email: 1, createdAt: -1 });
 quoteSchema.index({ status: 1 });
 
 module.exports = mongoose.model('quote', quoteSchema);
+

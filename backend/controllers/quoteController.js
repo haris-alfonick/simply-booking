@@ -2,7 +2,7 @@
 const path = require('path');
 const Quote = require('../models/Quote');
 const fs = require('fs');
-const sendEmail= require('../utils/sendEmail')
+const sendEmail = require('../utils/sendEmail')
 
 exports.createQuote = async (req, res) => {
   try {
@@ -46,62 +46,6 @@ exports.createQuote = async (req, res) => {
     });
   }
 };
-
-// exports.createQuote = async (req, res) => {
-//   try {
-//     const { name, email, phone, service, address, details, businessId } = req.body;
-
-//     // Validate required fields
-//     if (!name || !email || !phone || !service || !address || !details) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Please provide all required fields'
-//       });
-//     }
-
-//     const quoteData = { name, email, phone, service, address, details, businessId };
-
-//     // Handle file upload (photo)
-//     if (req.files && req.files.photo && req.files.photo.length > 0) {
-//       const photoFile = req.files.photo[0];
-//       quoteData.photo = {
-//         data: fs.readFileSync(photoFile.path),
-//         contentType: photoFile.mimetype
-//       };
-//     }
-
-//     // Save the quote to database
-//     const quote = await Quote.create(quoteData);
-
-//     // Optional: delete the uploaded file from server after saving to DB
-//     if (req.files && req.files.photo && req.files.photo.length > 0) {
-//       fs.unlink(req.files.photo[0].path, err => {
-//         if (err) console.error('Error deleting uploaded file:', err);
-//       });
-//     }
-
-//     res.status(201).json({
-//       success: true,
-//       message: 'Quote request submitted successfully',
-//       data: quote
-//     });
-
-//   } catch (error) {
-//     console.error('Error creating quote:', error);
-
-//     // Delete file in case of error
-//     if (req.files && req.files.photo && req.files.photo.length > 0) {
-//       fs.unlink(req.files.photo[0].path, err => {
-//         if (err) console.error('Error deleting file after failure:', err);
-//       });
-//     }
-
-//     res.status(500).json({
-//       success: false,
-//       message: error.message || 'Server error occurred'
-//     });
-//   }
-// };
 
 
 exports.getAllQuotes = async (req, res) => {
@@ -597,6 +541,35 @@ exports.imageQuotes = async (req, res) => {
   });
 };
 
+exports.updateQuote = async (req, res) => {
+  try {
+    const updatedQuote = await Quote.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedQuote) {
+      return res.status(404).json({
+        success: false,
+        message: 'Quote not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Quote updated successfully',
+      data: updatedQuote
+    });
+
+  } catch (error) {
+    console.error('Error updating quote:', error);
+    res.status(500).json({
+      success: false,
+      message: errorMessage
+    });
+  }
+};
 
 
 
