@@ -155,7 +155,7 @@ const JobsPage = ({ btnName, jobs }) => {
     <>
 
       <button
-        className="text-cyan-600 bg-blue-100 px-4 py-2 rounded-lg hover:underline text-sm"
+        className="text-cyan-600 bg-blue-100 plex items-end px-4 py-2 rounded-lg hover:underline text-sm"
         onClick={() => handleOpen(jobs)}>
         {btnName}
       </button>

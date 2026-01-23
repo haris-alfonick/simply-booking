@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
-    Menu, X, Search, Bell, Calendar as CalendarIcon, Briefcase, Users, Settings, HelpCircle, Download, LayoutDashboard,
+    Menu, X, Search, Calendar as CalendarIcon, Briefcase, Users, Settings, HelpCircle, Download, LayoutDashboard,
     Calendar, ChevronLeft, ChevronRight, User, Mail, Phone,
-    CircleAlert,
-    CircleCheckBig
+
 } from 'lucide-react';
 import { API_BASE_URL, getQuotes } from '../api/Api';
 import JobsPage from '../jobmodel/JobsPage';
@@ -143,7 +142,7 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setSt
     const renderJobStatusButton = (status, color, label, count) => (
         <div className={`flex items-center px-4 gap-2 rounded-lg ${jobsView === status ? 'bg-gray-200' : 'hover:bg-gray-50'}`}>
             <div className={`w-2 h-2 rounded-full bg-${color}-500`}></div>
-            <button onClick={() => { setJobsView(status); setStatus(status) }} className="py-2 text-sm">
+            <button onClick={() => { setJobsView(status); setStatus(status); setPage(1); }} className="py-2 text-sm ">
                 {label} ({count})
             </button>
         </div>
@@ -202,9 +201,8 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setSt
     );
 };
 
-const RenderCalendar = ({ quotes }) => {
+const RenderCalendar = ({ quotes, calendarView, setCalendarView }) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [calendarView, setCalendarView] = useState('day');
 
     const timeSlots = Array.from({ length: 24 }, (_, i) =>
         `${String(i).padStart(2, "0")}:00`
@@ -269,8 +267,6 @@ const RenderCalendar = ({ quotes }) => {
         </div>
     );
 };
-
-
 
 
 // const RenderClients = ({setSelectedClient}) => {
@@ -481,10 +477,11 @@ const RenderCalendar = ({ quotes }) => {
 // };
 
 
-
 const ClientDashboard = () => {
     const [currentView, setCurrentView] = useState('dashboard');
     const [jobsView, setJobsView] = useState('request');
+    const [calendarView, setCalendarView] = useState('day');
+
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [selectedClient, setSelectedClient] = useState(null);
     const [quotes, setQuotes] = useState([]);
@@ -499,7 +496,7 @@ const ClientDashboard = () => {
             const res = await getQuotes({
                 businessId: "696b9741be003a82e3e253e8",
                 page,
-                limit: 10,
+                limit: calendarView === "month" ? 30 : 10,
                 status,
             });
             setQuotes(res);
@@ -511,13 +508,13 @@ const ClientDashboard = () => {
 
     useEffect(() => {
         if (search.trim() === "") {
-            fetchQuotes();  
+            fetchQuotes();
         }
-    }, [page, status]); 
+    }, [page, status, jobsView]);
 
     useEffect(() => {
         if (search.trim() !== "") {
-            handleSearch(); 
+            handleSearch();
         }
     }, [search]);
 
@@ -574,7 +571,7 @@ const ClientDashboard = () => {
                         ].map((item) => (
                             <button
                                 key={item.view}
-                                onClick={() => { setCurrentView(item.view); setStatus('') }}
+                                onClick={() => { setStatus(""); setCurrentView(item.view); setJobsView("request"); }}
                                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${currentView === item.view ? 'bg-cyan-50 text-cyan-600' : 'text-gray-700 hover:bg-gray-50'}`}
                             >
                                 <item.icon className="w-5 h-5" />
@@ -629,8 +626,8 @@ const ClientDashboard = () => {
 
                     <main className="flex-1 overflow-auto p-6">
                         {currentView === 'dashboard' && <RenderDashboard quotes={quotes} jobsOverview={jobsOverview} setCurrentView={setCurrentView} setJobsView={setJobsView} page={page} setPage={setPage} setStatus={setStatus} totalPages={totalPages} user={user} />}
-                        {currentView === 'jobs' && <RenderJobs quotes={quotes} jobsOverview={jobsOverview} stats={stats} setStatus={setStatus} jobsView={jobsView} setJobsView={setJobsView} page={page} setPage={setPage} totalPages={totalPages} />}
-                        {currentView === 'calendar' && <RenderCalendar quotes={quotes} setSelectedClient={setSelectedClient} />}
+                        {currentView === 'jobs' && <RenderJobs  quotes={quotes} jobsOverview={jobsOverview} stats={stats} setStatus={setStatus} jobsView={jobsView} setJobsView={setJobsView} page={page} setPage={setPage} totalPages={totalPages} />}
+                        {currentView === 'calendar' && <RenderCalendar quotes={quotes} setSelectedClient={setSelectedClient} calendarView={calendarView} setCalendarView={setCalendarView} />}
                     </main>
                 </div>
             </div>

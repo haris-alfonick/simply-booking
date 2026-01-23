@@ -984,7 +984,7 @@ const PricingStep = ({ currentStep, setCurrentStep, submitFormData }) => {
 };
 
 const Booking = () => {
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(1);
   const [newServiceArea, setNewServiceArea] = useState('');
 
   const [formData, setFormData] = useState({

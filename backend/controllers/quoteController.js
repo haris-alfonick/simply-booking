@@ -50,7 +50,7 @@ exports.createQuote = async (req, res) => {
 
 exports.getAllQuotes = async (req, res) => {
   try {
-    const { businessId, status, page, limit = 10 } = req.query;
+    const { businessId, status, page, limit } = req.query;
 
     const query = { businessId };
     if (status) {

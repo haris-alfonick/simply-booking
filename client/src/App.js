@@ -12,9 +12,9 @@ import Login from './component/pages/Login';
 import SignUp from './component/pages/SignUp';
 import Booking from './component/pages/Booking';
 import ClientDashboard from './component/clientdashboard/ClientDashboard';
-import Calander from './component/clientdashboard/Calander';
 import Clients from './component/clientdashboard/Clients';
 import Jobs from './component/clientdashboard/Jobs';
+import MainDashboard from './component/maindashboard/MainDashboard';
 
 
 const App = () => {
@@ -35,7 +35,7 @@ const App = () => {
           {/* client dashboard */}
 
           <Route path='/clientdashboard' element={<ClientDashboard />} />
-          <Route path='/calander' element={<Calander />} />
+          <Route path='/maindashboard' element={<MainDashboard />} />
           <Route path='/client' element={<Clients />} />
           <Route path='/jobs' element={<Jobs />} />
 
