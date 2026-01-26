@@ -11,30 +11,11 @@ module.exports = {
     'bg-cyan-500', 'bg-green-500', 'bg-yellow-500', // etc.
   ],
   theme: {
-    extend: {},
+    extend: {
+       screens: {
+        'xxl': '1500px',
+      },
+    },
   },
   plugins: [],
 };
-
-
-
-// module.exports = {
-//   content: [
-//     "./src/**/*.{js,jsx,ts,tsx}",
-//   ],
-//   theme: {
-//     extend: {},
-//   },
-//   plugins: [],
-// }
-
-
-// /** @type {import('tailwindcss').Config} */
-// module.exports = {
-//   content: [],
-//   theme: {
-//     extend: {},
-//   },
-//   plugins: [],
-// }
-
