@@ -64,6 +64,7 @@ exports.sendOTP = async (req, res) => {
     // Generate OTP
     const otp = generateOTP();
     const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+    let lastLoginAt = new Date()
 
     // Save or update user with OTP
     if (existingUser) {
@@ -79,7 +80,8 @@ exports.sendOTP = async (req, res) => {
         password, // Hash in model
         otp,
         otpExpiry,
-        isVerified: false
+        isVerified: false,
+        lastLoginAt
       });
     }
 
@@ -162,8 +164,8 @@ exports.verifyOTP = async (req, res) => {
 
     // Mark user as verified
     user.isVerified = true;
-    user.otp = undefined;
-    user.otpExpiry = undefined;
+    // user.otp = undefined;
+    // user.otpExpiry = undefined;
     await user.save();
 
     res.status(200).json({
@@ -254,12 +256,11 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) { return res.status(401).json({ message: 'Invalid email or password' }) }
-
     const isMatch = await user.comparePassword(password);
     if (!isMatch) { return res.status(401).json({ message: 'Invalid email or password' }) }
-
     if (!user.isVerified) { return res.status(403).json({ message: 'Please verify your account first' }) }
-
+    user.lastLoginAt = new Date();
+    await user.save();
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(200).json({
@@ -269,7 +270,8 @@ exports.login = async (req, res) => {
         id: user._id,
         fullname: user.fullname,
         email: user.email,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        lastLoginAt: user.lastLoginAt
       }
     });
 
@@ -280,3 +282,5 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+

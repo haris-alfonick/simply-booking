@@ -201,6 +201,147 @@ exports.createBusiness = async (req, res) => {
     }
 };
 
+exports.getAllBusinesses = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+
+    if (req.query.search) {
+      filter.$or = [
+        { businessName: { $regex: req.query.search, $options: "i" } },
+        { email: { $regex: req.query.search, $options: "i" } },
+        { cityTown: { $regex: req.query.search, $options: "i" } }
+      ];
+    }
+
+    const [businesses, total] = await Promise.all([
+      Business.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("userId"),
+      Business.countDocuments(filter)
+    ]);
+
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    const startOfSixMonthsAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 5,
+      1
+    );
+
+    const allBusinesses = await Business.find({});
+    const totalBusinesses = allBusinesses.length;
+
+    const totalPaid = allBusinesses.filter(b => b.status === "Paid").length;
+    const totalTrial = allBusinesses.filter(b => b.status === "Trial").length;
+    const totalCancelled = allBusinesses.filter(b => b.status === "Cancelled").length;
+
+    const totalCancelledThisMonth = allBusinesses.filter(
+      b => b.status === "Cancelled" && b.updatedAt >= startOfThisMonth
+    ).length;
+
+    const totalBookings = allBusinesses.reduce(
+      (acc, b) => acc + (b.bookings || 0),
+      0
+    );
+
+    const totalThisMonth = allBusinesses.filter(
+      b => b.createdAt >= startOfThisMonth
+    ).length;
+
+    const totalLastMonth = allBusinesses.filter(
+      b => b.createdAt >= startOfLastMonth && b.createdAt <= endOfLastMonth
+    ).length;
+
+    const avgBookings = totalBusinesses
+      ? (totalBookings / totalBusinesses).toFixed(2)
+      : 0;
+
+    let avgCancelledPerMonth = 0;
+    if (totalBusinesses) {
+      const firstBusinessDate = allBusinesses.reduce(
+        (earliest, b) => (b.createdAt < earliest ? b.createdAt : earliest),
+        allBusinesses[0].createdAt
+      );
+
+      const monthsActive =
+        (now.getFullYear() - firstBusinessDate.getFullYear()) * 12 +
+        (now.getMonth() - firstBusinessDate.getMonth()) + 1;
+
+      avgCancelledPerMonth = (totalCancelled / monthsActive).toFixed(2);
+    }
+
+    const churnRate = totalBusinesses
+      ? ((totalCancelled / totalBusinesses) * 100).toFixed(2)
+      : 0;
+
+    const cancellationsLast6Months = await Business.aggregate([
+      {
+        $match: {
+          status: "Cancelled",
+          updatedAt: { $gte: startOfSixMonthsAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$updatedAt" },
+            month: { $month: "$updatedAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+      {
+        $project: {
+          _id: 0,
+          year: "$_id.year",
+          month: "$_id.month",
+          count: 1
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      },
+      analytics: {
+        totalPaid,
+        totalTrial,
+        totalCancelled,
+        totalCancelledThisMonth,
+        avgCancelledPerMonth: parseFloat(avgCancelledPerMonth),
+        churnRate: parseFloat(churnRate),
+        totalBookings,
+        avgBookings: parseFloat(avgBookings),
+        totalThisMonth,
+        totalLastMonth,
+        cancellationsLast6Months
+      },
+      data: businesses
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
 exports.updateBusiness = async (req, res) => {
     try {
         const { id } = req.params;

@@ -1,16 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const { createDomain, checkDomain, uploadImage, createBusiness, updateBusiness, getBusinessById,
-    getDomain, deleteBusiness,
-    threedomains } = require('../controllers/businessControllers');
+const { createDomain, checkDomain, uploadImage, createBusiness, updateBusiness, getBusinessById, getDomain, deleteBusiness, threedomains, getAllBusinesses } = require('../controllers/businessControllers');
 const upload = require('../middleware/upload');
 
 router.post('/generate-domain', createDomain);
 router.get('/check-domain/:domain', checkDomain);
 router.post('/upload-image', uploadImage);
-// router.post('/', upload.none(), createBusiness);
-// router.post('/', createBusiness,);
 router.post('/', upload.fields([
     { name: 'businessLogo', maxCount: 1 },
     { name: 'businessCoverPhoto', maxCount: 1 },
@@ -19,6 +15,7 @@ router.post('/', upload.fields([
     { name: 'image3', maxCount: 1 },
 
 ]), createBusiness);
+router.get('/', getAllBusinesses);
 router.put('/:id', updateBusiness);
 router.get('/:id', getBusinessById);
 router.get('/domain/:domain', getDomain);

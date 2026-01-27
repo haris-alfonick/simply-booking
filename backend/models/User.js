@@ -20,10 +20,13 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters']
   },
-  otp: {type: String},
+  otp: { type: String },
   otpExpiry: { type: Date },
-  isVerified: { type: Boolean, default: false }
+  isVerified: { type: Boolean, default: false },
+  lastLoginAt: Date,
+
 },
+
   { timestamps: true }
 );
 

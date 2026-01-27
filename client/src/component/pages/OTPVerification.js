@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react'
 import axios from 'axios'
+import { API_BASE_URL } from '../api/Api';
 
 const OTPVerification = ({ email, onSuccess, onBack }) => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -79,7 +80,7 @@ const OTPVerification = ({ email, onSuccess, onBack }) => {
         setError('');
 
         try {
-            const response = await axios.post('http://192.168.10.182:5000/api/auth/verify-otp', { email, otp: otpCode });
+            const response = await axios.post(`${API_BASE_URL}/auth/verify-otp`, { email, otp: otpCode });
 
             if (response.data.success) {
                 setSuccess(true);
@@ -101,7 +102,7 @@ const OTPVerification = ({ email, onSuccess, onBack }) => {
         setError('');
 
         try {
-            const response = await axios.post('http://192.168.10.182:5000/api/auth/resend-otp', {
+            const response = await axios.post(`${API_BASE_URL}/auth/resend-otp`, {
                 email
             });
 

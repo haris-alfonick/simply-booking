@@ -490,15 +490,18 @@ const ClientDashboard = () => {
     const [status, setStatus] = useState("");
     const [search, setSearch] = useState("");
     const user = JSON.parse(localStorage.getItem("user"));
+    let businessId = "697883618ab605d5eaf2b8ce"
+    //  user.id;
 
     const fetchQuotes = async () => {
         try {
             const res = await getQuotes({
-                businessId: "696b9741be003a82e3e253e8",
+                businessId,
                 page,
                 limit: calendarView === "month" ? 30 : 10,
                 status,
             });
+            console.log(res)
             setQuotes(res);
             setTotalPages(res.pagination.totalPages);
         } catch (err) {
@@ -519,9 +522,8 @@ const ClientDashboard = () => {
     }, [search]);
 
     const handleSearch = async () => {
-        let businessId = "696b9741be003a82e3e253e8";
         try {
-            const response = await fetch(`${API_BASE_URL}/quotes/search?search=${search}&page=${page}&businessId=${businessId}`, {
+            const response = await fetch(`${API_BASE_URL}/quotes/search?search=${search}&page=${page}&businessId=${"696b9741be003a82e3e253e8"}`, {
                 method: "GET"
             });
             if (!response.ok) { throw new Error('Failed to fetch data'); }
@@ -626,7 +628,7 @@ const ClientDashboard = () => {
 
                     <main className="flex-1 overflow-auto p-6">
                         {currentView === 'dashboard' && <RenderDashboard quotes={quotes} jobsOverview={jobsOverview} setCurrentView={setCurrentView} setJobsView={setJobsView} page={page} setPage={setPage} setStatus={setStatus} totalPages={totalPages} user={user} />}
-                        {currentView === 'jobs' && <RenderJobs  quotes={quotes} jobsOverview={jobsOverview} stats={stats} setStatus={setStatus} jobsView={jobsView} setJobsView={setJobsView} page={page} setPage={setPage} totalPages={totalPages} />}
+                        {currentView === 'jobs' && <RenderJobs quotes={quotes} jobsOverview={jobsOverview} stats={stats} setStatus={setStatus} jobsView={jobsView} setJobsView={setJobsView} page={page} setPage={setPage} totalPages={totalPages} />}
                         {currentView === 'calendar' && <RenderCalendar quotes={quotes} setSelectedClient={setSelectedClient} calendarView={calendarView} setCalendarView={setCalendarView} />}
                     </main>
                 </div>

@@ -3,6 +3,7 @@ import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import OTPVerification from './OTPVerification'
+import { API_BASE_URL } from '../api/Api'
 
 const SignUp = () => {
     const [user, setUser] = useState({
@@ -53,7 +54,7 @@ const SignUp = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await axios.post('http://192.168.10.182:5000/api/auth/send-otp', { fullname, email, password });
+            const response = await axios.post(`${API_BASE_URL}/auth/send-otp`, { fullname, email, password });
             if (response.data.success) { setShowOTPModal(true) }
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');

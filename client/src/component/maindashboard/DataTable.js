@@ -1,27 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 
-const DataTable = ({
-  columns,
-  data,
-  filters = [],
-  onExport,
-  searchable = true,
-  title,
-  subtitle,
-  ViewAll,
-  setActiveTab,
-  itemsPerPage = 10,
-}) => {
+import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+export const DataTable = ({ columns, data, filters = [], onExport, searchable = true, title, subtitle, viewAllText, onViewAll }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterValues, setFilterValues] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const filteredData = useMemo(() => {
     return data.filter(item => {
       const matchesSearch = searchable
         ? Object.values(item).some(val =>
-            String(val).toLowerCase().includes(searchTerm.toLowerCase())
-          )
+          String(val).toLowerCase().includes(searchTerm.toLowerCase())
+        )
         : true;
 
       const matchesFilters = filters.every(filter => {
@@ -37,21 +28,28 @@ const DataTable = ({
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredData.slice(start, start + itemsPerPage);
-  }, [filteredData, currentPage, itemsPerPage]);
+  }, [filteredData, currentPage]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
+  const getUniqueValues = (key) => {
+    return [...new Set(data.map(item => item[key]))].filter(Boolean);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      {(title || subtitle || ViewAll) && (
+      {(title || subtitle || viewAllText) && (
         <div className="flex justify-between mb-4">
           <div>
             {title && <h2 className="text-xl font-semibold text-gray-900">{title}</h2>}
             {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
           </div>
-          {ViewAll && (
-            <p className="text-sm text-gray-500 cursor-pointer hover:text-gray-700" onClick={setActiveTab}>
-              {ViewAll}
+          {viewAllText && (
+            <p
+              className="text-sm text-gray-500 cursor-pointer hover:text-gray-700"
+              onClick={onViewAll}
+            >
+              {viewAllText}
             </p>
           )}
         </div>
@@ -60,6 +58,7 @@ const DataTable = ({
       <div className="py-4 border-b border-gray-200 flex flex-wrap gap-3">
         {searchable && (
           <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search..."
@@ -83,9 +82,9 @@ const DataTable = ({
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">{filter.label}</option>
-            {filter.options.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option value="all">All {filter.label}</option>
+            {getUniqueValues(filter.key).map((value, idx) => (
+              <option key={idx} value={value}>{value}</option>
             ))}
           </select>
         ))}
@@ -95,6 +94,7 @@ const DataTable = ({
             onClick={onExport}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
           >
+            <Download className="w-4 h-4" />
             Export CSV
           </button>
         )}
@@ -102,10 +102,15 @@ const DataTable = ({
 
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="border-b border-gray-200">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               {columns.map(col => (
-                <th key={col.key} className={`px-4 py-2 text-${col.textAlign || 'left'} text-sm font-medium text-gray-600`}>
+                <th
+                  key={col.key}
+                  className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${col.align === 'center' ? 'text-center' :
+                    col.align === 'right' ? 'text-right' : 'text-left'
+                    }`}
+                >
                   {col.label}
                 </th>
               ))}
@@ -113,10 +118,15 @@ const DataTable = ({
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedData.map((row, idx) => (
-              <tr key={idx} className="text-center">
+              <tr key={idx} className="hover:bg-gray-50">
                 {columns.map(col => (
-                  <td key={col.key} className={`px-4 py-2 ${col.textAlign ? `text-${col.textAlign}` : ''}`}>
-                    {col.render ? col.render(row) : row[col.key]}
+                  <td
+                    key={col.key}
+                    className={`px-6 py-4 whitespace-nowrap ${col.align === 'center' ? 'text-center' :
+                      col.align === 'right' ? 'text-right' : 'text-left'
+                      }`}
+                  >
+                    {col.render ? col.render(row[col.key], row) : row[col.key]}
                   </td>
                 ))}
               </tr>
@@ -136,14 +146,14 @@ const DataTable = ({
               disabled={currentPage === 1}
               className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
-              Previous
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
-              Next
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -151,15 +161,3 @@ const DataTable = ({
     </div>
   );
 };
-
-export default DataTable;
-
-
-
-
-
-
-
-
-
-

@@ -1,6 +1,6 @@
 import axios from 'axios';
 // 
-export const API_BASE_URL = 'http://192.168.10.182:5000/api';
+export const API_BASE_URL = 'http://192.168.10.183:5000/api';
 // export const API_BASE_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
@@ -40,6 +40,34 @@ export const saveBusinessData = async (data) => {
     throw error;
   }
 };
+
+export const getBusinesses = async ({
+  page = 1,
+  limit = 10,
+  search = '',
+  status = ''
+}) => {
+  const params = { page, limit };
+
+  if (search) params.search = search;
+  if (status) params.status = status;
+
+  const response = await api.get("/businesses", { params });
+  return response.data;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const updateBusinessData = async (id, data) => {
   try {
