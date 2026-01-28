@@ -5,9 +5,10 @@ export const API_BASE_URL = 'http://192.168.10.183:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  // headers: {
-  //   'Content-Type': 'application/json',
-  // },
+  headers: {
+    // 'Content-Type': 'application/json',
+    Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
+  },
 });
 
 
@@ -58,17 +59,6 @@ export const getBusinesses = async ({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 export const updateBusinessData = async (id, data) => {
   try {
     const response = await api.put(`/businesses/${id}`, data);
@@ -107,13 +97,15 @@ export const login = async (user) => {
     throw error;
   }
 };
-export const getQuotes = async ({ businessId ="696b9741be003a82e3e253e8", page = 1, limit = 10, status }) => {
+export const getQuotes = async ({ search, businessId, page = 1, limit = 10, status }) => {
   const params = new URLSearchParams({
-    businessId, page, limit, ...(status && { status })
+    search, businessId, page, limit, ...(status && { status })
   });
-
-  const res = await fetch(`${API_BASE_URL}/quotes?${params}`);
+  const res = await fetch(`${API_BASE_URL}/quotes?${params}`, {
+    headers: {
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
+    },
+  });
   return await res.json();
 };
-
 

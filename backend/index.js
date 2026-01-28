@@ -21,8 +21,6 @@ app.use(express.static('public'));
 app.use("/uploads", express.static("uploads"));
 
 
-// s
-
 app.use('/api/auth', authRoutes);
 app.use('/api/businesses', businessRoutes);
 app.use('/api/quotes',quoteRoutes);

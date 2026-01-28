@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
-export const DataTable = ({ columns, data, filters = [], onExport, searchable = true, title, subtitle, viewAllText, onViewAll }) => {
+import ExportCSV from "./ExportCSV";
+export const DataTable = ({ columns, data, filters = [], searchable = true, title, subtitle, viewAllText, onViewAll, filename, page, setPage, pagination }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterValues, setFilterValues] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,7 +36,6 @@ export const DataTable = ({ columns, data, filters = [], onExport, searchable = 
   const getUniqueValues = (key) => {
     return [...new Set(data.map(item => item[key]))].filter(Boolean);
   };
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {(title || subtitle || viewAllText) && (
@@ -88,16 +88,7 @@ export const DataTable = ({ columns, data, filters = [], onExport, searchable = 
             ))}
           </select>
         ))}
-
-        {onExport && (
-          <button
-            onClick={onExport}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-        )}
+        <ExportCSV allData={paginatedData} columns={columns} filename={filename}  btncolor={"blue"} />
       </div>
 
       <div className="overflow-x-auto">
@@ -135,7 +126,7 @@ export const DataTable = ({ columns, data, filters = [], onExport, searchable = 
         </table>
       </div>
 
-      {totalPages > 1 && (
+      {/* {totalPages > 0 && (
         <div className="p-4 border-t border-gray-200 flex items-center justify-between">
           <div className="text-sm text-gray-500">
             Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries
@@ -151,6 +142,33 @@ export const DataTable = ({ columns, data, filters = [], onExport, searchable = 
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
+              className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )} */}
+
+
+      {pagination.totalPages > 1 && (
+        <div className="p-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(page - 1)}
+              // onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setPage(page + 1)}
+              // onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === pagination.totalPages || pagination.totalPages === 0}
               className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
               <ChevronRight className="w-4 h-4" />

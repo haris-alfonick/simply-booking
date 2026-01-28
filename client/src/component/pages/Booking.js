@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Phone, Mail, MapPin, Clock, Globe, FileText, Plus, Trash2, Check, ArrowLeft, ArrowRight, Star, Wrench, Camera, Building2, Lightbulb, Stars } from 'lucide-react';
 import { API_BASE_URL, checkDomainAvailability, generateUniqueDomain, saveBusinessData } from '../api/Api';
 import { showError, showSuccess } from '../utils/toast';
@@ -26,8 +26,11 @@ const StepIndicator = ({ currentStep, steps }) => {
 
 const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceArea, toggleDay, handleFileUpload,
   setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, saveToLocalStorage }) => {
+  const chipsRef = useRef(null);
+  const [inputPadding, setInputPadding] = useState(16); // default left padding
+
   const validateStep = () => {
-    console.log(formData)
+    // console.log(formData)
     if (!formData.businessName || !formData.businessName.trim()) {
       showError('Business name is required');
       return false;
@@ -66,8 +69,11 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
       try {
         const response = await fetch(API_BASE_URL + '/businesses/generate-domain', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ businessName: formData.businessName })
+          body: JSON.stringify({ businessName: formData.businessName }),
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
+          },
         });
         const data = await response.json();
         updateField('domain', data.domain);
@@ -77,6 +83,16 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
     }
     setCurrentStep(currentStep + 1);
   };
+  useEffect(() => {
+    if (chipsRef.current) {
+      const width = chipsRef.current.offsetWidth;
+      setInputPadding(width + 24); // add spacing buffer
+    } else {
+      setInputPadding(16);
+    }
+  }, [formData.serviceAreas]);
+
+
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-lg p-4 md:p-6 lg:p-8">
@@ -162,7 +178,7 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
           </label>
           <input
             type="text"
-            placeholder="New York, NY"
+            placeholder="City / Town"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={formData.cityTown}
             onChange={(e) => updateField('cityTown', e.target.value)}
@@ -171,6 +187,55 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
       </div>
 
       <div className="mb-4">
+        <label className="flex items-center text-sm font-medium mb-2">
+          <MapPin className="mr-2 text-blue-500" size={18} />
+          Service Areas
+        </label>
+
+        <div className="relative">
+          {/* Chips */}
+          <div
+            ref={chipsRef}
+            className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-2 flex-wrap max-w-[70%]"
+          >
+            {formData.serviceAreas.map((area, index) => (
+              <span
+                key={index}
+                className="px-3 py-1 bg-gray-100 text-cyan-600 rounded-full text-sm flex items-center gap-2 whitespace-nowrap"
+              >
+                {area}
+                <button
+                  type="button"
+                  onClick={() => removeServiceArea(index)}
+                  className="font-bold hover:text-cyan-800"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+
+          {/* Input */}
+          <input
+            type="text"
+            placeholder="Add service area"
+            value={newServiceArea}
+            onChange={(e) => setNewServiceArea(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addServiceArea();
+              }
+            }}
+            style={{ paddingLeft: inputPadding }}
+            className="w-full pr-4 py-2 border border-gray-300 rounded-lg
+                 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+
+      {/* <div className="mb-4">
         <label className="flex items-center text-sm font-medium mb-2">
           <MapPin className="mr-2 text-blue-500" size={18} />
           Service Areas
@@ -202,7 +267,7 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
             }
           }}
         />
-      </div>
+      </div> */}
 
       <div className="mb-6">
         <label className="flex items-center text-sm font-medium mb-2">
@@ -302,8 +367,12 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
       try {
         const response = await fetch(API_BASE_URL + '/businesses/generate-domainss', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ businessName: formData.businessName })
+          body: JSON.stringify({ businessName: formData.businessName }),
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
+          },
+
         });
 
         if (response.ok) {
@@ -410,8 +479,6 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
     </div>
   );
 };
-
-
 
 const AddServicesStep = ({ formData, addService, updateService, removeService, currentStep, setCurrentStep, saveToLocalStorage }) => {
   const validateStep = () => {
@@ -524,8 +591,6 @@ const AddServicesStep = ({ formData, addService, updateService, removeService, c
     </div>
   );
 };
-
-
 
 const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuestion, currentStep, setCurrentStep, saveToLocalStorage }) => {
 
@@ -1175,7 +1240,10 @@ const Booking = () => {
 
       const response = await fetch(API_BASE_URL + '/businesses', {
         method: 'POST',
-        body: formDataToSend
+        body: formDataToSend,
+        headers:{
+          Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
+        }
       });
 
       const data = await response.json();
@@ -1216,7 +1284,7 @@ const Booking = () => {
 
       case 6: return <ServiceCreatedStep formData={formData} setCurrentStep={setCurrentStep} currentStep={currentStep} saveToLocalStorage={saveToLocalStorage} />;
 
-      case 7: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage}  />;
+      case 7: return <PreviewStep formData={formData} currentStep={currentStep} setCurrentStep={setCurrentStep} saveToLocalStorage={saveToLocalStorage} />;
       case 8: return <PricingStep currentStep={currentStep} setCurrentStep={setCurrentStep} submitFormData={submitFormData} />;
       default: return <BusinessInfoStep />;
     }

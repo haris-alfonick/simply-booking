@@ -1,13 +1,14 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Chart from "react-apexcharts";
+
 import {
   Search, Download, ChevronLeft, ChevronRight, Bell, Users, Settings, HelpCircle, LayoutDashboard, Clock, CircleX, UserPlus, CreditCard, TrendingUp, Calendar, TriangleAlert, TrendingDown, X, Menu, ArrowBigRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'
 import { getBusinesses } from '../api/Api';
+import { DataTable } from "./DataTable";
 
-import {DataTable} from "./DataTable";
-
-const Header = ({ user, title, subtitle, onExport }) => (
+const Header = ({ user, title, subtitle }) => (
   <div className='flex justify-between bg-gradient-to-r from-cyan-50 to-blue-50 p-6 mb-4 rounded-lg'>
     <div>
       <h1 className="text-2xl font-bold text-gray-800">
@@ -15,15 +16,6 @@ const Header = ({ user, title, subtitle, onExport }) => (
       </h1>
       <p className="text-gray-600 mt-1">{subtitle}</p>
     </div>
-    {onExport && (
-      <button
-        onClick={onExport}
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
-      >
-        <Download className="w-4 h-4" />
-        Export CSV
-      </button>
-    )}
   </div>
 );
 
@@ -54,39 +46,34 @@ const StatCard = ({ icons: Icon, label, value, subtitle, change }) => {
   );
 };
 
-
-
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [businesses, setBusinesses] = useState([]);
   const [pagination, setPagination] = useState({});
   const [analytics, setAnalytics] = useState({});
-  const [businessName, setBusinessName] = useState('');
+  const [search, setSearch] = useState('');
 
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const fetchBusinesses = useCallback(async () => {
-    setLoading(true);
-
     try {
       const res = await getBusinesses({
+        search,
         page,
         limit: 10,
       });
 
+      // console.log(res)
       setBusinesses(res?.data || []);
       setPagination(res?.pagination || null);
       setAnalytics(res?.analytics || null);
     } catch (error) {
       console.error("Failed to fetch businesses:", error);
-    } finally {
-      setLoading(false);
     }
-  }, [businessName, page]);
+  }, [search, page]);
 
   useEffect(() => {
     fetchBusinesses();
@@ -146,17 +133,6 @@ const Dashboard = () => {
       ]
     };
   }, [analytics]);
-
-  const handleExportCSV = () => {
-    alert('Exporting CSV...');
-    // Implement actual CSV export logic here
-  };
-
-  if (loading) return (
-    <div className="flex items-center justify-center h-screen">
-      <p className="text-lg text-gray-600">Loading businesses...</p>
-    </div>
-  );
 
   const dashboardStats = [
     {
@@ -231,10 +207,10 @@ const Dashboard = () => {
       align: 'center',
       render: (status) => (
         <span className={`text-md font-medium px-3 py-1 rounded-full inline-block ${status === 'Paid'
-            ? 'bg-green-100 text-green-500 border border-green-300'
-            : status === 'Trial'
-              ? 'bg-yellow-100 text-yellow-500 border border-yellow-300'
-              : 'bg-red-100 text-red-500 border border-red-300'
+          ? 'bg-green-100 text-green-500 border border-green-300'
+          : status === 'Trial'
+            ? 'bg-yellow-100 text-yellow-500 border border-yellow-300'
+            : 'bg-red-100 text-red-500 border border-red-300'
           }`}>
           {status}
         </span>
@@ -280,8 +256,8 @@ const Dashboard = () => {
       align: 'center',
       render: (status) => (
         <span className={`text-md font-medium px-3 py-1 rounded-full inline-block ${status === 'Trial'
-            ? 'bg-yellow-100 text-yellow-500 border border-yellow-300'
-            : 'bg-gray-100 text-gray-500 border border-gray-300'
+          ? 'bg-yellow-100 text-yellow-500 border border-yellow-300'
+          : 'bg-gray-100 text-gray-500 border border-gray-300'
           }`}>
           {status}
         </span>
@@ -309,8 +285,8 @@ const Dashboard = () => {
       align: 'center',
       render: (daysLeft, row) => (
         <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block ${daysLeft <= 2
-            ? 'bg-red-100 text-red-500 border border-red-800'
-            : 'bg-yellow-100 text-yellow-500 border border-yellow-300'
+          ? 'bg-red-100 text-red-500 border border-red-800'
+          : 'bg-yellow-100 text-yellow-500 border border-yellow-300'
           }`}>
           {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
         </span>
@@ -401,7 +377,7 @@ const Dashboard = () => {
 
 
         <div className="absolute bottom-0 w-64 p-4 border-t corsur-pointer">
-          <button onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token") }} className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mb-1">
+          <button onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); navigate('/login') }} className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mb-1">
             <ArrowBigRight className="w-5 h-5" />
             <span>Log Out</span>
           </button>
@@ -422,22 +398,23 @@ const Dashboard = () => {
                   type="text"
                   placeholder="Search clients, bookings..."
                   className="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  onChange={(e) => setSearch(e.target.value)}
+                  value={search}
                 />
-
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button className="relative p-2 hover:bg-gray-100 rounded-lg">
+              {/* <button className="relative p-2 hover:bg-gray-100 rounded-lg">
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+              </button> */}
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium">{user.fullname}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
+                  <p className="text-sm font-medium">{user?.fullname}</p>
+                  <p className="text-xs text-gray-500">{user?.email}</p>
                 </div>
                 <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
-                  {user.fullname[0]}
+                  {user?.fullname[0]}
                 </div>
               </div>
             </div>
@@ -494,10 +471,10 @@ const Dashboard = () => {
                             </td>
                             <td>
                               <p className={`text-md font-medium px-3 py-1 rounded-full inline-block ${client.status === 'Paid'
-                                  ? 'bg-green-100 text-green-500 border border-green-300'
-                                  : client.status === 'Trial'
-                                    ? 'bg-yellow-100 text-yellow-500 border border-yellow-300'
-                                    : 'bg-red-100 text-red-500 border border-red-300'
+                                ? 'bg-green-100 text-green-500 border border-green-300'
+                                : client.status === 'Trial'
+                                  ? 'bg-yellow-100 text-yellow-500 border border-yellow-300'
+                                  : 'bg-red-100 text-red-500 border border-red-300'
                                 }`}>
                                 {client.status}
                               </p>
@@ -530,8 +507,8 @@ const Dashboard = () => {
                     <div key={idx} className="flex items-center justify-between p-3 mt-2 bg-gray-100 rounded-lg gap-3">
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${business.daysLeft <= 2
-                            ? 'bg-red-100 text-red-500'
-                            : 'bg-yellow-100 text-yellow-500'
+                          ? 'bg-red-100 text-red-500'
+                          : 'bg-yellow-100 text-yellow-500'
                           }`}>
                           {business.daysLeft <= 2 ? <TriangleAlert className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                         </div>
@@ -542,8 +519,8 @@ const Dashboard = () => {
                       </div>
                       <div className="flex flex-col text-center">
                         <p className={`px-3 py-1 rounded-full text-xs font-medium ${business.daysLeft <= 2
-                            ? 'bg-red-100 text-red-500 border border-red-800'
-                            : 'bg-yellow-100 text-yellow-500'
+                          ? 'bg-red-100 text-red-500 border border-red-800'
+                          : 'bg-yellow-100 text-yellow-500'
                           }`}>
                           {business.daysLeft} day{business.daysLeft !== 1 ? 's' : ''} left
                         </p>
@@ -613,12 +590,7 @@ const Dashboard = () => {
 
           {activeTab === 'clients' && (
             <>
-              <Header
-                user={user}
-                title="All Clients"
-                subtitle="Manage and view all your platform clients"
-                onExport={handleExportCSV}
-              />
+              <Header user={user} title="All Clients" subtitle="Manage and view all your platform clients" />
               <DataTable
                 columns={clientColumns}
                 data={businesses}
@@ -627,19 +599,17 @@ const Dashboard = () => {
                   { key: 'location', label: 'Location' }
                 ]}
                 searchable={true}
-                onExport={handleExportCSV}
+                filename="Clients"
+                page={page}
+                setPage={setPage}
+                pagination={pagination}
               />
             </>
           )}
 
           {activeTab === 'trials' && (
             <>
-              <Header
-                user={user}
-                title="Trial Clients"
-                subtitle="Users currently on the 7-day free trial"
-                onExport={handleExportCSV}
-              />
+              <Header user={user} title="Trial Clients" subtitle="Users currently on the 7-day free trial" />
               <DataTable
                 columns={trialColumns}
                 data={trialBusinesses}
@@ -647,19 +617,17 @@ const Dashboard = () => {
                   { key: 'location', label: 'Location' }
                 ]}
                 searchable={true}
-                onExport={handleExportCSV}
+                filename="Trial Clients"
+                page={page}
+                setPage={setPage}
+                pagination={pagination}
               />
             </>
           )}
 
           {activeTab === 'cancellations' && (
             <>
-              <Header
-                user={user}
-                title="Cancellations"
-                subtitle="Track and analyze subscription cancellations"
-                onExport={handleExportCSV}
-              />
+              <Header user={user} title="Cancellations" subtitle="Track and analyze subscription cancellations" />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {cancellationStats.map((stat, idx) => (
@@ -687,7 +655,10 @@ const Dashboard = () => {
                   { key: 'location', label: 'Location' }
                 ]}
                 searchable={true}
-                onExport={handleExportCSV}
+                filename="Cancellations"
+                page={page}
+                setPage={setPage}
+                pagination={pagination}
               />
             </>
           )}

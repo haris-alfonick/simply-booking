@@ -3,18 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import './App.css';
-import Homepage from './component/pages/Homepage';
-import About from './component/pages/About';
-import Contact from './component/pages/Contact';
-import Service from './component/pages/Service';
 import Form from './component/pages/Form';
-import Login from './component/pages/Login';
-import SignUp from './component/pages/SignUp';
-import Booking from './component/pages/Booking';
-import ClientDashboard from './component/clientdashboard/ClientDashboard';
-import Clients from './component/clientdashboard/Clients';
-import Jobs from './component/clientdashboard/Jobs';
-import MainDashboard from './component/maindashboard/MainDashboard';
+
+import { About,Contact, Booking, ClientDashboard, Homepage, Login, MainDashboard, PageNotFound, Service, SignUp ,PrivateRoute} from './component';
 
 
 const App = () => {
@@ -25,19 +16,19 @@ const App = () => {
           <Route path='/' element={<Homepage />} />
           <Route path='/about' element={<About />} />
           <Route path='/contact' element={<Contact />} />
-          <Route path='/service/:id' element={<Service />} />
           <Route path='/form' element={<Form />} />
-
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<SignUp />} />
-          <Route path='/booking' element={<Booking />} />
 
-          {/* client dashboard */}
+          {/* dashboard */}
 
-          <Route path='/clientdashboard' element={<ClientDashboard />} />
-          <Route path='/maindashboard' element={<MainDashboard />} />
-          <Route path='/client' element={<Clients />} />
-          <Route path='/jobs' element={<Jobs />} />
+          <Route element={<PrivateRoute />}>
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/service/:id" element={<Service />} />
+            <Route path="/clientdashboard" element={<ClientDashboard />} />
+            <Route path="/maindashboard" element={<MainDashboard />} />
+          </Route>
+          <Route path='*' element={<PageNotFound />} />
 
         </Routes>
       </Router>

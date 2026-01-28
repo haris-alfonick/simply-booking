@@ -44,27 +44,22 @@ async function generateUniqueDomain(businessName) {
         suggestions: domainArray.slice(1)
     };
 }
-
 exports.createDomain = async (req, res) => {
     try {
         const { businessName } = req.body;
-        if (!businessName) { return res.status(400).json({ error: 'Business name is required' }) }
+        if (!businessName) { 
+            return res.status(400).json({ error: 'Business name is required' }); 
+        }
         const domains = await generateUniqueDomain(businessName);
-        // res.json({ domain, fullUrl: `simplybooking.org/${domain}` });
-        res.json({
-            domain: domains.selected,
-            suggestions: domains.suggestions, fullUrl: `simplybooking.org/${domains}`
-        });
-
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            selected: domains.selected,
-            suggestions: domains.suggestions
+            domain: domains.selected,
+            suggestions: domains.suggestions,
+            fullUrl: `simplybooking.org/${domains.selected}` // Fixed 'domains' reference here
         });
     } catch (error) {
         console.error('Error generating domain:', error);
-        res.status(500).json({ error: 'Failed to generate domain' });
+        return res.status(500).json({ error: 'Failed to generate domain' });
     }
 }
 
@@ -340,7 +335,6 @@ exports.getAllBusinesses = async (req, res) => {
     });
   }
 };
-
 
 exports.updateBusiness = async (req, res) => {
     try {

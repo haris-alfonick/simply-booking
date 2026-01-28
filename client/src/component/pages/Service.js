@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, MapPinIcon, CheckCircle, XCircle } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, MapPinIcon, CheckCircle, XCircle, ChevronLeft } from 'lucide-react';
 import Footer from '../footer/Footer';
 import Navbar from '../navbar/Navbar';
 import axios from 'axios';
@@ -66,7 +66,10 @@ const Service = () => {
             }
             const response = await fetch(`${API_BASE_URL}/quotes`, {
                 method: 'POST',
-                body: formDataToSend
+                body: formDataToSend,
+                headers: {
+                    Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
+                }
             });
 
             const data = await response.json();
@@ -95,8 +98,6 @@ const Service = () => {
         }
     };
 
-
-
     const submitReview = async () => {
 
         try {
@@ -104,7 +105,8 @@ const Service = () => {
                 method: 'POST',
                 body: JSON.stringify({ reviewText, reviewName, reviewEmail, businessId: business._id, ratingStars }),
                 headers: {
-                    'Content-Type': "application/json"
+                    'Content-Type': "application/json",
+                    Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
                 }
             });
 
@@ -125,13 +127,17 @@ const Service = () => {
 
     }
 
-
     useEffect(() => { getBusiness(); }, [])
-
 
     const getBusiness = async () => {
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/businesses/${params.id}`);
+            const { data } = await axios.get(`${API_BASE_URL}/businesses/${params.id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+                    },
+                }
+            );
             setBusiness(data);
             // console.log(data)
         } catch (error) {
@@ -145,14 +151,20 @@ const Service = () => {
         try {
             const { data } = await axios.post(
                 `${API_BASE_URL}/reviews/get-reviews-business`,
-                { businessId: business._id }
+                { businessId: business._id },
+                {
+                    headers: {
+                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+                    },
+                }
             );
-            // console.log(data)
+
             setgetreviews(data);
         } catch (error) {
             console.error("Failed to fetch reviews:", error);
         }
     };
+
 
     const toggleForm = () => {
         setIsFormVisible(!isFormVisible);
@@ -188,76 +200,15 @@ const Service = () => {
         }
     ];
 
-    const recentWork = [
-        "/api/placeholder/400/300",
-        "/api/placeholder/400/300",
-        "/api/placeholder/400/300"
-    ];
-
-    // const reviews = [
-    //     {
-    //         name: "Sarah Johnson",
-    //         service: "Pipe Restoration",
-    //         avatar: "S",
-    //         rating: 5,
-    //         time: "2 weeks ago",
-    //         text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
-    //     },
-    //     {
-    //         name: "Michael Chen",
-    //         service: "Pipe Restoration",
-    //         avatar: "M",
-    //         rating: 5,
-    //         time: "1 month ago",
-    //         text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
-    //     },
-    //     {
-    //         name: "Emily Rodriguez",
-    //         service: "Pipe Restoration",
-    //         avatar: "E",
-    //         rating: 4,
-    //         time: "1 month ago",
-    //         text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
-    //     }
-    // ];
-
-    // const faqs = [
-    //     {
-    //         question: "Do you provide emergency plumbing services on weekends?",
-    //         answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
-    //     },
-    //     {
-    //         question: "Do you provide emergency plumbing services on weekends?",
-    //         answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
-    //     },
-    //     {
-    //         question: "Do you provide emergency plumbing services on weekends?",
-    //         answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
-    //     },
-    //     {
-    //         question: "Do you provide emergency plumbing services on weekends?",
-    //         answer: "Yes, we provide 24/7 emergency plumbing services including weekends and holidays. Just call our hotline!"
-    //     }
-    // ];
-
-    // const businessHours = [
-    //     { day: "Monday - Friday", hours: "8:00 AM - 6:00 PM" },
-    //     { day: "Saturday", hours: "9:00 AM - 4:00 PM" },
-    //     { day: "Sunday", hours: "Closed" }
-    // ];
-
-    // const serviceAreas = ["Downtown", "Midtown", "North Side", "Business District"];
 
     const handleStarClick = (index) => {
         const updatedStars = ratingStars.map((_, i) => i <= index);
         setRatingStars(updatedStars);
     };
 
-    // Function to convert backend image to base64
     const getBase64Image = (image) => {
         if (!image || !image.data) return null;
 
-        // Convert the data buffer to base64
         const base64String = btoa(
             new Uint8Array(image.data.data).reduce(
                 (data, byte) => data + String.fromCharCode(byte),
@@ -270,12 +221,71 @@ const Service = () => {
     const coverPhoto = getBase64Image(business.businessCoverPhoto);
     const logo = getBase64Image(business.businessLogo);
     const image1 = getBase64Image(business.image1);
-
     const image2 = getBase64Image(business.image2);
-
     const image3 = getBase64Image(business.image3);
 
+    const ITEMS_PER_PAGE = 5;
+    const [currentPage, setCurrentPage] = useState(1);
 
+    const questionsArray = useMemo(() => {
+        return Object.entries(business?.questions || {}).map(([key, faq]) => ({
+            id: key,
+            ...faq
+        }));
+    }, [business?.questions]);
+
+    const totalPages = Math.ceil(questionsArray.length / ITEMS_PER_PAGE);
+
+    const currentItems = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return questionsArray.slice(startIndex, endIndex);
+    }, [questionsArray, currentPage]);
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+        }
+    };
+
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxPagesToShow = 5;
+
+        if (totalPages <= maxPagesToShow) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 4; i++) {
+                    pages.push(i);
+                }
+                pages.push('...');
+                pages.push(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1);
+                pages.push('...');
+                for (let i = totalPages - 3; i <= totalPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                pages.push(1);
+                pages.push('...');
+                for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                    pages.push(i);
+                }
+                pages.push('...');
+                pages.push(totalPages);
+            }
+        }
+
+        return pages;
+    };
+
+    if (questionsArray.length === 0) {
+        return null;
+    }
 
     return (
         <>
@@ -555,43 +565,85 @@ const Service = () => {
 
                             <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
                                 <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
-                                    <h3 className="text-xl font-bold text-gray-900 ">Questions & Answers (5)</h3>
+                                    <h3 className="text-xl font-bold text-gray-900">
+                                        Questions & Answers ({questionsArray.length})
+                                    </h3>
                                 </div>
+
                                 <div className="space-y-4">
-
-                                    {Object.entries(business?.questions || {}).map(
-                                        ([key, faq]) => (
-                                            <div
-                                                key={key}
-                                                className="border-b border-gray-200 pb-4 last:border-0"
-                                            >
-                                                <div className="flex gap-3 mb-2">
-                                                    <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center flex-shrink-0">
-                                                        <MessageCircle className="w-4 h-4 text-white" />
-                                                    </div>
-                                                    <p className="font-medium text-gray-900">
-                                                        {faq.question}
-                                                    </p>
+                                    {currentItems.map((faq) => (
+                                        <div
+                                            key={faq.id}
+                                            className="border-b border-gray-200 pb-4 last:border-0"
+                                        >
+                                            <div className="flex gap-3 mb-2">
+                                                <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center flex-shrink-0">
+                                                    <MessageCircle className="w-4 h-4 text-white" />
                                                 </div>
+                                                <p className="font-medium text-gray-900">
+                                                    {faq.question}
+                                                </p>
+                                            </div>
 
-                                                <div className="flex gap-3 ml-9">
-                                                    <div className="text-sm text-gray-600">
-                                                        <span className="font-semibold text-gray-900">A</span>{' '}
-                                                        {faq.answer}
-                                                    </div>
+                                            <div className="flex gap-3 ml-9">
+                                                <div className="text-sm text-gray-600">
+                                                    <span className="font-semibold text-gray-900">A</span>{' '}
+                                                    {faq.answer}
                                                 </div>
                                             </div>
-                                        )
-                                    )}
+                                        </div>
+                                    ))}
+                                </div>
 
-                                </div>
-                                <div className="flex justify-center gap-2 mt-6">
-                                    <button className="w-8 h-8 bg-cyan-500 text-white rounded flex items-center justify-center">1</button>
-                                    <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200">2</button>
-                                    <button className="w-8 h-8 bg-gray-100 text-gray-700 rounded flex items-center justify-center hover:bg-gray-200">
-                                        <ChevronRight className="w-4 h-4" />
-                                    </button>
-                                </div>
+                                {totalPages > 0 && (
+                                    <div className="flex justify-center items-center gap-2 mt-6">
+                                        <button
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                            className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${currentPage === 1
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                            aria-label="Previous page"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </button>
+
+                                        {getPageNumbers().map((page, index) => (
+                                            <React.Fragment key={index}>
+                                                {page === '...' ? (
+                                                    <span className="w-8 h-8 flex items-center justify-center text-gray-400">
+                                                        ...
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handlePageChange(page)}
+                                                        className={`w-8 h-8 rounded flex items-center justify-center font-medium transition-colors ${currentPage === page
+                                                                ? 'bg-cyan-500 text-white'
+                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            }`}
+                                                        aria-label={`Page ${page}`}
+                                                        aria-current={currentPage === page ? 'page' : undefined}
+                                                    >
+                                                        {page}
+                                                    </button>
+                                                )}
+                                            </React.Fragment>
+                                        ))}
+
+                                        <button
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                            className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${currentPage === totalPages
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                            aria-label="Next page"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="bg-white rounded-xl shadow-sm p-6">
@@ -636,9 +688,11 @@ const Service = () => {
                                     )}
 
                                 </div>
-                                <button className="w-full mt-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
-                                    Load More Reviews
-                                </button>
+                                {getreviews?.data?.length > 0 && (
+                                    <button className="w-full mt-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
+                                        Load More Reviews
+                                    </button>
+                                )}
                             </div>
 
                             <div className="bg-gray-50 rounded-xl shadow-sm p-6 mt-6">

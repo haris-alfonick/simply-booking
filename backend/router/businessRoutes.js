@@ -3,7 +3,9 @@ const router = express.Router();
 
 const { createDomain, checkDomain, uploadImage, createBusiness, updateBusiness, getBusinessById, getDomain, deleteBusiness, threedomains, getAllBusinesses } = require('../controllers/businessControllers');
 const upload = require('../middleware/upload');
-
+const {verifyToken,isAdmin} = require('../middleware/VerifyToken');
+router.use(verifyToken)
+// router.use(isAdmin)
 router.post('/generate-domain', createDomain);
 router.get('/check-domain/:domain', checkDomain);
 router.post('/upload-image', uploadImage);
@@ -15,11 +17,11 @@ router.post('/', upload.fields([
     { name: 'image3', maxCount: 1 },
 
 ]), createBusiness);
-router.get('/', getAllBusinesses);
-router.put('/:id', updateBusiness);
-router.get('/:id', getBusinessById);
+router.get('/', isAdmin,getAllBusinesses);
+router.put('/:id',isAdmin, updateBusiness);
+router.get('/:id',isAdmin, getBusinessById);
 router.get('/domain/:domain', getDomain);
-router.delete('/:id', deleteBusiness);
+router.delete('/:id',isAdmin, deleteBusiness);
 
 router.post('/generate-domainss', threedomains);
 

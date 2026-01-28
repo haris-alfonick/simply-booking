@@ -75,7 +75,7 @@ const businessSchema = new mongoose.Schema(
         },
         /* Platform / SaaS Fields */
         status: { type: String, enum: ['Paid', 'Trial', 'Cancelled'], default: 'Trial', index: true },
-        plan: { type: String, enum: ['Pro Plan', 'Business Plan'] },
+        plan: { type: String, enum: ['Pro Plan', 'Business Plan'], default: 'Business Plan' },
         startDate: { type: Date, default: Date.now },
         trialExpiresAt: Date,
         daysLeft: Number,

@@ -50,13 +50,22 @@ exports.createQuote = async (req, res) => {
 
 exports.getAllQuotes = async (req, res) => {
   try {
-    const { businessId, status, page, limit } = req.query;
+    const { search, businessId, status, page, limit } = req.query;
 
     const query = { businessId };
     if (status) {
       query.status = status;
     }
+    //     if (businessId && mongoose.Types.ObjectId.isValid(businessId)) {
+    //   query.businessId = new mongoose.Types.ObjectId(businessId);
+    // }
 
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
     const quotes = await Quote.find(query)
       .sort({ createdAt: -1 })
       .limit(Number(limit))

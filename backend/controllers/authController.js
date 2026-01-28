@@ -164,8 +164,8 @@ exports.verifyOTP = async (req, res) => {
 
     // Mark user as verified
     user.isVerified = true;
-    // user.otp = undefined;
-    // user.otpExpiry = undefined;
+    user.otp = undefined;
+    user.otpExpiry = undefined;
     await user.save();
 
     res.status(200).json({
@@ -174,7 +174,8 @@ exports.verifyOTP = async (req, res) => {
       user: {
         id: user._id,
         fullname: user.fullname,
-        email: user.email
+        email: user.email,
+        // role:user.role
       }
     });
 

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import {
     Menu, X, Search, Calendar as CalendarIcon, Briefcase, Users, Settings, HelpCircle, Download, LayoutDashboard,
-    Calendar, ChevronLeft, ChevronRight, User, Mail, Phone,
+    Calendar, ChevronLeft, ChevronRight, User, Mail, Phone, ArrowBigRight
 
 } from 'lucide-react';
-import { API_BASE_URL, getQuotes } from '../api/Api';
+import ExportCSV from '../maindashboard/ExportCSV';
+import { useNavigate } from 'react-router-dom'
+import { getQuotes } from '../api/Api';
 import JobsPage from '../jobmodel/JobsPage';
 import { DayView } from './calander/DayView';
 import { WeekView } from './calander/WeekView';
@@ -156,10 +158,17 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setSt
                     <h1 className="text-2xl font-bold">Jobs</h1>
                     <p className="text-gray-600">Manage all your service jobs in one place</p>
                 </div>
-                <button className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-2">
-                    <Download className="w-4 h-4" />
-                    Export CSV
-                </button>
+                <ExportCSV allData={quotes.data} columns={[
+                    { label: "Name", key: "name" },
+                    { label: "email", key: "email" },
+                    { label: "service", key: "service" },
+                    { label: "Submited On", key: "name" },
+                    { label: "Price", key: "price" },
+                    { label: "Location", key: "address" },
+                    { label: "Status", key: "status" },
+
+
+                ]} filename={"Jobs"} btncolor={"cyan"} />
             </div>
 
             <div className="bg-white rounded-lg shadow-sm">
@@ -216,10 +225,17 @@ const RenderCalendar = ({ quotes, calendarView, setCalendarView }) => {
                     <h1 className="text-2xl font-bold">Calendar</h1>
                     <p className="text-gray-600">View and manage your scheduled jobs</p>
                 </div>
-                <button className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-2">
-                    <Download className="w-4 h-4" />
-                    Export CSV
-                </button>
+                <ExportCSV allData={quotes.data} columns={[
+                    { label: "Name", key: "name" },
+                    { label: "email", key: "email" },
+                    { label: "service", key: "service" },
+                    { label: "Submited On", key: "name" },
+                    { label: "Price", key: "price" },
+                    { label: "Location", key: "address" },
+                    { label: "Status", key: "status" },
+
+
+                ]} filename={"Jobs"} btncolor={"cyan"} />
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border">
@@ -489,19 +505,21 @@ const ClientDashboard = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [status, setStatus] = useState("");
     const [search, setSearch] = useState("");
+    const navigate = useNavigate();
+
     const user = JSON.parse(localStorage.getItem("user"));
-    let businessId = "697883618ab605d5eaf2b8ce"
-    //  user.id;
+    let businessId = "696b9741be003a82e3e253e8"
 
     const fetchQuotes = async () => {
         try {
             const res = await getQuotes({
+                search,
                 businessId,
                 page,
                 limit: calendarView === "month" ? 30 : 10,
                 status,
             });
-            console.log(res)
+            // console.log(res)
             setQuotes(res);
             setTotalPages(res.pagination.totalPages);
         } catch (err) {
@@ -510,30 +528,8 @@ const ClientDashboard = () => {
     };
 
     useEffect(() => {
-        if (search.trim() === "") {
-            fetchQuotes();
-        }
-    }, [page, status, jobsView]);
-
-    useEffect(() => {
-        if (search.trim() !== "") {
-            handleSearch();
-        }
-    }, [search]);
-
-    const handleSearch = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/quotes/search?search=${search}&page=${page}&businessId=${"696b9741be003a82e3e253e8"}`, {
-                method: "GET"
-            });
-            if (!response.ok) { throw new Error('Failed to fetch data'); }
-            const data = await response.json();
-            setQuotes(data);
-        } catch (err) {
-            console.error('Error fetching data:', err);
-            setQuotes([]);
-        }
-    };
+        fetchQuotes();
+    }, [page, status, jobsView, search]);
 
     // Stats for the dashboard view
     const stats = {
@@ -582,14 +578,10 @@ const ClientDashboard = () => {
                         ))}
                     </nav>
 
-                    <div className="absolute bottom-0 w-64 p-4 border-t">
-                        <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg mb-1">
-                            <Settings className="w-5 h-5" />
-                            <span>Settings</span>
-                        </button>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
-                            <HelpCircle className="w-5 h-5" />
-                            <span>Help Center</span>
+                    <div className="absolute bottom-0 w-64 p-4 border-t corsur-pointer">
+                        <button onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); navigate('/login') }} className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mb-1">
+                            <ArrowBigRight className="w-5 h-5" />
+                            <span>Log Out</span>
                         </button>
                     </div>
                 </div>
