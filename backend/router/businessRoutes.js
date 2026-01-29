@@ -21,7 +21,7 @@ router.get('/', isAdmin,getAllBusinesses);
 router.put('/:id',isAdmin, updateBusiness);
 router.get('/:id',isAdmin, getBusinessById);
 router.get('/domain/:domain', getDomain);
-router.delete('/:id',isAdmin, deleteBusiness);
+router.delete('/:id', deleteBusiness);
 
 router.post('/generate-domainss', threedomains);
 

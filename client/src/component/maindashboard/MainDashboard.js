@@ -8,11 +8,11 @@ import { useNavigate } from 'react-router-dom'
 import { getBusinesses } from '../api/Api';
 import { DataTable } from "./DataTable";
 
-const Header = ({ user, title, subtitle }) => (
+const Header = ({ user, title, subtitle, hide }) => (
   <div className='flex justify-between bg-gradient-to-r from-cyan-50 to-blue-50 p-6 mb-4 rounded-lg'>
     <div>
       <h1 className="text-2xl font-bold text-gray-800">
-        {title} {user ? user.fullname : ''}
+        {title} {hide && (user ? user.fullname : '')}
       </h1>
       <p className="text-gray-600 mt-1">{subtitle}</p>
     </div>
@@ -232,6 +232,18 @@ const Dashboard = () => {
       label: 'Total Booking',
       align: 'center'
     },
+    {
+      key: 'isActive',
+      label: 'Is Active',
+      align: 'center',
+      render: (value) => (
+        <span className={`px-3 py-1 rounded-full text-xs font-medium 
+      ${value ? 'bg-green-100 border border-green-800 text-green-700' : 'bg-red-100 border border-red-800 text-red-700'}`}
+        >
+          {value ? 'Active' : 'Inactive'}
+        </span>
+      )
+    },
   ];
 
   const trialColumns = [
@@ -279,6 +291,19 @@ const Dashboard = () => {
       label: 'Bookings',
       align: 'center'
     },
+    {
+      key: 'isActive',
+      label: 'Is Active',
+      align: 'center',
+      render: (value) => (
+        <span className={`px-3 py-1 rounded-full text-xs font-medium 
+      ${value ? 'bg-green-100 border border-green-800 text-green-700' : 'bg-red-100 border border-red-800 text-red-700'}`}
+        >
+          {value ? 'Active' : 'Inactive'}
+        </span>
+      )
+    },
+
     {
       key: 'daysLeft',
       label: 'Days Left',
@@ -427,6 +452,7 @@ const Dashboard = () => {
             <div className="space-y-6">
               <Header
                 user={user}
+                hide={true}
                 title="Welcome Back,"
                 subtitle="Here's what's happening with your SimplyBooking platform today"
               />

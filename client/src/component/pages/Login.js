@@ -33,9 +33,8 @@ const Login = () => {
             if (result?.token) {
                 localStorage.setItem("user", JSON.stringify(result.user));
                 localStorage.setItem("token", JSON.stringify(result.token));
-                // console.log("Login successful:", result);
                 showSuccess("Login successful");
-                navigate('/clientdashboard')
+                if (result.role === 1) { navigate("/maindashboard") } else { navigate("/clientdashboard") }
             } else {
                 showError("Invalid login response");
             }

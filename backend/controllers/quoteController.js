@@ -1,6 +1,7 @@
-
+const mongoose = require('mongoose');
 const path = require('path');
 const Quote = require('../models/Quote');
+const Business = require('../models/Business');
 const fs = require('fs');
 const sendEmail = require('../utils/sendEmail')
 
@@ -17,7 +18,7 @@ exports.createQuote = async (req, res) => {
     }
 
     // Prepare quote data
-    const quoteData = { name, email, phone, service, address, details, photo, businessId };
+    const quoteData = { name, email, phone, service, address, details, photo, businessId, };
 
     // Handle file upload if exists
     if (req.file) {
@@ -47,18 +48,26 @@ exports.createQuote = async (req, res) => {
   }
 };
 
-
 exports.getAllQuotes = async (req, res) => {
   try {
-    const { search, businessId, status, page, limit } = req.query;
+    const { search, status, page, limit } = req.query;
+    const business = await Business.findOne({ userId: new mongoose.Types.ObjectId(req.user.userId), isActive: true });
 
+    if (!business) {
+      return res.status(404).json({
+        success: false,
+        message: "Business not Found or Cancelled"
+      })
+    }
+    let businessId = business._id
     const query = { businessId };
     if (status) {
       query.status = status;
     }
-    //     if (businessId && mongoose.Types.ObjectId.isValid(businessId)) {
-    //   query.businessId = new mongoose.Types.ObjectId(businessId);
+    // if (businessId && mongoose.Types.ObjectId.isValid(businessId)) {
+    //  query.businessId = new mongoose.Types.ObjectId(businessId);
     // }
+
 
     if (search) {
       query.$or = [
@@ -75,6 +84,7 @@ exports.getAllQuotes = async (req, res) => {
     const total = await Quote.countDocuments(query);
 
     const statusCounts = await Quote.aggregate([
+      { $match: { businessId: businessId } },
       {
         $group: {
           _id: "$status",
@@ -111,7 +121,8 @@ exports.getAllQuotes = async (req, res) => {
         currentPage: Number(page),
         limit: Number(limit)
       },
-      counts
+      counts,
+      businessId
     });
 
   } catch (error) {
@@ -122,7 +133,6 @@ exports.getAllQuotes = async (req, res) => {
     });
   }
 };
-
 
 // exports.getQuoteById = async (req, res) => {
 //   try {
@@ -283,7 +293,6 @@ exports.getSearchQuotes = async (req, res) => {
 };
 
 
-// Send Estimate to Client
 exports.sendEstimateToClient = async (req, res) => {
   try {
     const { price, notes } = req.body;
@@ -364,7 +373,6 @@ exports.sendEstimateToClient = async (req, res) => {
   }
 };
 
-// Handle Quote Confirmation
 exports.emailQuotesConfirmation = async (req, res) => {
   try {
     const { action } = req.query;

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import {
     Menu, X, Search, Calendar as CalendarIcon, Briefcase, Users, Settings, HelpCircle, Download, LayoutDashboard,
-    Calendar, ChevronLeft, ChevronRight, User, Mail, Phone, ArrowBigRight
+    Calendar, ChevronLeft, ChevronRight, User, Mail, Phone, ArrowBigRight,
+    Globe
 
 } from 'lucide-react';
 import ExportCSV from '../maindashboard/ExportCSV';
@@ -12,6 +13,7 @@ import { DayView } from './calander/DayView';
 import { WeekView } from './calander/WeekView';
 import { MonthView } from './calander/MonthView';
 import { JobTableRow } from './jobtable/JobTableRow';
+import CancellationForm from './CancellationForm';
 
 const RenderDashboard = ({ quotes, jobsOverview, setCurrentView, setJobsView, setStatus, user }) => {
     return (
@@ -117,6 +119,14 @@ const RenderDashboard = ({ quotes, jobsOverview, setCurrentView, setJobsView, se
     )
 }
 
+const column = [{ label: "Name", key: "name" },
+{ label: "email", key: "email" },
+{ label: "service", key: "service" },
+{ label: "Submited On", key: "name" },
+{ label: "Price", key: "price" },
+{ label: "Location", key: "address" },
+{ label: "Status", key: "status" },]
+
 const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setStatus, totalPages }) => {
 
     const getJobStatusFilter = () => {
@@ -150,6 +160,10 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setSt
         </div>
     );
 
+
+
+
+
     return (
         <div className="space-y-6">
 
@@ -158,17 +172,7 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setSt
                     <h1 className="text-2xl font-bold">Jobs</h1>
                     <p className="text-gray-600">Manage all your service jobs in one place</p>
                 </div>
-                <ExportCSV allData={quotes.data} columns={[
-                    { label: "Name", key: "name" },
-                    { label: "email", key: "email" },
-                    { label: "service", key: "service" },
-                    { label: "Submited On", key: "name" },
-                    { label: "Price", key: "price" },
-                    { label: "Location", key: "address" },
-                    { label: "Status", key: "status" },
-
-
-                ]} filename={"Jobs"} btncolor={"cyan"} />
+                <ExportCSV allData={quotes.data} columns={column} filename={"Jobs"} btncolor={"cyan"} />
             </div>
 
             <div className="bg-white rounded-lg shadow-sm">
@@ -225,17 +229,7 @@ const RenderCalendar = ({ quotes, calendarView, setCalendarView }) => {
                     <h1 className="text-2xl font-bold">Calendar</h1>
                     <p className="text-gray-600">View and manage your scheduled jobs</p>
                 </div>
-                <ExportCSV allData={quotes.data} columns={[
-                    { label: "Name", key: "name" },
-                    { label: "email", key: "email" },
-                    { label: "service", key: "service" },
-                    { label: "Submited On", key: "name" },
-                    { label: "Price", key: "price" },
-                    { label: "Location", key: "address" },
-                    { label: "Status", key: "status" },
-
-
-                ]} filename={"Jobs"} btncolor={"cyan"} />
+                <ExportCSV allData={quotes.data} columns={column} filename={"Jobs"} btncolor={"cyan"} />
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border">
@@ -508,24 +502,31 @@ const ClientDashboard = () => {
     const navigate = useNavigate();
 
     const user = JSON.parse(localStorage.getItem("user"));
-    let businessId = "696b9741be003a82e3e253e8"
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
     const fetchQuotes = async () => {
         try {
             const res = await getQuotes({
                 search,
-                businessId,
                 page,
-                limit: calendarView === "month" ? 30 : 10,
                 status,
+                limit: calendarView === "month" ? 30 : 10,
             });
-            // console.log(res)
+
+            // if (!res.ok) {
+            //     await delay(1000); 
+            //     navigate('/');
+            //     return;
+            // }
+
             setQuotes(res);
-            setTotalPages(res.pagination.totalPages);
+            setTotalPages(res.pagination?.totalPages ?? 0);
+
         } catch (err) {
-            console.error(err);
+            console.error('Failed to fetch quotes:', err);
         }
     };
+
 
     useEffect(() => {
         fetchQuotes();
@@ -565,7 +566,8 @@ const ClientDashboard = () => {
                         {[
                             { icon: LayoutDashboard, label: 'Dashboard', view: 'dashboard' },
                             { icon: Briefcase, label: 'Jobs', view: 'jobs' },
-                            { icon: CalendarIcon, label: 'Calendar', view: 'calendar' }
+                            { icon: CalendarIcon, label: 'Calendar', view: 'calendar' },
+                            { icon: Globe, label: 'Close Business', view: 'closebusiness' },
                         ].map((item) => (
                             <button
                                 key={item.view}
@@ -622,6 +624,9 @@ const ClientDashboard = () => {
                         {currentView === 'dashboard' && <RenderDashboard quotes={quotes} jobsOverview={jobsOverview} setCurrentView={setCurrentView} setJobsView={setJobsView} page={page} setPage={setPage} setStatus={setStatus} totalPages={totalPages} user={user} />}
                         {currentView === 'jobs' && <RenderJobs quotes={quotes} jobsOverview={jobsOverview} stats={stats} setStatus={setStatus} jobsView={jobsView} setJobsView={setJobsView} page={page} setPage={setPage} totalPages={totalPages} />}
                         {currentView === 'calendar' && <RenderCalendar quotes={quotes} setSelectedClient={setSelectedClient} calendarView={calendarView} setCalendarView={setCalendarView} />}
+
+                        {currentView === 'closebusiness' && <CancellationForm quotes={quotes} />}
+
                     </main>
                 </div>
             </div>

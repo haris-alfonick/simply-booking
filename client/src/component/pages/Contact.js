@@ -1,12 +1,61 @@
 import { Clock, Mail, MessageCircle, Phone } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import Footer from '../footer/Footer'
 import Navbar from '../navbar/Navbar'
+import { API_BASE_URL } from '../api/Api'
+import { showError, showSuccess } from '../utils/toast'
 
 const Contact = () => {
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message);
+
+      showSuccess("Message sent successfully!");
+      setFormData({
+        fullName: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (error) {
+      showError(error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div>
-       <Navbar />
+      <Navbar />
       <section className='bg-cyan-50 py-8 lg:py-12 xl:py-16 px-4 lg:px-16'>
         <div className='max-w-7xl mx-auto text-center'>
           <div className='lg:mt-10'>
@@ -74,7 +123,78 @@ const Contact = () => {
               <MessageCircle className='me-2 mt-1 text-cyan-500' />
               Send Us a Message
             </h2>
-            <form>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4 flex md:flex-row flex-col md:gap-4">
+                <div className="flex-1">
+                  <label htmlFor="fullName" className="block text-gray-600">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-md mt-2"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <label htmlFor="email" className="block text-gray-600">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-md mt-2"
+                    placeholder="john@example.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="subject" className="block text-gray-600">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  id="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-md mt-2"
+                  placeholder="How can we help you?"
+                  required
+                />
+              </div>
+
+              <div className="mb-6">
+                <label htmlFor="message" className="block text-gray-600">
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-md mt-2"
+                  placeholder="Tell us more about your inquiry..."
+                  rows="4"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-orange-500 text-white p-3 rounded-md hover:bg-orange-600 transition-all"
+              >
+                {loading ? "Sending..." : "Send Message"}
+              </button>
+            </form>
+            {/* <form>
               <div className='mb-4 flex md:flex-row flex-col md:gap-4'>
                 <div className='flex-1'>
                   <label htmlFor='full-name' className='block text-gray-600'>
@@ -128,7 +248,7 @@ const Contact = () => {
               >
                 Send Message
               </button>
-            </form>
+            </form> */}
           </div>
 
           <div className='bg-white shadow-lg rounded-lg max-w-md w-full py-8 lg:py-12 xl:py-16 px-4 lg:px-16'>

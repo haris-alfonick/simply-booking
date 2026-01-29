@@ -244,7 +244,6 @@ exports.resendOTP = async (req, res) => {
 };
 
 
-
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -272,7 +271,8 @@ exports.login = async (req, res) => {
         fullname: user.fullname,
         email: user.email,
         isVerified: user.isVerified,
-        lastLoginAt: user.lastLoginAt
+        lastLoginAt: user.lastLoginAt,
+        role: user.role
       }
     });
 

@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import './App.css';
 import Form from './component/pages/Form';
 
-import { About,Contact, Booking, ClientDashboard, Homepage, Login, MainDashboard, PageNotFound, Service, SignUp ,PrivateRoute} from './component';
+import { About, Contact, Booking, ClientDashboard, Homepage, Login, MainDashboard, PageNotFound, Service, SignUp, PrivateRoute } from './component';
 
 
 const App = () => {
@@ -38,3 +38,32 @@ const App = () => {
 };
 
 export default App;
+
+
+
+{/* <Router>
+        <Routes>
+          <Route path='/' element={<Homepage />} />
+          <Route path='/about' element={<About />} />
+          <Route path='/contact' element={<Contact />} />
+          <Route path='/form' element={<Form />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/signup' element={<SignUp />} />
+
+          <Route element={<PrivateRoute />}>
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/service/:id" element={<Service />} />
+          </Route>
+
+          <Route element={<PrivateRoute allowedRole={0} />}>
+            <Route path="/clientdashboard" element={<ClientDashboard />} />
+          </Route>
+
+          <Route element={<PrivateRoute allowedRole={1} />}>
+            <Route path="/maindashboard" element={<MainDashboard />} />
+          </Route>
+          <Route path='*' element={<PageNotFound />} />
+
+        </Routes>
+      </Router>
+      <ToastContainer position="top-right" autoClose={3000} /> */}

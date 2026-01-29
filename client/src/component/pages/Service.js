@@ -4,7 +4,7 @@ import Footer from '../footer/Footer';
 import Navbar from '../navbar/Navbar';
 import axios from 'axios';
 import { showError, showSuccess } from '../utils/toast';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { API_BASE_URL } from '../api/Api';
 const Service = () => {
     const [reviewText, setReviewText] = useState('');
@@ -17,6 +17,7 @@ const Service = () => {
     const [getreviews, setgetreviews] = useState([]);
 
     const params = useParams();
+    const navigate = useNavigate()
 
     const [business, setBusiness] = useState([])
     const [formData, setFormData] = useState({
@@ -31,6 +32,8 @@ const Service = () => {
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+
+    const token = JSON.parse(localStorage.getItem("token"));
 
     const handleInputChange = (e) => {
         const { id, value } = e.target;
@@ -68,7 +71,7 @@ const Service = () => {
                 method: 'POST',
                 body: formDataToSend,
                 headers: {
-                    Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
+                    Authorization: `Bearer ${token}`
                 }
             });
 
@@ -76,26 +79,12 @@ const Service = () => {
 
             if (response.ok) {
                 setMessage({ type: 'success', text: 'Quote request submitted successfully!' });
-                setFormData({
-                    name: '',
-                    email: '',
-                    phone: '',
-                    service: '',
-                    address: '',
-                    details: '',
-                    photo: null
-                });
-                setTimeout(() => {
-                    toggleForm();
-                }, 2000);
-            } else {
-                setMessage({ type: 'error', text: data.message || 'Failed to submit quote request' });
-            }
+                setFormData({ name: '', email: '', phone: '', service: '', address: '', details: '', photo: null });
+                setTimeout(() => { toggleForm() }, 2000);
+            } else { setMessage({ type: 'error', text: data.message || 'Failed to submit quote request' }) }
         } catch (error) {
             setMessage({ type: 'error', text: 'Network error. Please try again.' });
-        } finally {
-            setLoading(false);
-        }
+        } finally { setLoading(false); }
     };
 
     const submitReview = async () => {
@@ -106,7 +95,7 @@ const Service = () => {
                 body: JSON.stringify({ reviewText, reviewName, reviewEmail, businessId: business._id, ratingStars }),
                 headers: {
                     'Content-Type': "application/json",
-                    Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
+                    Authorization: `Bearer ${token}`
                 }
             });
 
@@ -127,38 +116,25 @@ const Service = () => {
 
     }
 
-    useEffect(() => { getBusiness(); }, [])
 
-    const getBusiness = async () => {
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/businesses/${params.id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
-                    },
-                }
-            );
-            setBusiness(data);
-            // console.log(data)
-        } catch (error) {
-            console.log(error);
-        }
-    };
+    useEffect(() => {
+        const getBusiness = async () => {
+            try {
+                const { data } = await axios.get(`${API_BASE_URL}/businesses/${params.id}`, { headers: { Authorization: `Bearer ${token}` } });
+                setBusiness(data);
+            } catch (error) {
+                navigate("/", { replace: true });
+            }
+        };
+
+        getBusiness();
+    }, [params.id, navigate]);
 
     useEffect(() => { if (business?._id) { getReviews(); } }, [business?._id]);
 
     const getReviews = async () => {
         try {
-            const { data } = await axios.post(
-                `${API_BASE_URL}/reviews/get-reviews-business`,
-                { businessId: business._id },
-                {
-                    headers: {
-                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
-                    },
-                }
-            );
-
+            const { data } = await axios.post(`${API_BASE_URL}/reviews/get-reviews-business`, { businessId: business._id }, { headers: { Authorization: `Bearer ${token}` } });
             setgetreviews(data);
         } catch (error) {
             console.error("Failed to fetch reviews:", error);
@@ -166,9 +142,7 @@ const Service = () => {
     };
 
 
-    const toggleForm = () => {
-        setIsFormVisible(!isFormVisible);
-    };
+    const toggleForm = () => { setIsFormVisible(!isFormVisible) };
 
     const services = [
         {
@@ -549,8 +523,6 @@ const Service = () => {
                     </div>
                 </section>
 
-
-
                 <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2">
@@ -595,14 +567,14 @@ const Service = () => {
                                     ))}
                                 </div>
 
-                                {totalPages > 0 && (
+                                {totalPages > 1 && (
                                     <div className="flex justify-center items-center gap-2 mt-6">
                                         <button
                                             onClick={() => handlePageChange(currentPage - 1)}
                                             disabled={currentPage === 1}
                                             className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${currentPage === 1
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
                                             aria-label="Previous page"
                                         >
@@ -619,8 +591,8 @@ const Service = () => {
                                                     <button
                                                         onClick={() => handlePageChange(page)}
                                                         className={`w-8 h-8 rounded flex items-center justify-center font-medium transition-colors ${currentPage === page
-                                                                ? 'bg-cyan-500 text-white'
-                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            ? 'bg-cyan-500 text-white'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                             }`}
                                                         aria-label={`Page ${page}`}
                                                         aria-current={currentPage === page ? 'page' : undefined}
@@ -635,8 +607,8 @@ const Service = () => {
                                             onClick={() => handlePageChange(currentPage + 1)}
                                             disabled={currentPage === totalPages}
                                             className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${currentPage === totalPages
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
                                             aria-label="Next page"
                                         >

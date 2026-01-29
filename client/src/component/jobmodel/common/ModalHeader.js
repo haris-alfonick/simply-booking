@@ -9,7 +9,6 @@ export const ModalHeader = ({ job, onClose }) => (
                     {job.status}
                 </span>
             </div>
-            <p className="text-sm text-gray-500">{job.name}</p>
         </div>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={24} />

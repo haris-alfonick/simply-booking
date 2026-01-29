@@ -22,8 +22,10 @@ import {
 } from 'lucide-react'
 import Footer from '../footer/Footer'
 import Navbar from '../navbar/Navbar'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function Homepage() {
+  const navigate = useNavigate()
   const stats = [
     { label: 'Requests This Month', value: '18' },
     { label: 'Job Schedule', value: '18' },
@@ -125,13 +127,7 @@ export default function Homepage() {
   ]
 
   const pricingPlans = [
-    // {
-    //   name: 'Unlimited Bookings',
-    //   subtitle: 'Perfect for getting started',
-    //   price: '$5.99',
-    //   features: ['Unlimited services', 'Custom Subdomain', 'Email Support'],
-    //   popular: false
-    // },
+
     {
       name: 'Pro',
       subtitle: 'Most popular for growing businesses',
@@ -148,24 +144,7 @@ export default function Homepage() {
       ],
       popular: true
     },
-    // {
-    //   name: 'Elite',
-    //   subtitle: 'For established businesses',
-    //   price: '$19.99',
-    //   features: [
-    //     '1000 Requests / month',
-    //     '5 Admin Users',
-    //     'Unlimited Services',
-    //     'Custom Subdomain',
-    //     '24/7 Priority Support',
-    //     'Advanced Analytics',
-    //     'Marketing Tracking',
-    //     'Recurring Bookings',
-    //     'API Access',
-    //     'Custom Branding'
-    //   ],
-    //   popular: false
-    // }
+
   ]
 
 
@@ -193,7 +172,7 @@ export default function Homepage() {
             </p>
 
             <div className='flex flex-row sm:gap-4 gap-2 justify-center'>
-              <button className='bg-cyan-500 text-white sm:px-8 px-2 py-1 sm:py-3 rounded-lg hover:bg-cyan-600 font-medium'>
+              <button className='bg-cyan-500 text-white sm:px-8 px-2 py-1 sm:py-3 rounded-lg hover:bg-cyan-600 font-medium' onClick={() => navigate('/signup')}>
                 Create My Page{' '}
                 <ArrowBigRight className='inline-block ml-2 h-5 w-5' />
               </button>
@@ -212,10 +191,10 @@ export default function Homepage() {
                     <div className='text-sm text-[#A9A7A7]'>{stat.label}</div>
                     <div
                       className={`text-[clamp(1.5rem,4vw,2.5rem)] font-bold ${i === 0
+                        ? 'text-cyan-500'
+                        : i === 2
                           ? 'text-cyan-500'
-                          : i === 2
-                            ? 'text-cyan-500'
-                            : 'text-orange-400'
+                          : 'text-orange-400'
                         }`}
                     >
                       {stat.value}
@@ -476,23 +455,23 @@ export default function Homepage() {
               data storage even if payment pauses.
             </p>
             <div className='mt-4 inline-flex items-center px-4 py-2 bg-cyan-50 text-cyan-700 rounded-[12px] text-sm border border-cyan-200'>
-             
-             <Clock1 className='mr-2' /> 07 Day free Trial
+
+              <Clock1 className='mr-2' /> 07 Day free Trial
               {/* <Zap className='mr-2' /> Auto-upgrade available if request limit
               is reached */}
             </div>
           </div>
 
           {/* <div className='grid md:grid-cols-3 flex items-center justify-center gap-7 md:gap-8 max-w-6xl mx-auto'> */}
-            {/* changes by client */}
-                      <div className=' p-4 flex items-center justify-center gap-7 md:gap-8 max-w-6xl mx-auto'>
+          {/* changes by client */}
+          <div className=' p-4 flex items-center justify-center gap-7 md:gap-8 max-w-6xl mx-auto'>
 
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
                 className={`rounded-lg p-4 md:p-8 flex flex-col ${plan.popular
-                    ? ' border-2 border-cyan-500 shadow-lg'
-                    : 'bg-white border-2 border-gray-200'
+                  ? ' border-2 border-cyan-500 shadow-lg'
+                  : 'bg-white border-2 border-gray-200'
                   }`}
               >
                 {plan.popular && (
@@ -523,8 +502,8 @@ export default function Homepage() {
                 <div className='mt-auto'>
                   <button
                     className={`w-full py-3 rounded-lg font-medium ${plan.popular
-                        ? 'bg-cyan-500 text-white hover:bg-cyan-600'
-                        : 'bg-white text-cyan-500 border-2 border-cyan-500 hover:bg-cyan-50'
+                      ? 'bg-cyan-500 text-white hover:bg-cyan-600'
+                      : 'bg-white text-cyan-500 border-2 border-cyan-500 hover:bg-cyan-50'
                       }`}
                   >
                     Get Started
@@ -536,9 +515,9 @@ export default function Homepage() {
 
           <p className='text-center text-gray-600 mt-8'>
             Need a custom plan?{' '}
-            <a href='#' className='text-cyan-500 hover:underline'>
+            <Link to='/contact' className='text-cyan-500 hover:underline'>
               Contact us
-            </a>{' '}
+            </Link>{' '}
             for enterprise pricing.
           </p>
         </div>

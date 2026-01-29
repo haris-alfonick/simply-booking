@@ -69,6 +69,17 @@ export const updateBusinessData = async (id, data) => {
   }
 };
 
+
+export const deleteBusinessData = async (id, data) => {
+  try {
+    const response = await api.delete(`/businesses/${id}`, {data});
+    return response.data;
+  } catch (error) {
+    console.error('Error updating business:', error);
+    throw error;
+  }
+};
+
 export const uploadImage = async (file, fieldName) => {
   try {
     const formData = new FormData();

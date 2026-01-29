@@ -9,6 +9,8 @@ const businessRoutes = require('./router/businessRoutes');
 require('./models/ConnectDB');
 const quoteRoutes = require('./router/quoteRoutes');
 const reviewRoute = require('./router/reviewRoutes');
+const contectRoutes = require('./router/contectRoutes');
+
 
 const PORT = process.env.PORT;
 const app = express();
@@ -25,7 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/businesses', businessRoutes);
 app.use('/api/quotes',quoteRoutes);
 app.use('/api/reviews', reviewRoute);
-
+app.use("/api/contact", contectRoutes);
 
 
 app.listen(PORT || 5001, () => {

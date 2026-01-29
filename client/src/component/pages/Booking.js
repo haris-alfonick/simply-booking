@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Phone, Mail, MapPin, Clock, Globe, FileText, Plus, Trash2, Check, ArrowLeft, ArrowRight, Star, Wrench, Camera, Building2, Lightbulb, Stars } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Globe, FileText, Plus, Trash2, Check, ArrowLeft, ArrowRight, Star, Wrench, Camera, Building2, Lightbulb, Stars, Locate } from 'lucide-react';
 import { API_BASE_URL, checkDomainAvailability, generateUniqueDomain, saveBusinessData } from '../api/Api';
 import { showError, showSuccess } from '../utils/toast';
 import axios from 'axios';
@@ -47,6 +47,11 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
       showError('City/Town is required');
       return false;
     }
+
+    if (!formData.location || !formData.location.trim()) {
+      showError('location is required');
+      return false;
+    }
     if (!(formData.businessLogo instanceof File)) {
       showError('logo is required');
       return false;
@@ -86,7 +91,7 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
   useEffect(() => {
     if (chipsRef.current) {
       const width = chipsRef.current.offsetWidth;
-      setInputPadding(width + 24); // add spacing buffer
+      setInputPadding(width + 24);
     } else {
       setInputPadding(16);
     }
@@ -182,6 +187,22 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={formData.cityTown}
             onChange={(e) => updateField('cityTown', e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-1 gap-4 mb-4">
+        <div>
+          <label className="flex items-center text-sm font-medium mb-2">
+            <Locate className="mr-2 text-blue-500" size={18} />
+            Your Location <span className="text-red-500 ml-1">*</span>
+          </label>
+          <input
+            type="text"
+            placeholder="location"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={formData.location}
+            onChange={(e) => updateField('location', e.target.value)}
           />
         </div>
       </div>
@@ -392,7 +413,6 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
     setChecking(true);
     try {
       const result = await checkDomainAvailability(formData.domain);
-      console.log(result.available)
       setAvailable(result.available);
     } catch (error) {
       console.error('Error checking domain:', error);
@@ -1076,7 +1096,8 @@ const Booking = () => {
     image1: null,
     image2: null,
     image3: null,
-    userId: ''
+    userId: '',
+    location: ''
   });
 
   const totalSteps = 8;
@@ -1225,6 +1246,7 @@ const Booking = () => {
       formDataToSend.append('hours', JSON.stringify(formData.hours));
       formDataToSend.append('services', JSON.stringify(formData.services));
       formDataToSend.append('questions', JSON.stringify(formData.questions));
+      formDataToSend.append('location', JSON.stringify(formData.location));
 
       if (formData.businessLogo) {
         formDataToSend.append('businessLogo', formData.businessLogo);
@@ -1241,7 +1263,7 @@ const Booking = () => {
       const response = await fetch(API_BASE_URL + '/businesses', {
         method: 'POST',
         body: formDataToSend,
-        headers:{
+        headers: {
           Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
         }
       });
