@@ -1,17 +1,20 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import './App.css';
 import Form from './component/pages/Form';
 
 import { About, Contact, Booking, ClientDashboard, Homepage, Login, MainDashboard, PageNotFound, Service, SignUp, PrivateRoute } from './component';
+import AuthWatcher from './component/utils/AuthWatcher';
 
 
 const App = () => {
+
   return (
     <>
       <Router>
+        <AuthWatcher />
         <Routes>
           <Route path='/' element={<Homepage />} />
           <Route path='/about' element={<About />} />
@@ -19,8 +22,6 @@ const App = () => {
           <Route path='/form' element={<Form />} />
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<SignUp />} />
-
-          {/* dashboard */}
 
           <Route element={<PrivateRoute />}>
             <Route path="/booking" element={<Booking />} />

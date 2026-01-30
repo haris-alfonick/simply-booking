@@ -1,7 +1,5 @@
 
 const Contact = require('../models/Contect')
-
-
 exports.createContact = async (req, res) => {
     try {
         const { fullName, email, subject, message } = req.body;
@@ -33,7 +31,6 @@ exports.getAllContacts = async (req, res) => {
     }
 };
 
-
 exports.getContactById = async (req, res) => {
     try {
         const contact = await Contact.findById(req.params.id);
@@ -47,7 +44,6 @@ exports.getContactById = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
 
 exports.updateContact = async (req, res) => {
     try {
@@ -66,7 +62,6 @@ exports.updateContact = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
 
 exports.deleteContact = async (req, res) => {
     try {

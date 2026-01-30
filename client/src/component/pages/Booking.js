@@ -214,7 +214,6 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
         </label>
 
         <div className="relative">
-          {/* Chips */}
           <div
             ref={chipsRef}
             className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-2 flex-wrap max-w-[70%]"
@@ -239,7 +238,7 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
           {/* Input */}
           <input
             type="text"
-            placeholder="Add service area"
+            placeholder="Add service area then enter to next add area"
             value={newServiceArea}
             onChange={(e) => setNewServiceArea(e.target.value)}
             onKeyDown={(e) => {

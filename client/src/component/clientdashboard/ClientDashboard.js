@@ -502,8 +502,7 @@ const ClientDashboard = () => {
     const navigate = useNavigate();
 
     const user = JSON.parse(localStorage.getItem("user"));
-    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
+    useEffect(() => { fetchQuotes() }, [page, currentView, status, jobsView, search]);
     const fetchQuotes = async () => {
         try {
             const res = await getQuotes({
@@ -513,12 +512,12 @@ const ClientDashboard = () => {
                 limit: calendarView === "month" ? 30 : 10,
             });
 
+            // const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             // if (!res.ok) {
             //     await delay(1000); 
             //     navigate('/');
             //     return;
             // }
-
             setQuotes(res);
             setTotalPages(res.pagination?.totalPages ?? 0);
 
@@ -526,11 +525,6 @@ const ClientDashboard = () => {
             console.error('Failed to fetch quotes:', err);
         }
     };
-
-
-    useEffect(() => {
-        fetchQuotes();
-    }, [page, status, jobsView, search]);
 
     // Stats for the dashboard view
     const stats = {
@@ -571,7 +565,7 @@ const ClientDashboard = () => {
                         ].map((item) => (
                             <button
                                 key={item.view}
-                                onClick={() => { setStatus(""); setCurrentView(item.view); setJobsView("request"); }}
+                                onClick={() => { setStatus(item.view === "jobs" ? "request" : ""); setCurrentView(item.view); setJobsView("request"); }}
                                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${currentView === item.view ? 'bg-cyan-50 text-cyan-600' : 'text-gray-700 hover:bg-gray-50'}`}
                             >
                                 <item.icon className="w-5 h-5" />
@@ -581,7 +575,9 @@ const ClientDashboard = () => {
                     </nav>
 
                     <div className="absolute bottom-0 w-64 p-4 border-t corsur-pointer">
-                        <button onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); navigate('/login') }} className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mb-1">
+                        <button onClick={() => {
+                            localStorage.removeItem("user"); localStorage.removeItem("token"); localStorage.removeItem('expiresAt'); navigate('/login')
+                        }} className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mb-1">
                             <ArrowBigRight className="w-5 h-5" />
                             <span>Log Out</span>
                         </button>

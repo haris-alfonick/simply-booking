@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const User = require("../models/User");
 
-dotenv.config({ path: "config.env" });
+dotenv.config({ path: 'config/config.env' });
 
 const { JWT_SECRET } = process.env;
 

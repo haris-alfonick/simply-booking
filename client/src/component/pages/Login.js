@@ -33,6 +33,7 @@ const Login = () => {
             if (result?.token) {
                 localStorage.setItem("user", JSON.stringify(result.user));
                 localStorage.setItem("token", JSON.stringify(result.token));
+                localStorage.setItem('expiresAt', result.expiresAt);
                 showSuccess("Login successful");
                 if (result.role === 1) { navigate("/maindashboard") } else { navigate("/clientdashboard") }
             } else {

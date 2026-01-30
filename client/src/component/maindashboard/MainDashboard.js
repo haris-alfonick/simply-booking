@@ -53,10 +53,17 @@ const Dashboard = () => {
   const [pagination, setPagination] = useState({});
   const [analytics, setAnalytics] = useState({});
   const [search, setSearch] = useState('');
+  const [contectus, setContectus] = useState([]);
+
+
 
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "null");
+
+
+
+
 
   const fetchBusinesses = useCallback(async () => {
     try {
@@ -365,13 +372,47 @@ const Dashboard = () => {
     },
   ];
 
+  const contectColumns = [
+    {
+      key: 'fullName',
+      label: 'User Name',
+      render: (_, row) => (
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center text-red-500">
+            <span className="text-sm font-medium">{row.fullName.charAt(0)}</span>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900">{row.fullName}</p>
+            <p className="text-xs text-gray-500">{row.email}</p>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'subject',
+      label: 'subject',
+      align: 'center'
+    },
+    {
+      key: 'message',
+      label: 'message',
+      align: 'center'
+    },
+    {
+      key: 'createAt',
+      label: 'Date',
+      align: 'right',
+      render: (_, row) => row.createAt ? new Date(row.createAt).toLocaleDateString("en-GB") : 'N/A'
+    },
+
+  ];
+
+
   const trialBusinesses = businesses.filter(b => b.status === "Trial");
   const cancelledBusinesses = businesses.filter(b => b.status === "Cancelled");
 
   return (
     <div className="flex h-screen bg-gray-50">
-
-
 
       <div className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-white border-r overflow-hidden`}>
         <div className="p-6">
@@ -400,16 +441,14 @@ const Dashboard = () => {
           ))}
         </nav>
 
-
         <div className="absolute bottom-0 w-64 p-4 border-t corsur-pointer">
-          <button onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); navigate('/login') }} className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mb-1">
+          <button onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); localStorage.removeItem('expiresAt'); navigate('/login') }} className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mb-1">
             <ArrowBigRight className="w-5 h-5" />
             <span>Log Out</span>
           </button>
         </div>
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
-
 
         <header className="bg-white border-b px-6 py-4">
           <div className="flex items-center justify-between">
@@ -688,6 +727,32 @@ const Dashboard = () => {
               />
             </>
           )}
+
+          {activeTab === 'contact' && (
+            <>
+              <Header user={user} title="Contect User" subtitle="Track and analyze User Want to Contect us" />
+
+              {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {cancellationStats.map((stat, idx) => (
+                  <StatCard key={idx} {...stat} />
+                ))}
+              </div> */}
+
+              <DataTable
+                columns={contectColumns}
+                data={cancelledBusinesses}
+                // filters={[
+                //   { key: 'location', label: 'Location' }
+                // ]}
+                searchable={true}
+                filename="Contact Us"
+                page={page}
+                setPage={setPage}
+                pagination={pagination}
+              />
+            </>
+          )}
+
 
         </div>
       </div>

@@ -64,9 +64,7 @@ exports.getAllQuotes = async (req, res) => {
     if (status) {
       query.status = status;
     }
-    // if (businessId && mongoose.Types.ObjectId.isValid(businessId)) {
-    //  query.businessId = new mongoose.Types.ObjectId(businessId);
-    // }
+
 
 
     if (search) {
@@ -83,8 +81,9 @@ exports.getAllQuotes = async (req, res) => {
 
     const total = await Quote.countDocuments(query);
 
+
     const statusCounts = await Quote.aggregate([
-      { $match: { businessId: businessId } },
+      { $match: { businessId: businessId.toString() } },
       {
         $group: {
           _id: "$status",
@@ -101,6 +100,7 @@ exports.getAllQuotes = async (req, res) => {
       completed: 0,
       request: 0
     };
+
 
     statusCounts.forEach(item => {
       counts.totalRequests += item.count;
@@ -587,6 +587,21 @@ exports.updateQuote = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+// if (businessId && mongoose.Types.ObjectId.isValid(businessId)) {
+//  query.businessId = new mongoose.Types.ObjectId(businessId);
+// }
+
+
+
+
+
 
 
 

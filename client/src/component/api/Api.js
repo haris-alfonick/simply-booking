@@ -2,6 +2,9 @@ import axios from 'axios';
 // 
 export const API_BASE_URL = 'http://192.168.10.183:5000/api';
 // export const API_BASE_URL = 'http://localhost:5000/api';
+// 
+
+export const PAYPAL_BASE_URL = 'http://192.168.10.183:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,6 +14,9 @@ const api = axios.create({
   },
 });
 
+export const YOUR_PAYPAL_CLIENT_ID = "YOUR_PAYPAL_CLIENT_ID"
+export const currency = "USD"
+export const intent = "CAPTURE"
 
 export const generateUniqueDomain = async (businessName) => {
   try {
@@ -72,7 +78,7 @@ export const updateBusinessData = async (id, data) => {
 
 export const deleteBusinessData = async (id, data) => {
   try {
-    const response = await api.delete(`/businesses/${id}`, {data});
+    const response = await api.delete(`/businesses/${id}`, { data });
     return response.data;
   } catch (error) {
     console.error('Error updating business:', error);
