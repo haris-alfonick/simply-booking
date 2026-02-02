@@ -2,11 +2,15 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Chart from "react-apexcharts";
 
 import {
-  Search, Download, ChevronLeft, ChevronRight, Bell, Users, Settings, HelpCircle, LayoutDashboard, Clock, CircleX, UserPlus, CreditCard, TrendingUp, Calendar, TriangleAlert, TrendingDown, X, Menu, ArrowBigRight
+  Search, Download, ChevronLeft, ChevronRight, Bell, Users, Settings, HelpCircle, LayoutDashboard, Clock, CircleX, UserPlus, CreditCard, TrendingUp, Calendar, TriangleAlert, TrendingDown, X, Menu, ArrowBigRight,
+  ContactRound
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'
 import { getBusinesses } from '../api/Api';
 import { DataTable } from "./DataTable";
+import ContectUser from './ContectUser';
+import Transectino from './Transectino';
+import User from './User';
 
 const Header = ({ user, title, subtitle, hide }) => (
   <div className='flex justify-between bg-gradient-to-r from-cyan-50 to-blue-50 p-6 mb-4 rounded-lg'>
@@ -53,9 +57,6 @@ const Dashboard = () => {
   const [pagination, setPagination] = useState({});
   const [analytics, setAnalytics] = useState({});
   const [search, setSearch] = useState('');
-  const [contectus, setContectus] = useState([]);
-
-
 
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
@@ -82,27 +83,37 @@ const Dashboard = () => {
     }
   }, [search, page]);
 
+
+
   useEffect(() => {
     fetchBusinesses();
   }, [fetchBusinesses]);
 
-
   const getLast6Months = () => {
-    return Array.from({ length: 6 }, (_, i) => {
-      const date = new Date();
-      date.setMonth(date.getMonth() - (5 - i));
-      return {
-        key: `${date.getFullYear()}-${date.getMonth() + 1}`,
+    const result = [];
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+
+      result.push({
+        key: `${year}-${month}`,     // e.g. 2024-01
         label: date.toLocaleString("default", { month: "short" })
-      };
-    });
+      });
+    }
+
+    return result;
   };
+
 
   const chartState = useMemo(() => {
     if (!analytics?.cancellationsLast6Months) return null;
 
     const months = getLast6Months();
-    const data = months.map(m => {
+    const data = months.map((m, idx) => {
       const match = analytics.cancellationsLast6Months.find(
         x => `${x.year}-${x.month}` === m.key
       );
@@ -372,42 +383,6 @@ const Dashboard = () => {
     },
   ];
 
-  const contectColumns = [
-    {
-      key: 'fullName',
-      label: 'User Name',
-      render: (_, row) => (
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center text-red-500">
-            <span className="text-sm font-medium">{row.fullName.charAt(0)}</span>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900">{row.fullName}</p>
-            <p className="text-xs text-gray-500">{row.email}</p>
-          </div>
-        </div>
-      )
-    },
-    {
-      key: 'subject',
-      label: 'subject',
-      align: 'center'
-    },
-    {
-      key: 'message',
-      label: 'message',
-      align: 'center'
-    },
-    {
-      key: 'createAt',
-      label: 'Date',
-      align: 'right',
-      render: (_, row) => row.createAt ? new Date(row.createAt).toLocaleDateString("en-GB") : 'N/A'
-    },
-
-  ];
-
-
   const trialBusinesses = businesses.filter(b => b.status === "Trial");
   const cancelledBusinesses = businesses.filter(b => b.status === "Cancelled");
 
@@ -428,6 +403,27 @@ const Dashboard = () => {
             { icon: Users, label: 'All Clients', view: 'clients' },
             { icon: Clock, label: 'Trial Clients', view: 'trials' },
             { icon: CircleX, label: 'Cancellations', view: 'cancellations' },
+          ].map((item) => (
+            <button
+              key={item.view}
+              onClick={() => setActiveTab(item.view)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === item.view ? 'bg-cyan-50 text-cyan-600' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <nav className="px-4 space-y-1">
+          <p className="text-xs font-semibold text-gray-400 px-3 mb-2">ANALYTICS</p>
+          {[
+
+            { icon: CreditCard, label: 'Transection', view: 'transection' },
+            { icon: UserPlus, label: 'Users', view: 'users' },
+            { icon: ContactRound, label: 'Contact', view: 'contact' },
+
           ].map((item) => (
             <button
               key={item.view}
@@ -731,25 +727,20 @@ const Dashboard = () => {
           {activeTab === 'contact' && (
             <>
               <Header user={user} title="Contect User" subtitle="Track and analyze User Want to Contect us" />
+              <ContectUser search={search} setSearch={setSearch} />
+            </>
+          )}
 
-              {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {cancellationStats.map((stat, idx) => (
-                  <StatCard key={idx} {...stat} />
-                ))}
-              </div> */}
-
-              <DataTable
-                columns={contectColumns}
-                data={cancelledBusinesses}
-                // filters={[
-                //   { key: 'location', label: 'Location' }
-                // ]}
-                searchable={true}
-                filename="Contact Us"
-                page={page}
-                setPage={setPage}
-                pagination={pagination}
-              />
+          {activeTab === 'transection' && (
+            <>
+              <Header user={user} title="Transectinos" subtitle="Client Transection" />
+              <Transectino search={search} setSearch={setSearch} />
+            </>
+          )}
+          {activeTab === 'users' && (
+            <>
+              <Header user={user} title="Users" subtitle="User List of Signup /Login" />
+              <User search={search} setSearch={setSearch} />
             </>
           )}
 

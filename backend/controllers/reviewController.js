@@ -1,8 +1,5 @@
 const Review = require('../models/Review');
 
-/**
- * Create a new review
- */
 exports.createReview = async (req, res) => {
     try {
         const { reviewName, reviewEmail, reviewText, businessId, ratingStars } = req.body;
@@ -29,9 +26,6 @@ exports.createReview = async (req, res) => {
     }
 };
 
-/**
- * Get all reviews
- */
 exports.getAllReviews = async (req, res) => {
     try {
         const reviews = await Review.find().sort({ createdAt: -1 }).limit(3);
@@ -52,7 +46,6 @@ exports.getAllReviews = async (req, res) => {
 
 exports.getAllReviewsBusinessId = async (req, res) => {
     const { businessId } = req.body;
-    // console.log(businessId,"from get reviews")
     try {
         const reviews = await Review.find({businessId}).sort({ createdAt: -1 }).limit(5);
 
@@ -70,10 +63,6 @@ exports.getAllReviewsBusinessId = async (req, res) => {
     }
 };
 
-
-/**
- * Get single review by ID
- */
 exports.getReviewById = async (req, res) => {
     try {
         const review = await Review.findById(req.params.id);
@@ -98,9 +87,6 @@ exports.getReviewById = async (req, res) => {
     }
 };
 
-/**
- * Delete review
- */
 exports.deleteReview = async (req, res) => {
     try {
         const review = await Review.findByIdAndDelete(req.params.id);

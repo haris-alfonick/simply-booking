@@ -1,13 +1,15 @@
 // routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
-const { sendOTP, verifyOTP, resendOTP, login } = require('../controllers/authController');
+const { sendOTP, verifyOTP, resendOTP, login, getAllUsers } = require('../controllers/authController');
+const { isAdmin } = require('../middleware/VerifyToken');
 
 // Send OTP to email
 router.post('/send-otp', sendOTP);
 router.post('/verify-otp', verifyOTP);
 router.post('/resend-otp', resendOTP);
 router.post('/login', login);
+router.get('/users', isAdmin, getAllUsers);
 
 module.exports = router;
 

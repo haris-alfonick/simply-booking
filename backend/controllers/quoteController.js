@@ -588,23 +588,9 @@ exports.updateQuote = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
 // if (businessId && mongoose.Types.ObjectId.isValid(businessId)) {
 //  query.businessId = new mongoose.Types.ObjectId(businessId);
 // }
-
-
-
-
-
-
-
-
 
 
 

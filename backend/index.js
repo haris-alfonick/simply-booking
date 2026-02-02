@@ -29,8 +29,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/businesses', businessRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/reviews', reviewRoute);
-app.use("/api/contact", contectRoutes);
-
+app.use("/api/contacts", contectRoutes);
 
 app.use('/api/paypal', paymentRoutes);
 

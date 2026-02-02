@@ -13,36 +13,8 @@ const App = () => {
 
   return (
     <>
-      <Router>
-        <AuthWatcher />
-        <Routes>
-          <Route path='/' element={<Homepage />} />
-          <Route path='/about' element={<About />} />
-          <Route path='/contact' element={<Contact />} />
-          <Route path='/form' element={<Form />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/signup' element={<SignUp />} />
 
-          <Route element={<PrivateRoute />}>
-            <Route path="/booking" element={<Booking />} />
-            <Route path="/service/:id" element={<Service />} />
-            <Route path="/clientdashboard" element={<ClientDashboard />} />
-            <Route path="/maindashboard" element={<MainDashboard />} />
-          </Route>
-          <Route path='*' element={<PageNotFound />} />
-
-        </Routes>
-      </Router>
-      <ToastContainer position="top-right" autoClose={3000} />
-    </>
-  );
-};
-
-export default App;
-
-
-
-{/* <Router>
+    <Router>
         <Routes>
           <Route path='/' element={<Homepage />} />
           <Route path='/about' element={<About />} />
@@ -67,4 +39,30 @@ export default App;
 
         </Routes>
       </Router>
+      <ToastContainer position="top-right" autoClose={3000} />
+      {/* <Router>
+        <AuthWatcher />
+        <Routes>
+          <Route path='/' element={<Homepage />} />
+          <Route path='/about' element={<About />} />
+          <Route path='/contact' element={<Contact />} />
+          <Route path='/form' element={<Form />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/signup' element={<SignUp />} />
+
+          <Route element={<PrivateRoute />}>
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/service/:id" element={<Service />} />
+            <Route path="/clientdashboard" element={<ClientDashboard />} />
+            <Route path="/maindashboard" element={<MainDashboard />} />
+          </Route>
+          <Route path='*' element={<PageNotFound />} />
+
+        </Routes>
+      </Router>
       <ToastContainer position="top-right" autoClose={3000} /> */}
+    </>
+  );
+};
+
+export default App;

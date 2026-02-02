@@ -151,7 +151,7 @@ export const DataTable = ({ columns, data, filters = [], searchable = true, titl
       )} */}
 
 
-      {pagination.totalPages > 1 && (
+      {pagination?.totalPages > 1 && (
         <div className="p-4 border-t border-gray-200 flex items-center justify-between">
           <div className="text-sm text-gray-500">
             Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries

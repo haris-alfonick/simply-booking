@@ -24,10 +24,40 @@ exports.createContact = async (req, res) => {
 
 exports.getAllContacts = async (req, res) => {
     try {
-        const contacts = await Contact.find().sort({ createdAt: -1 });
-        res.status(200).json(contacts);
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+        const search = req.query.search || "";
+
+        const skip = (page - 1) * limit;
+
+        const searchQuery = search
+            ? {
+                  $or: [
+                      { fullName: { $regex: search, $options: "i" } },
+                      { email: { $regex: search, $options: "i" } },
+                  ]
+              }
+            : {};
+
+        const [contacts, total] = await Promise.all([
+            Contact.find(searchQuery)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Contact.countDocuments(searchQuery)
+        ]);
+
+        res.status(200).json({
+            data: contacts,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Failed to fetch contacts" });
     }
 };
 

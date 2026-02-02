@@ -4,7 +4,6 @@ const Payment = require('../models/Payment');
 
 exports.createPaypalOrder = async (req, res) => {
     try {
-        console.log(req.user)
         const { amount, customerName, customerEmail } = req.body;
 
         if (!amount || !customerName || !customerEmail) {
@@ -72,19 +71,42 @@ exports.captureOrder = async (req, res) => {
     }
 };
 
+exports.getAllPayment = async (req, res) => {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+    const search = req.query.search || "";
+    const skip = (page - 1) * limit
 
+    try {
+        const searchQuery = search ? {
+            $or: [
+                { customerName: { $regex: search, $options: "i" } },
+                { customerEmail: { $regex: search, $oprions: "i" } }
+            ]
+        } : {};
 
+        const [transections, total] = await Promise.all([
+            Payment.find(searchQuery)
+                .sort({ createAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Payment.countDocuments(searchQuery)
+        ])
 
+        res.status(200).json({
+            data: transections,
+            pagimation: {
+                total,
+                page,
+                limit,
+                totalpages: Math.ceil(total / limit)
+            }
+        })
 
-
-
-
-
-
-
-
-
-
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch contacts" })
+    }
+}
 
 
 

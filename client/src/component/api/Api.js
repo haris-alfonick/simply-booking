@@ -63,8 +63,6 @@ export const getBusinesses = async ({
   return response.data;
 };
 
-
-
 export const updateBusinessData = async (id, data) => {
   try {
     const response = await api.put(`/businesses/${id}`, data);
@@ -74,7 +72,6 @@ export const updateBusinessData = async (id, data) => {
     throw error;
   }
 };
-
 
 export const deleteBusinessData = async (id, data) => {
   try {
@@ -104,7 +101,6 @@ export const uploadImage = async (file, fieldName) => {
   }
 };
 
-
 export const login = async (user) => {
   try {
     const response = await api.post('/auth/login', user);
@@ -125,4 +121,26 @@ export const getQuotes = async ({ search, businessId, page = 1, limit = 10, stat
   });
   return await res.json();
 };
+
+export const getContacts = async ({ page = 1, limit = 10, search = "" }) => {
+  const response = await api.get("/contacts", {
+    params: { page, limit, search }
+  });
+  return response.data;
+};
+
+export const getAllUsers = async ({ page = 1, limit = 10, search = "" }) => {
+  const response = await api.get("/auth/users", {
+    params: { page, limit, search }
+  });
+  return response.data;
+};
+
+export const getTransections = async ({ page = 1, limit = 10, search = "" }) => {
+  const response = await api.get("/paypal/getAll-payment", {
+    params: { page, limit, search }
+  });
+  return response.data;
+};
+
 

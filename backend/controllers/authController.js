@@ -297,6 +297,46 @@ exports.login = async (req, res) => {
 
 
 
+exports.getAllUsers = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+    const search = req.query.search || "";
+
+    const skip = (page - 1) * limit;
+
+    const searchQuery = search
+      ? {
+        $or: [
+          { fullName: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ]
+      }
+      : {};
+
+    const [users, total] = await Promise.all([
+      User.find(searchQuery)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(searchQuery)
+    ]);
+
+    res.status(200).json({
+      data: users,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch contacts" });
+  }
+};
+
+
 
 
 
