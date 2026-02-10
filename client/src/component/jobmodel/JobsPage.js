@@ -3,7 +3,7 @@ import JobModal from "./common/JobModal";
 import { API_BASE_URL } from "../api/Api";
 import { showSuccess } from "../utils/toast";
 
-const JobsPage = ({ btnName, jobs }) => {
+const JobsPage = ({ btnName, jobs, fetchQuotes }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
 
@@ -39,9 +39,10 @@ const JobsPage = ({ btnName, jobs }) => {
       });
 
       if (response.ok) {
-        showSuccess("Estimate sent to client");
         setIsModalOpen(false);
         setSelectedJob(null);
+        fetchQuotes();
+
         await new Promise((res) => setTimeout(res, 1000));
       } else {
         throw new Error("Request failed");
@@ -59,6 +60,9 @@ const JobsPage = ({ btnName, jobs }) => {
       notes: selectedJob.notes,
     };
     handleApiRequest("POST", `/quotes/send-estimate/${selectedJob._id}`, body);
+    fetchQuotes();
+    showSuccess("Estimate sent to client");
+
   };
 
   const handleSchedule = () => {
@@ -67,6 +71,9 @@ const JobsPage = ({ btnName, jobs }) => {
       time: selectedJob.time,
     };
     handleApiRequest("PUT", `/quotes/update/${selectedJob._id}`, body);
+    fetchQuotes();
+    showSuccess("Schedule updated successfully");
+
   };
 
   const handleMarkCompleted = () => {
@@ -74,6 +81,9 @@ const JobsPage = ({ btnName, jobs }) => {
       status: "completed",
     };
     handleApiRequest("PUT", `/quotes/update/${selectedJob._id}`, body);
+    fetchQuotes();
+    showSuccess("Job marked as completed");
+
   };
 
 
@@ -171,6 +181,7 @@ const JobsPage = ({ btnName, jobs }) => {
         loading={loading}
         error={error}
         API_BASE_URL={API_BASE_URL}
+        fetchQuotes={fetchQuotes}
       />
     </>
   );

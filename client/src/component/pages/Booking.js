@@ -27,10 +27,9 @@ const StepIndicator = ({ currentStep, steps }) => {
 const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceArea, toggleDay, handleFileUpload,
   setCurrentStep, currentStep, removeServiceArea, setNewServiceArea, updateHours, saveToLocalStorage }) => {
   const chipsRef = useRef(null);
-  const [inputPadding, setInputPadding] = useState(16); // default left padding
+  const [inputPadding, setInputPadding] = useState(16);
 
   const validateStep = () => {
-    // console.log(formData)
     if (!formData.businessName || !formData.businessName.trim()) {
       showError('Business name is required');
       return false;
@@ -59,6 +58,10 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
 
     if (!(formData.businessCoverPhoto instanceof File)) {
       showError('Cover photo is required');
+      return false;
+    }
+    if (!formData.businessDescription || !formData.businessDescription.trim()) {
+      showError('Business description is required');
       return false;
     }
 
@@ -100,7 +103,7 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
 
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-lg p-4 md:p-6 lg:p-8">
+    <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-4 md:p-6 lg:p-8">
       <h1 className="text-3xl font-bold mb-2">Set Up Your Business</h1>
       <p className="text-gray-600 mb-8">Tell us about your business</p>
 
@@ -121,7 +124,7 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
               />
             ) : (
               <>
-                <Camera className="text-blue-500 mb-1" size={40} />
+                <Camera className="text-blue-500 mb-1" size={32} />
                 <p className="text-sm text-blue-500">Logo</p>
               </>
             )}
@@ -254,45 +257,10 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
         </div>
       </div>
 
-
-      {/* <div className="mb-4">
-        <label className="flex items-center text-sm font-medium mb-2">
-          <MapPin className="mr-2 text-blue-500" size={18} />
-          Service Areas
-        </label>
-        <div className="flex gap-2 mb-2 flex-wrap">
-          {formData.serviceAreas.map((area, index) => (
-            <span key={index} className="px-3 py-1 bg-gray-100 text-cyan-600 rounded-full text-sm flex items-center gap-2">
-              {area}
-              <button
-                type="button"
-                onClick={() => removeServiceArea(index)}
-                className="text-cyan-600 hover:text-cyan-800 font-bold"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-        <input
-          type="text"
-          placeholder="Add service area"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={newServiceArea}
-          onChange={(e) => setNewServiceArea(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              addServiceArea();
-            }
-          }}
-        />
-      </div> */}
-
-      <div className="mb-6">
+      <div className="mb-4 lg:mb-6">
         <label className="flex items-center text-sm font-medium mb-2">
           <FileText className="mr-2 text-blue-500" size={18} />
-          Description <span className="text-gray-400 ml-1">(optional)</span>
+          Description
         </label>
         <textarea
           placeholder="Tell customers about your business..."
@@ -303,19 +271,59 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
         />
       </div>
 
-      <div className="mb-6 bg-gray-100 p-4 rounded-lg">
+      <div className="mb-4 lg:mb-6 bg-gray-100 p-4 rounded-lg">
         <label className="flex items-center text-sm font-medium mb-4">
           <Clock className="mr-2 text-blue-500" size={18} />
           Hours of Operation
         </label>
         {Object.entries(formData.hours).map(([day, hours]) => (
+          <div
+            key={day}
+            className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3"
+          >
+            {/* Day button */}
+            <button
+              type="button"
+              onClick={() => toggleDay(day)}
+              className={`px-3 py-1 rounded-xl font-medium text-sm w-16 text-center transition
+        ${!hours.closed ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-500"}
+      `}
+            >
+              {day.charAt(0).toUpperCase() + day.slice(1, 3)}
+            </button>
+
+            {!hours.closed ? (
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full">
+                <input
+                  // type="time"
+                  value={hours.start}
+                  onChange={(e) => updateHours(day, "start", e.target.value)}
+                  className="time-input w-[32px] sm:w-auto px-3 py-1 border text-sm border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                />
+
+                <span className="text-gray-500 hidden sm:inline">to</span>
+
+                <input
+                  // type="time"
+                  value={hours.end}
+                  onChange={(e) => updateHours(day, "end", e.target.value)}
+                  className="time-input w-[32px] sm:w-auto px-3 py-1 border text-sm border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            ) : (
+              <span className="text-gray-400 text-sm">Closed</span>
+            )}
+          </div>
+        ))}
+
+        {/* {Object.entries(formData.hours).map(([day, hours]) => (
           <div key={day} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2">
             <button
               type="button"
               onClick={() => toggleDay(day)}
-              className={'px-3 py-1 rounded-xl font-medium text-sm w-24 text-center transition ' + (!hours.closed ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500')}
+              className={'px-3 py-1 rounded-xl font-medium text-sm w-16 text-center transition inline-block ' + (!hours.closed ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500')}
             >
-              {day.charAt(0).toUpperCase() + day.slice(1)}
+              {day.charAt(0).toUpperCase() + day.slice(1, 3)}
             </button>
             {!hours.closed ? (
               <div className="flex items-center gap-2">
@@ -323,25 +331,26 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
                   type="time"
                   value={hours.start}
                   onChange={(e) => updateHours(day, 'start', e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 w-32"
+                  className="px-2 lg:px-3 py-1 border text-sm md:text-medium border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 w-"
                 />
                 <span className="text-gray-500">to</span>
                 <input
                   type="time"
                   value={hours.end}
                   onChange={(e) => updateHours(day, 'end', e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 w-32"
+                  className="px-2 lg:px-3 py-1 border text-sm md:text-medium border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 w-"
                 />
               </div>
             ) : (
               <span className="text-gray-400">Closed</span>
             )}
           </div>
-        ))}
+        ))} */}
       </div>
 
-      <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center mb-6 cursor-pointer hover:border-blue-400 transition">
+      <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 lg:p-8 text-center mb-6 cursor-pointer hover:border-blue-400 transition">
         <label className="cursor-pointer block">
+
           <input
             type="file"
             accept="image/*"
@@ -366,7 +375,7 @@ const BusinessInfoStep = ({ formData, updateField, newServiceArea, addServiceAre
         <button
           type="button"
           onClick={() => handleNext()}
-          className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1"
+          className="bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white text-sm  px-2 py-2 lg:px-6 lg:py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1"
         >
           Next: Choose Domain<ArrowRight size={18} />
         </button>
@@ -490,7 +499,7 @@ const DomainStep = ({ formData, updateField, currentStep, setCurrentStep, saveTo
           type="button"
           onClick={handleNext}
           disabled={available === false}
-          className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1 disabled:opacity-50"
+          className="bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white px-6 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1 disabled:opacity-50"
         >
           Add Services<ArrowRight size={18} />
         </button>
@@ -601,7 +610,7 @@ const AddServicesStep = ({ formData, addService, updateService, removeService, c
           <button
             type="button"
             onClick={handleNext}
-            className="bg-cyan-500 text-white px-8 py-2 rounded-lg hover:bg-cyan-600"
+            className="bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white px-8 py-2 rounded-lg hover:bg-cyan-600"
           >
             Next
           </button>
@@ -706,7 +715,7 @@ const QuestionnaireStep = ({ formData, addQuestion, updateQuestion, removeQuesti
           <button
             type="button"
             onClick={() => handleNext()}
-            className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
+            className="ml-auto bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
             Save Service</button>
         </div>
       </div>
@@ -745,7 +754,7 @@ const ServiceCreatedStep = ({ formData, currentStep, setCurrentStep, saveToLocal
         <button
           type="button"
           onClick={() => setCurrentStep(3)}
-          className="w-full bg-cyan-500 text-white py-3 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-2 mb-4"
+          className="w-full bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white py-3 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-2 mb-4"
         >
           <Plus size={20} />
           Add Another Service
@@ -781,7 +790,21 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
       <p className="text-gray-600 mb-8">This is how your customers will see your booking page.</p>
 
       <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <div className="h-32 bg-gradient-to-r from-blue-600 to-cyan-400 relative">
+
+
+        <div className="h-32 relative">
+          {formData?.businessCoverPhoto && (
+            <img
+              src={
+                formData.businessCoverPhoto instanceof File
+                  ? URL.createObjectURL(formData.businessCoverPhoto)
+                  : formData.businessCoverPhoto
+              }
+              alt="Business Cover Photo"
+              className="w-full h-full object-cover rounded-t-lg"
+            />
+
+          )}
           <div className="absolute -bottom-8 left-8 w-20 h-20 bg-white rounded-lg border-4 border-white flex items-center justify-center">
 
             {formData?.businessLogo && (
@@ -891,7 +914,7 @@ const PreviewStep = ({ formData, currentStep, setCurrentStep, saveToLocalStorage
         <button
           type="button"
           onClick={() => handleNext()}
-          className="ml-auto bg-cyan-500 text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
+          className="ml-auto bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white px-4 md:px-3 lg:px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center gap-1">
           Next: Choose Plan</button>
       </div>
     </div>
@@ -1001,7 +1024,7 @@ const RelatedImage = ({
               <button
                 type="button"
                 onClick={handleNext}
-                className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition"
+                className="bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition"
               >
                 Save Service
               </button>
@@ -1027,7 +1050,7 @@ const PricingStep = ({ currentStep, setCurrentStep, submitFormData }) => {
           <div className="text-center border-2 border-cyan-500 p-12 rounded-[20px]">
             <h4 className="text-gray-600 text-2xl mb-2 font-bold">ALL IN JUST</h4>
             <div className="text-7xl font-bold text-cyan-500 mb-2">$5.99</div>
-            <p className="text-gray-600">Per dayth</p>
+            <p className="text-gray-600">Per month</p>
           </div>
 
           <div className="space-y-3 p-4 ">
@@ -1052,11 +1075,11 @@ const PricingStep = ({ currentStep, setCurrentStep, submitFormData }) => {
               <ArrowRight className="text-cyan-500" size={20} />
               <span>No Hidden Fees</span>
             </div>
-            <button className=" bg-cyan-500 text-white py-2 px-4 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-1" onClick={() => setCurrentStep(currentStep - 1)}>
+            <button className=" bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white py-2 px-4 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-1" onClick={() => setCurrentStep(currentStep - 1)}>
               Next: Choose Plan
               <ArrowRight size={20} className='mt-1' />
             </button>
-            <button className=" bg-cyan-500 text-white py-2 px-4 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-1" onClick={() => submitFormData()}>
+            <button className=" bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] text-white py-2 px-4 rounded-lg hover:bg-cyan-600 flex items-center justify-center gap-1" onClick={() => submitFormData()}>
               Submit</button>
           </div>
 
@@ -1121,12 +1144,12 @@ const Booking = () => {
       setCurrentStep(Number(savedStep));
     }
 
-    setIsHydrated(true); // only after loading from localStorage
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (!isHydrated) return; // don't save before hydration
-    if (!formData.businessName) return; // optional: only save if valid
+    if (!isHydrated) return;
+    if (!formData.businessName) return;
     saveToLocalStorage();
   }, [formData, isHydrated]);
 
@@ -1282,9 +1305,9 @@ const Booking = () => {
     }
   };
   const ProgressBar = () => (
-    <div className="w-full bg-gray-200 h-1 mb-8 rounded-full overflow-hidden">
+    <div className="max-w-6xl mx-auto bg-gray-200 h-2 mb-8 rounded-full overflow-hidden">
       <div
-        className="bg-blue-500 h-1 transition-all duration-300"
+        className="bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] h-2 transition-all duration-300"
         style={{ width: ((currentStep / totalSteps) * 100) + '%' }}
       />
     </div>
@@ -1311,14 +1334,33 @@ const Booking = () => {
     }
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#D7F4FE] py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center text-white justify-center">
-            S
+        <div className="flex flex-col gap-3 mb-6 md:flex-row md:items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] rounded-lg flex items-center justify-center text-white font-bold">
+              S
+            </div>
+            <h1 className="text-lg md:text-2xl font-bold">SimplyBooking</h1>
           </div>
-          <h1 className="text-2xl font-bold">SimplyBooking</h1>
-          <span className="ml-auto text-sm text-gray-600">Step {currentStep} of {totalSteps} - {currentStep === 1 ? 'Business Info' : currentStep === 2 ? 'Domain' : currentStep === 3 ? 'Services' : currentStep === 4 ? 'Services' : currentStep === 5 ? 'Services' : currentStep === 6 ? 'Related Image' : currentStep === 6 ? 'Preview' : 'Preview'}</span>
+
+          <span className="md:ml-auto text-xs md:text-sm text-gray-700">
+            Step {currentStep} of {totalSteps} –{" "}
+            <span className='font-bold'> {currentStep === 1
+              ? "Business Info"
+              : currentStep === 2
+                ? "Domain"
+                : currentStep === 3
+                  ? "Services"
+                  : currentStep === 4
+                    ? "Services"
+                    : currentStep === 5
+                      ? "Services"
+                      : currentStep === 6
+                        ? "Related Image"
+                        : "Preview"}
+            </span>
+          </span>
         </div>
         <ProgressBar />
         {renderStep()}

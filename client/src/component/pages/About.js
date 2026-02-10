@@ -1,20 +1,4 @@
-import {
-  Award,
-  BarChart3,
-  Blocks,
-  BlocksIcon,
-  Calendar,
-  CalendarSearch,
-  CircleDotDashed,
-  DollarSign,
-  Eye,
-  Globe,
-  Heart,
-  Settings,
-  Users,
-  Wrench,
-  Zap
-} from 'lucide-react'
+import { Award, BarChart3, Blocks, BlocksIcon, Calendar, CalendarSearch, CircleDotDashed, DollarSign, Eye, Globe, Heart, Settings, Users, Wrench, Zap } from 'lucide-react'
 import React from 'react'
 import Footer from '../footer/Footer'
 import Navbar from '../navbar/Navbar'
@@ -85,20 +69,43 @@ const About = () => {
       description:
         'A world where every service professional has the same powerful business tools as large corporations, leveling the playing field',
       bg: 'bg-cyan-100',
-      textColor: 'text-cyan-500'
+      textColor: 'text-[#11A4D4]'
     }
   ]
 
   return (
-    <div>
-      <Navbar />
-      <section className='bg-cyan-50 p-2 lg:p-6 xl:p-8'>
+
+    <div className="min-h-screen bg-[linear-gradient(135deg,#F8FAFC_0%,rgba(215,244,254,0.1)_50%,#F8FAFC_100%)] relative overflow-hidden">
+      <div
+        className="
+      pointer-events-none
+      absolute
+      rounded-full
+      bg-[#11A4D4]/20
+      blur-3xl
+      animate-float
+
+      top-[-80px] right-[-80px]
+      w-[180px] h-[180px]
+
+      sm:top-[-100px] sm:right-[-120px]
+      sm:w-[240px] sm:h-[240px]
+
+      /* desktop */
+      lg:top-[-115px] lg:right-[-160px]
+      lg:w-[320px] lg:h-[320px]
+    "
+      />
+
+<Navbar />
+      <section className='p-2 lg:p-6 xl:p-8'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
-          <div className='mt-10 mb-16 lg:mt-16 lg:mb-20'>
-            <h1 className='text-3xl md:text-6xl font-bold text-cyan-500 mb-6'>
+          <div className='mt-8 mb-8 lg:my-16'>
+            <h1 className="text-[clamp(1.8rem,6vw,3.5rem)] text-[#11A4D4] mb-4 leading-[1.1] sm:leading-[1.05] font-outfit font-semibold align-center">
               About SimplyBooking
             </h1>
-            <p className='sm:text-xl text-[16px] text-gray-600 mb-8 max-w-3xl mx-auto'>
+            <p
+              className="font-arial regular text-[clamp(0.95rem,3vw,1.25rem)] text-gray-600 mb-8 max-w-3xl mx-auto leading-[1.4]">
               we are on a mission to help service professionals build thriving
               businesses with simple, powerful tools that anyone can use
             </p>
@@ -106,23 +113,24 @@ const About = () => {
         </div>
       </section>
 
-      <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white border-radius-lg'>
+      <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white border-radius-lg '>
         <div className='max-w-7xl mx-auto text-center'>
           <div className='grid md:grid-cols-2 gap-8'>
             {vision.map((text, i) => (
               <div
                 key={i}
-                className='bg-white border-2 border-gray-100 rounded-lg sm:p-8 p-4 font-bold shadow-md'
+                className='bg-white border-2 border-gray-100 rounded-2xl sm:p-8 p-4 font-bold shadow-md'
               >
                 <div
-                  className={`text-5xl text-start font-bold mb-4 border ${text.bg} ${text.textColor} p-2 rounded-[20px] w-10 h-10 flex items-center justify-center`}
+                  className={`text-5xl text-start font-bold mb-4 border
+                     ${text.bg} ${text.textColor} p-2 rounded-[20px] w-10 h-10 flex items-center justify-center`}
                 >
                   {text.icon}
                 </div>
                 <div className='sm:text-3xl text-xl text-start font-bold mb-4'>
                   {text.title}
                 </div>
-                <p className='text-start max-sm:text-[15px] text-[#627084]'>
+                <p className='text-start text-sm font-normal text-gray-700'>
                   {text.description}
                 </p>
               </div>
@@ -131,12 +139,12 @@ const About = () => {
         </div>
       </section>
 
-      <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-gray-50'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='grid md:grid-cols-4 grid-cols-2 gap-8'>
+      <section className='py-8 lg:py-12 xl:py-16 p-4 bg-gray-50'>
+        <div className='max-w-7xl mx-auto text-center'>
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-8'>
             {process.map((step, i) => (
               <div key={i} className='text-center'>
-                <h3 className='font-bold text-cyan-500 text-3xl mb-2 '>
+                <h3 className='font-bold text-[#11A4D4] text-3xl mb-2 '>
                   {step.title}
                 </h3>
                 <p className='text-sm text-gray-600'>{step.description}</p>
@@ -146,8 +154,8 @@ const About = () => {
         </div>
       </section>
 
-      {/* <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-white'>
-        <div className='max-w-4xl mx-auto text-center'>
+      <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-12 bg-white'>
+        <div className='max-w-7xl mx-auto text-center px-2 sm:px-4 lg:px-8'>
           <h2 className='sm:text-4xl text-3xl font-bold text-gray-900 mb-6'>
             Our Story
           </h2>
@@ -175,11 +183,11 @@ const About = () => {
             simple, powerful tools.
           </p>
         </div>
-      </section> */}
+      </section>
 
       <section className='py-8 lg:py-12 xl:py-16 px-4 lg:px-16 bg-gray-50'>
         <div className='max-w-7xl mx-auto '>
-          <div className='text-center mb-12'>
+          <div className='text-center mb-12 px-4'>
             <h2 className='text-3xl font-bold text-gray-900 mb-4'>
               Why Choose Us
             </h2>
@@ -213,11 +221,11 @@ const About = () => {
         <h2 className='text-3xl font-bold text-center text-gray-800'>
           Our Values
         </h2>
-        <p className='text-center text-gray-500 mb-12'>
+        <p className='text-center text-gray-500 mt-4 mb-8 lg:mb-12 lg:max-w-2xl mx-auto'>
           The principles that guide everything we do at SimplyBooking.
         </p>
 
-        <div className='grid md:grid-cols-4 grid-cols-2 justify-between items-center gap-6'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 justify-between items-center gap-6'>
           <div className='flex flex-col items-center text-center'>
             <div className='mb-4 bg-orange-100 p-2 rounded-[50%] text-orange-500'>
               <Heart />

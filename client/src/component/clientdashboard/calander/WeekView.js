@@ -30,7 +30,7 @@ export const WeekView = ({ quotes = [], selectedDate, setSelectedDate }) => {
             <div className="grid grid-cols-7 gap-2">
                 {days.map((day) => {
                     const key = day.toISOString().split("T")[0];
-                    const dayQuotes = quotes.filter(q => (q.date || q.createdAt.split("T")[0]) === key);
+                    const dayQuotes = quotes.filter(q => (q.date || q.createdAt.split("T")[0]) === key && q.status === "upcoming");
 
                     return (
                         <div key={key} className="border rounded p-2 rounded-lg">

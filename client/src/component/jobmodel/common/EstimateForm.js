@@ -1,6 +1,6 @@
 import { Button, InfoCard, PhotoPreview } from "../shared/Shared";
 
-export const EstimateForm = ({ job, onInputChange, onSubmit, API_BASE_URL, loading }) => (
+export const EstimateForm = ({ job, onInputChange, onSubmit, API_BASE_URL, loading ,fetchQuotes}) => (
     <>
         <PhotoPreview photo={job.photo} API_BASE_URL={API_BASE_URL} />
 
@@ -25,6 +25,7 @@ export const EstimateForm = ({ job, onInputChange, onSubmit, API_BASE_URL, loadi
                 color="cyan"
                 disabled={loading}
                 onClick={onSubmit}
+                fetchQuotes={fetchQuotes}
                 className="px-4 py-2 bg-cyan-500 text-white rounded disabled:opacity-50"
             >
                 {loading ? "Sending..." : "Send Estimate"}

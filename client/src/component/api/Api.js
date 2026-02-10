@@ -110,9 +110,9 @@ export const login = async (user) => {
     throw error;
   }
 };
-export const getQuotes = async ({ search, businessId, page = 1, limit = 10, status }) => {
+export const getQuotes = async ({date, search, businessId, page = 1, limit = 10, status }) => {
   const params = new URLSearchParams({
-    search, businessId, page, limit, ...(status && { status })
+    date, search, businessId, page, limit, ...(status && { status })
   });
   const res = await fetch(`${API_BASE_URL}/quotes?${params}`, {
     headers: {

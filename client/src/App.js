@@ -14,7 +14,7 @@ const App = () => {
   return (
     <>
 
-    <Router>
+      <Router>
         <Routes>
           <Route path='/' element={<Homepage />} />
           <Route path='/about' element={<About />} />
@@ -22,10 +22,10 @@ const App = () => {
           <Route path='/form' element={<Form />} />
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<SignUp />} />
+          <Route path="/service/:id" element={<Service />} />
 
           <Route element={<PrivateRoute />}>
             <Route path="/booking" element={<Booking />} />
-            <Route path="/service/:id" element={<Service />} />
           </Route>
 
           <Route element={<PrivateRoute allowedRole={0} />}>

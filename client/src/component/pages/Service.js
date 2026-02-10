@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, MapPinIcon, CheckCircle, XCircle, ChevronLeft } from 'lucide-react';
+import { Hammer, Wrench, Zap, Star, MapPin, Users, User, Clock, ChevronRight, MessageCircle, Phone, Mail, Upload, Image, FileText, MapPinIcon, CheckCircle, XCircle, ChevronLeft, ArrowRight } from 'lucide-react';
 import Footer from '../footer/Footer';
 import Navbar from '../navbar/Navbar';
 import axios from 'axios';
@@ -80,7 +80,11 @@ const Service = () => {
             if (response.ok) {
                 setMessage({ type: 'success', text: 'Quote request submitted successfully!' });
                 setFormData({ name: '', email: '', phone: '', service: '', address: '', details: '', photo: null });
-                setTimeout(() => { toggleForm() }, 2000);
+                setTimeout(() => {
+                    toggleForm();
+                    setMessage({ type: '', text: '' });
+                }, 2000);
+
             } else { setMessage({ type: 'error', text: data.message || 'Failed to submit quote request' }) }
         } catch (error) {
             setMessage({ type: 'error', text: 'Network error. Please try again.' });
@@ -146,7 +150,7 @@ const Service = () => {
 
     const services = [
         {
-            icon: <Hammer className="w-6 h-6" />,
+            icon: <Hammer className="w-6 h-6 text-orange-500" />,
             title: "Carpentry",
             trending: true,
             professionals: 127,
@@ -155,7 +159,7 @@ const Service = () => {
             tags: ["Door Repair", "Custom Cabinets", "Furniture Assembly"]
         },
         {
-            icon: <Wrench className="w-6 h-6" />,
+            icon: <Wrench className="w-6 h-6 text-gray-500" />,
             title: "Plumbing",
             trending: false,
             professionals: 89,
@@ -164,7 +168,7 @@ const Service = () => {
             tags: ["Leak Repair", "Drain Cleaning", "Water Heater"]
         },
         {
-            icon: <Zap className="w-6 h-6" />,
+            icon: <Zap className="w-6 h-6 text-yellow-500" />,
             title: "Electrical",
             trending: true,
             professionals: 156,
@@ -262,13 +266,15 @@ const Service = () => {
     }
 
     return (
-        <>
+        <div className='max-h-screen bg-gradient-to-bl from-sky-100 via-sky-50 from-0% via-5% to-white'>
             <Navbar />
 
             {isFormVisible && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="min-w-[30%] max-w-2xl mx-auto shadow-lg mt-10 mb-20 max-h-[90vh] overflow-y-auto">
-                        <div className="text-start bg-cyan-500 text-white p-6 rounded-t-lg">
+                    <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+
+                {/* // <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 "> */}
+                    <div className="min-w-[50%] max-w-2xl mx-auto shadow-lg mt-10 mb-20 max-h-[90vh] overflow-y-auto rounded-2xl">
+                        <div className="text-start bg-[#25AFF4] text-white p-6 rounded-t-lg">
                             <div className="text-2xl font-semibold mb-2">
                                 Request a Quote
                             </div>
@@ -288,8 +294,8 @@ const Service = () => {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="mb-4">
-                                    <label htmlFor="name" className="flex items-center text-sm font-medium text-gray-700">
-                                        <User className="text-cyan-500 h-4 w-4 mr-1" />
+                                    <label htmlFor="name" className="flex items-center text-sm font-medium text-gray-600 ">
+                                        <User className="text-[#25AFF4] h-4 w-4 mr-1" />
                                         Name
                                     </label>
                                     <input
@@ -298,14 +304,15 @@ const Service = () => {
                                         value={formData.name}
                                         onChange={handleInputChange}
                                         required
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                        placeholder='Enter Your Name'
                                     />
                                 </div>
 
                                 <div className="mb-4">
-                                    <label htmlFor="email" className="flex items-center text-sm font-medium text-gray-700">
-                                        <Mail className="text-cyan-500 h-4 w-4 mr-1" />
-                                        Email
+                                    <label htmlFor="email" className="flex items-center text-sm font-medium text-gray-600 ">
+                                        <Mail className="text-[#25AFF4] h-4 w-4 mr-1" />
+                                        Email Address
                                     </label>
                                     <input
                                         type="email"
@@ -313,13 +320,14 @@ const Service = () => {
                                         value={formData.email}
                                         onChange={handleInputChange}
                                         required
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                        placeholder='Enter Your Email'
                                     />
                                 </div>
 
                                 <div className="mb-4">
-                                    <label htmlFor="phone" className="flex items-center text-sm font-medium text-gray-700">
-                                        <Phone className="text-cyan-500 h-4 w-4 mr-1" />
+                                    <label htmlFor="phone" className="flex items-center text-sm font-medium text-gray-600 ">
+                                        <Phone className="text-[#25AFF4] h-4 w-4 mr-1" />
                                         Phone
                                     </label>
                                     <input
@@ -328,22 +336,23 @@ const Service = () => {
                                         value={formData.phone}
                                         onChange={handleInputChange}
                                         required
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                        placeholder='Enter Your Phone Number'
                                     />
                                 </div>
 
                                 <div className="mb-4">
-                                    <label htmlFor="service" className="flex items-center text-sm font-medium text-gray-700">
-                                        <Wrench className="text-cyan-500 h-4 w-4 mr-1" />
+                                    <label htmlFor="service" className="flex items-center text-sm font-medium text-gray-600 ">
+                                        <Wrench className="text-[#25AFF4] h-4 w-4 mr-1" />
                                         Select Service
                                     </label>
                                     <select
                                         id="service"
                                         value={formData.service}
                                         onChange={handleInputChange}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
                                     >
-                                        <option >Select Service</option>
+                                        <option className='test' >Select Service</option>
                                         {Object.entries(business?.services || {}).map(
                                             ([key, service]) => (
                                                 <option key={key}>{service.name}</option>
@@ -354,8 +363,8 @@ const Service = () => {
                             </div>
 
                             <div className="mb-4">
-                                <label htmlFor="address" className="flex items-center text-sm font-medium text-gray-700">
-                                    <MapPin className="text-cyan-500 h-4 w-4 mr-1" />
+                                <label htmlFor="address" className="flex items-center text-sm font-medium text-gray-600 ">
+                                    <MapPin className="text-[#25AFF4] h-4 w-4 mr-1" />
                                     Address
                                 </label>
                                 <input
@@ -364,13 +373,15 @@ const Service = () => {
                                     value={formData.address}
                                     onChange={handleInputChange}
                                     required
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                    placeholder='Enter Your Address'
+
                                 />
                             </div>
 
                             <div className="mb-4">
-                                <label htmlFor="details" className="flex items-center text-sm font-medium text-gray-700">
-                                    <FileText className="text-cyan-500 h-4 w-4 mr-1" />
+                                <label htmlFor="details" className="flex items-center text-sm font-medium text-gray-600 ">
+                                    <FileText className="text-[#25AFF4] h-4 w-4 mr-1" />
                                     Describe your problem
                                 </label>
                                 <textarea
@@ -379,23 +390,25 @@ const Service = () => {
                                     value={formData.details}
                                     onChange={handleInputChange}
                                     required
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                    placeholder='Please Describe the issue you are experiencing in detail, ...'
+                                
                                 />
                             </div>
 
                             <div className="mb-4">
-                                <label htmlFor="dropzone-file" className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                                    <Image className="text-cyan-500 h-4 w-4 mr-1" />
+                                <label htmlFor="dropzone-file" className="flex items-center text-sm font-medium text-gray-600  mb-2">
+                                    <Image className="text-[#25AFF4] h-4 w-4 mr-1" />
                                     Upload Photo (Optional)
                                 </label>
                                 <div className="flex items-center justify-center w-full">
                                     <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 rounded-lg bg-gray-50 border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100">
                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                                            <span className="font-semibold text-sm text-gray-600">
+                                            <Upload className="h-8 w-8 text-gray-700 mb-2" />
+                                            <span className="font-semibold text-sm text-gray-700">
                                                 {formData.photo ? formData.photo.name : 'Drag and drop an image here'}
                                             </span>
-                                            <p className="text-xs text-gray-500">or click to browse from your device</p>
+                                            <p className="text-xs text-gray-700">or click to browse from your device</p>
                                         </div>
                                         <input
                                             id="dropzone-file"
@@ -431,32 +444,34 @@ const Service = () => {
                     </div>
                 </div>
             )}
-            <div className="min-h-screen bg-white">
+
+
+            <div className="bg-white">
 
 
                 <section className="bg-white">
 
-                    <div className="bg-cyan-500 h-80">  <img src={coverPhoto} alt='image' className="banner-img h-full w-full" /></div>
-                    <div className="p-8 relative max-w-7xl mx-auto">
-                        <div className="absolute -top-12 left-8 bg-white rounded-lg shadow-md">
-                            <div className="bg-cyan-500 w-24 h-24 rounded-lg flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                                <img src={logo} alt='image' className="banner-img h-full w-full rounded-lg" />
+                    <div className="h-64 md:h-96">  <img src={coverPhoto} alt='image' className="banner-img h-full w-full" /></div>
+                    <div className="p-4 lg:p-8 relative max-w-7xl mx-auto">
+                        <div className="absolute -top-12 left-8 bg-white rounded-lg shadow-xl">
+                            <div className="bg-[#25AFF4] m-2 lg:m-4 w-16 h-16 lg:w-24 lg:h-24 rounded-lg flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                                <img src={logo} alt='image' className="banner-img h-full w-full rounded-lg " />
 
                             </div>
                         </div>
-                        <div className="mt-14">
+                        <div className="mt-4 md:mt-16 ">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900">{business.businessName}</h3>
                                     <p className="text-gray-500 flex items-center mt-1">
-                                        Los Angeles, CA
+                                        {business.location}
                                     </p>
                                     <div className="flex items-center mt-2">
-                                        <div className="flex text-orange-400">★★★★★</div>
+                                        <div className="flex text-orange-400 text-lg">★★★★★</div>
                                         <span className="text-sm text-gray-500 ml-2">({getreviews.count} reviews)</span>
                                     </div>
                                 </div>
-                                <button className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600" onClick={toggleForm}>
+                                <button className="bg-gradient-to-r from-orange-500 to-orange-400 text-white px-4 text-sm md:text-base md:px-6  py-2 rounded-lg hover:bg-orange-600" onClick={toggleForm}>
                                     Request a Quote
                                 </button>
                             </div>
@@ -466,7 +481,7 @@ const Service = () => {
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                                 <div className="text-center p-4 bg-gray-50 rounded-lg flex gap-2 items-center">
-                                    <div className="text-cyan-500 mb-2 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200">
+                                    <div className="text-[#25AFF4] mb-2 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200">
                                         <Phone />
                                     </div>
                                     <div className="mx-2">
@@ -476,7 +491,7 @@ const Service = () => {
                                 </div>
 
                                 <div className="text-center p-4 bg-gray-50 rounded-lg flex gap-2 items-center">
-                                    <div className="text-cyan-500 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200">
+                                    <div className="text-[#25AFF4] h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200">
                                         <Mail />
                                     </div>
                                     <div className="mx-2">
@@ -486,7 +501,7 @@ const Service = () => {
                                 </div>
 
                                 <div className="text-center p-4 bg-gray-50 rounded-lg flex gap-2 items-center">
-                                    <div className="text-cyan-500 mb-2 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200">
+                                    <div className="text-[#25AFF4] mb-2 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-200">
                                         <Clock />
                                     </div>
                                     <div className="mx-2">
@@ -519,11 +534,11 @@ const Service = () => {
                             </div>
 
                         </div>
-                        <p className="text-center text-gray-500 mt-10">This is how your business page will look to your customers</p>
+                        {/* <p className="text-center text-gray-500 mt-10">This is how your business page will look to your customers</p> */}
                     </div>
                 </section>
 
-                <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                <section className="py-4 lg:py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2">
                             <h3 className="text-2xl font-bold text-gray-900 mb-6">Recent Work</h3>
@@ -546,20 +561,24 @@ const Service = () => {
                                     {currentItems.map((faq) => (
                                         <div
                                             key={faq.id}
-                                            className="border-b border-gray-200 pb-4 last:border-0"
+                                            className="border-b border-gray-200 pb-4 last:border-1"
                                         >
                                             <div className="flex gap-3 mb-2">
                                                 <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center flex-shrink-0">
                                                     <MessageCircle className="w-4 h-4 text-white" />
                                                 </div>
+
                                                 <p className="font-medium text-gray-900">
                                                     {faq.question}
                                                 </p>
                                             </div>
 
-                                            <div className="flex gap-3 ml-9">
+                                            <div className="flex gap-3 mt-4">
+                                                <div className="text-sm text-gray-500 p-2 w-8 h-8 bg-gray-100  flex items-center justify-center rounded-md font-semibold">
+                                                    A
+                                                </div>
                                                 <div className="text-sm text-gray-600">
-                                                    <span className="font-semibold text-gray-900">A</span>{' '}
+                                                    {/* <span className="font-semibold text-gray-900">A</span>{' '} */}
                                                     {faq.answer}
                                                 </div>
                                             </div>
@@ -567,8 +586,8 @@ const Service = () => {
                                     ))}
                                 </div>
 
-                                {totalPages > 1 && (
-                                    <div className="flex justify-center items-center gap-2 mt-6">
+                                {totalPages > 0 && (
+                                    <div className="flex justify-end items-center gap-2 mt-6">
                                         <button
                                             onClick={() => handlePageChange(currentPage - 1)}
                                             disabled={currentPage === 1}
@@ -591,7 +610,7 @@ const Service = () => {
                                                     <button
                                                         onClick={() => handlePageChange(page)}
                                                         className={`w-8 h-8 rounded flex items-center justify-center font-medium transition-colors ${currentPage === page
-                                                            ? 'bg-cyan-500 text-white'
+                                                            ? 'bg-[#25AFF4] text-white'
                                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                             }`}
                                                         aria-label={`Page ${page}`}
@@ -625,7 +644,7 @@ const Service = () => {
                                 </div>
                                 <div className="space-y-6">
 
-                                    {getreviews?.data?.length > 0 ? (
+                                    {getreviews?.data?.length > -1 ? (
                                         getreviews.data.map((review, index) => (
                                             <div key={index} className="flex gap-4 border border-gray-200 rounded-lg p-4">
                                                 <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center text-cyan-700 font-semibold flex-shrink-0">
@@ -673,7 +692,7 @@ const Service = () => {
                                     value={reviewText}
                                     onChange={(e) => setReviewText(e.target.value)}
                                     placeholder="Write your review"
-                                    className="w-full p-3 border border-gray-300 rounded-lg mb-4 min-h-32 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                                    className="w-full p-3 rounded-lg mb-4 min-h-32 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                                 />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <input
@@ -681,23 +700,23 @@ const Service = () => {
                                         value={reviewName}
                                         onChange={(e) => setReviewName(e.target.value)}
                                         placeholder="Name *"
-                                        className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                                        className="p-3 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                                     />
                                     <input
                                         type="email"
                                         value={reviewEmail}
                                         onChange={(e) => setReviewEmail(e.target.value)}
                                         placeholder="Email *"
-                                        className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                                        className="p-3 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                                     />
                                 </div>
 
-                                <div className="mb-4">
+                                <div className="mb-2 mt-4">
                                     <label className="block text-gray-700 font-semibold mb-2">
                                         Your Rating
                                     </label>
 
-                                    <div className="flex gap-2 py-2">
+                                    <div className="flex gap-2 py-">
                                         {ratingStars.map((filled, index) => (
                                             <svg
                                                 key={index}
@@ -718,29 +737,23 @@ const Service = () => {
                                         ))}
                                     </div>
                                 </div>
-
-
-
-
-
-                                <div className="mt-4">
-                                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-lg shadow-md transition-colors"
-                                        onClick={() => submitReview()}
-                                    >
-                                        Submit Review
-                                    </button>
-                                </div>
-
+                            </div>
+                            <div className="mt-4">
+                                <button className="px-4 md:px-6 py-2 lg:py-4 text-sm md:text-base bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg shadow-md transition-colors"
+                                    onClick={() => submitReview()}
+                                >
+                                    Submit Review
+                                </button>
                             </div>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-6 mt-2 lg:mt-6">
 
 
 
                             <div className="bg-white rounded-[25px] border border-gray-200 shadow-sm p-6">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <Clock className="w-5 h-5 text-cyan-500" />
+                                    <Clock className="w-5 h-5 text-[#25AFF4]" />
                                     <h3 className="font-semibold text-gray-900">Business Hours</h3>
                                 </div>
                                 <div className="space-y-2">
@@ -776,14 +789,14 @@ const Service = () => {
 
                             <div className="bg-white shadow-sm p-6 rounded-[25px] border border-gray-200">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <MapPin className="w-5 h-5 text-cyan-500" />
+                                    <MapPin className="w-5 h-5 text-[#25AFF4]" />
                                     <h3 className="font-semibold text-gray-900">Service Area</h3>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {(business?.serviceAreas || []).map((area, index) => (
                                         <span
                                             key={index}
-                                            className="px-3 py-1 bg-cyan-50 text-cyan-600 rounded-full text-sm"
+                                            className="px-3 py-1 bg-blue-50 text-[#25AFF4] rounded-full text-sm"
                                         >
                                             {area}
                                         </span>
@@ -798,63 +811,68 @@ const Service = () => {
                 </section>
 
 
-                <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                            Check out some related services
-                        </h2>
-                        <p className="text-gray-600 text-sm sm:text-base">
-                            Get your professional service page up and running in four simple steps
-                        </p>
-                    </div>
+                <section className="py-4 lg:py-12 px-4 sm:px-6 lg:px-8 mx-auto bg-gray-50">
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {services.map((service, index) => (
-                            <div key={index} className="bg-white rounded-[25px] shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-6 relative">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center text-cyan-600">
-                                            {service.name}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-semibold text-gray-900">{service.title}</h3>
-                                                {service.trending && <span className="text-orange-500">🔥</span>}
+                    <div className="max-w-7xl mx-auto">
+
+                        <div className="text-center mb-4 lg:mb-12">
+                            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4">
+                                Check out some related services
+                            </h2>
+                            <p className="text-gray-600 text-sm sm:text-base">
+                                Get your professional service page up and running in four simple steps
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+                            {services.map((service, index) => (
+                                <div key={index} className="bg-white rounded-[25px] shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-6 relative">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-[#25AFF4]">
+                                                {service.icon}
                                             </div>
-                                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                                                <Users className="w-4 h-4" />
-                                                <span>{service.professionals} pros</span>
-                                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                                <span>{service.rating}</span>
+
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="font-semibold text-gray-900">{service.title}</h3>
+                                                    {service.trending && <span className="text-orange-500 bg-orange-100 px-2 py-1 rounded-full text-xs">🔥</span>}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                                                    <Users className="w-4 h-4" />
+                                                    <span>{service.professionals} pros</span>
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                    <span>{service.rating}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <p className="text-gray-600 text-sm mb-4">{service.description}</p>
+                                    <p className="text-gray-600 text-sm mb-4">{service.description}</p>
 
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                    {service.tags.map((tag, i) => (
-                                        <span key={i} className="px-3 py-1 bg-cyan-50 text-cyan-600 rounded-full text-xs">
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
+                                    <div className="flex flex-wrap gap-2 mb-8">
+                                        {service.tags.map((tag, i) => (
+                                            <span key={i} className="px-3 py-1 bg-blue-50 text-[#25AFF4] rounded-full text-xs">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
 
-                                <div className="absolute bottom-4 left-0 right-0 px-6">
-                                    <button className=" mt-5 text-cyan-500 hover:text-cyan-600 font-medium text-sm flex items-center justify-center w-full">
-                                        View Providers <ChevronRight className="w-4 h-4" />
-                                    </button>
+                                    <div className="absolute bottom-4 left-0 right-0 px-6">
+                                        <button className=" mt-4 text-[#25AFF4] hover:text-[#25AFF4] font-medium text-sm flex items-center justify-center w-full">
+                                            View Providers <ArrowRight className="ms-1 mt-0.5 w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </section>
 
                 <Footer />
             </div>
 
-        </>
+        </div>
     );
 };
 

@@ -15,7 +15,7 @@ import { MonthView } from './calander/MonthView';
 import { JobTableRow } from './jobtable/JobTableRow';
 import CancellationForm from './CancellationForm';
 
-const RenderDashboard = ({ quotes, jobsOverview, setCurrentView, setJobsView, setStatus, user }) => {
+const RenderDashboard = ({ quotes, jobsOverview, setCurrentView, setJobsView, setStatus, user, fetchQuotes }) => {
     return (
         <div className="space-y-6 w-5xl">
 
@@ -71,7 +71,7 @@ const RenderDashboard = ({ quotes, jobsOverview, setCurrentView, setJobsView, se
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">
-                                            <JobsPage btnName={"View Details"} jobs={job} />
+                                            <JobsPage btnName={"View Details"} jobs={job} fetchQuotes={fetchQuotes} />
                                         </td>
 
                                     </tr>
@@ -127,7 +127,7 @@ const column = [{ label: "Name", key: "name" },
 { label: "Location", key: "address" },
 { label: "Status", key: "status" },]
 
-const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setStatus, totalPages }) => {
+const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setStatus, totalPages, fetchQuotes }) => {
 
     const getJobStatusFilter = () => {
         switch (jobsView) {
@@ -148,7 +148,7 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setSt
 
     const renderTableRows = () => {
         const filteredJobs = quotes?.data?.filter(job => job.status === getJobStatusFilter());
-        return filteredJobs?.map(job => <JobTableRow key={job._id} job={job} />);
+        return filteredJobs?.map(job => <JobTableRow key={job._id} job={job} fetchQuotes={fetchQuotes} />);
     };
 
     const renderJobStatusButton = (status, color, label, count) => (
@@ -214,12 +214,18 @@ const RenderJobs = ({ quotes, stats, jobsView, setJobsView, page, setPage, setSt
     );
 };
 
-const RenderCalendar = ({ quotes, calendarView, setCalendarView }) => {
-    const [selectedDate, setSelectedDate] = useState(new Date());
+const RenderCalendar = ({ quotes, calendarView, setCalendarView, fetchQuotes, selectedDate, setSelectedDate, setDate }) => {
 
     const timeSlots = Array.from({ length: 24 }, (_, i) =>
         `${String(i).padStart(2, "0")}:00`
     );
+    const today = new Date();
+
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    const formattedDate = `${year}-${month}`;
+
+
 
     return (
         <div className="space-y-6">
@@ -238,9 +244,12 @@ const RenderCalendar = ({ quotes, calendarView, setCalendarView }) => {
                     {["day", "week", "month"].map((v) => (
                         <button
                             key={v}
-                            onClick={() => setCalendarView(v)}
-                            className={`px-4 py-2 rounded-lg text-sm capitalize ${calendarView === v ? "bg-gray-200" : "hover:bg-gray-50"
-                                }`}
+                            onClick={() => {
+                                setCalendarView(v);
+                                setDate(formattedDate);
+                                setSelectedDate(new Date());
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm capitalize ${calendarView === v ? "bg-gray-200" : "hover:bg-gray-50"}`}
                         >
                             {v}
                         </button>
@@ -253,6 +262,7 @@ const RenderCalendar = ({ quotes, calendarView, setCalendarView }) => {
                         quotes={quotes?.data}
                         selectedDate={selectedDate}
                         setSelectedDate={setSelectedDate}
+                        fetchQuotes={fetchQuotes}
                     />
                 )}
 
@@ -499,27 +509,41 @@ const ClientDashboard = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [status, setStatus] = useState("");
     const [search, setSearch] = useState("");
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+
+    //   const today = new Date();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const year = selectedDate.getFullYear();
+    const formattedDate = `${year}-${month}`;
+    const [date, setDate] = useState(`${formattedDate}`);
+
+
     const navigate = useNavigate();
 
     const user = JSON.parse(localStorage.getItem("user"));
-    useEffect(() => { fetchQuotes() }, [page, currentView, status, jobsView, search]);
+    useEffect(() => { fetchQuotes() }, [page, currentView, status, jobsView, search, selectedDate, date]);
     const fetchQuotes = async () => {
         try {
             const res = await getQuotes({
                 search,
                 page,
                 status,
-                limit: calendarView === "month" ? 30 : 10,
+                limit: currentView === "calendar" ? 30 : 10,
+                date: date
             });
 
             // const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             // if (!res.ok) {
-            //     await delay(1000); 
+            //     // await delay(1000); 
             //     navigate('/');
             //     return;
             // }
-            setQuotes(res);
-            setTotalPages(res.pagination?.totalPages ?? 0);
+            // console.log(currentView === "calendar" ? 30 : 10,'data fetched with limit');
+            // console.log(formattedDate, "selected date")
+            setQuotes(res || []);
+            setTotalPages(res.pagination?.totalPages || 0);
 
         } catch (err) {
             console.error('Failed to fetch quotes:', err);
@@ -565,23 +589,35 @@ const ClientDashboard = () => {
                         ].map((item) => (
                             <button
                                 key={item.view}
-                                onClick={() => { setStatus(item.view === "jobs" ? "request" : ""); setCurrentView(item.view); setJobsView("request"); }}
+                                onClick={() => { setStatus(item.view === "jobs" ? "request" : ""); setCurrentView(item.view); setJobsView("request"); setDate(item.view !== "calendar" ? "" : formattedDate) }}
                                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${currentView === item.view ? 'bg-cyan-50 text-cyan-600' : 'text-gray-700 hover:bg-gray-50'}`}
                             >
                                 <item.icon className="w-5 h-5" />
                                 <span>{item.label}</span>
                             </button>
                         ))}
+
+                        {/* <button
+                            key={item.view}
+                            onClick={() => { navigate(`/service/${quotes?.domain || 'default'}`) }}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${currentView === "service" ? 'bg-cyan-50 text-cyan-600' : 'text-gray-700 hover:bg-gray-50'}`}
+                            
+                        >
+                            <Service className="w-5 h-5" />
+                            <span>View Service</span>
+                        </button> */}
+
+
                     </nav>
 
-                    <div className="absolute bottom-0 w-64 p-4 border-t corsur-pointer">
+                    {sidebarOpen && (<div className="absolute bottom-0 w-64 p-4 border-t cursor-pointer">
                         <button onClick={() => {
                             localStorage.removeItem("user"); localStorage.removeItem("token"); localStorage.removeItem('expiresAt'); navigate('/login')
                         }} className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mb-1">
                             <ArrowBigRight className="w-5 h-5" />
                             <span>Log Out</span>
                         </button>
-                    </div>
+                    </div>)}
                 </div>
 
                 <div className="flex-1 flex flex-col overflow-hidden">
@@ -617,11 +653,13 @@ const ClientDashboard = () => {
                     </header>
 
                     <main className="flex-1 overflow-auto p-6">
-                        {currentView === 'dashboard' && <RenderDashboard quotes={quotes} jobsOverview={jobsOverview} setCurrentView={setCurrentView} setJobsView={setJobsView} page={page} setPage={setPage} setStatus={setStatus} totalPages={totalPages} user={user} />}
-                        {currentView === 'jobs' && <RenderJobs quotes={quotes} jobsOverview={jobsOverview} stats={stats} setStatus={setStatus} jobsView={jobsView} setJobsView={setJobsView} page={page} setPage={setPage} totalPages={totalPages} />}
-                        {currentView === 'calendar' && <RenderCalendar quotes={quotes} setSelectedClient={setSelectedClient} calendarView={calendarView} setCalendarView={setCalendarView} />}
-
-                        {currentView === 'closebusiness' && <CancellationForm quotes={quotes} />}
+                        {currentView === 'dashboard' && <RenderDashboard quotes={quotes} jobsOverview={jobsOverview} setCurrentView={setCurrentView} setJobsView={setJobsView}
+                            page={page} setPage={setPage} setStatus={setStatus} totalPages={totalPages} user={user} fetchQuotes={fetchQuotes} />}
+                        {currentView === 'jobs' && <RenderJobs quotes={quotes} jobsOverview={jobsOverview} stats={stats} setStatus={setStatus} jobsView={jobsView} setJobsView={setJobsView}
+                            page={page} setPage={setPage} totalPages={totalPages} fetchQuotes={fetchQuotes} />}
+                        {currentView === 'calendar' && <RenderCalendar quotes={quotes} setSelectedClient={setSelectedClient} calendarView={calendarView} setCalendarView={setCalendarView}
+                            fetchQuotes={fetchQuotes} selectedDate={selectedDate} setSelectedDate={setSelectedDate} formattedDate={formattedDate} setDate={setDate} />}
+                        {currentView === 'closebusiness' && <CancellationForm quotes={quotes} fetchQuotes={fetchQuotes} />}
 
                     </main>
                 </div>

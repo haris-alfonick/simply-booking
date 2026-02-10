@@ -16,19 +16,19 @@ const JobModal = ({
     onMarkCompleted,
     loading,
     error,
-    API_BASE_URL
+    API_BASE_URL,
+    fetchQuotes
 }) => {
     if (!isOpen || !job) return null;
 
     return (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center p-8">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl relative">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl relative max-h-[50vh] flex flex-col">
                 <ModalHeader job={job} onClose={onClose} />
 
-                {/* 🔹 Global loading overlay */}
                 {loading && <LoadingOverlay />}
 
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 overflow-y-auto">
                     {error && <ErrorBanner message={error} />}
 
                     <JobInfo job={job} />
@@ -44,16 +44,18 @@ const JobModal = ({
                             onMarkCompleted={onMarkCompleted}
                             loading={loading}
                             API_BASE_URL={API_BASE_URL}
+                            fetchQuotes={fetchQuotes}
                         />
                     )}
 
-                    {job.status !== "pending" && job.status !== "upcoming" && (
+                    {job.status !== "pending" && job.status !== "upcoming" && job.status !== "completed" && (
                         <EstimateForm
                             job={job}
                             onInputChange={onInputChange}
                             onSubmit={onSubmit}
                             loading={loading}
                             API_BASE_URL={API_BASE_URL}
+                            fetchQuotes={fetchQuotes}
                         />
                     )}
                 </div>
