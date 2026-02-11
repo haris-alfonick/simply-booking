@@ -73,8 +73,27 @@ const SignUp = () => {
     }
 
     return (
-        <div className='min-h-screen bg-gradient-to-bl from-sky-300 via-sky-100 from-0% via-5% to-white flex items-center justify-center p-4'>
-            <div className='w-full max-w-md mt-[-100px]'>
+        <div className='min-h-screen bg-sky-100 flex items-center justify-center p-4'>
+
+            <div
+                className="
+      pointer-events-none
+      absolute
+      rounded-full
+      bg-[#11A4D4]/20
+      blur-3xl
+      animate-float
+
+      top-[-80px] right-[-80px]
+      w-[180px] h-[180px]
+
+      sm:top-[-100px] sm:right-[-120px]
+      sm:w-[240px] sm:h-[240px]
+
+      lg:top-[-115px] lg:right-[-160px]
+      lg:w-[320px] lg:h-[320px]
+    "
+            />            <div className='w-full max-w-md mt-[-100px]'>
                 <div className='flex items-center justify-center mb-8'>
                     <div className='bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] rounded-lg py-2 px-4 shadow-lg'>
                         <span className='text-white text-center text-2xl font-bold'>S</span>

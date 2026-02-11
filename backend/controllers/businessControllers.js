@@ -16,34 +16,33 @@ function generateSlug(text) {
 
 async function generateUniqueDomain(businessName) {
     const baseSlug = generateSlug(businessName);
-    const domains = new Set(); // ensures uniqueness
+    const domains = new Set();
     let attempts = 0;
+    const exists = await Business.findOne({ domain: baseSlug });
+
+    if (!exists) { return { selected: baseSlug, suggestions: [] } }
 
     while (domains.size < 4) {
         const randomNum = Math.floor(Math.random() * 90) + 10;
         const domain = `${baseSlug}-${randomNum}`;
-
-        // Check DB + local uniqueness
         const exists = await Business.findOne({ domain });
-
         if (!exists && !domains.has(domain)) {
             domains.add(domain);
         }
-
         attempts++;
-        // Prevent infinite loop
         if (attempts > 100) {
             domains.add(`${baseSlug}-${Date.now()}`);
         }
     }
 
     const domainArray = Array.from(domains);
-
     return {
-        selected: domainArray[0],
+        selected: !exists ? baseSlug : domainArray[0],
         suggestions: domainArray.slice(1)
     };
 }
+
+
 exports.createDomain = async (req, res) => {
     try {
         const { businessName } = req.body;

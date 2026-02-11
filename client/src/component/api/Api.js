@@ -144,3 +144,43 @@ export const getTransections = async ({ page = 1, limit = 10, search = "" }) => 
 };
 
 
+
+
+//////////////////////////////////////////
+
+
+
+// Password Reset Functions
+export const requestPasswordReset = async (data) => {
+    const response = await api.post('/password-reset/request', data);
+    return response.data;
+};
+
+export const verifyResetToken = async (token) => {
+    const response = await api.post('/password-reset/verify', { token });
+    return response.data;
+};
+
+export const resetPassword = async (data) => {
+    const response = await api.post('/password-reset/reset', data);
+    return response.data;
+};
+
+// Social Auth Functions (these are handled via popup windows)
+export const googleLogin = () => {
+    window.open(`${API_BASE_URL}/auth/google`, 'Google Login', 'width=500,height=600');
+};
+
+export const facebookLogin = () => {
+    window.open(`${API_BASE_URL}/auth/facebook`, 'Facebook Login', 'width=500,height=600');
+};
+
+export const appleLogin = () => {
+    window.open(`${API_BASE_URL}/auth/apple`, 'Apple Login', 'width=500,height=600');
+};
+
+export const twitterLogin = () => {
+    window.open(`${API_BASE_URL}/auth/twitter`, 'Twitter Login', 'width=500,height=600');
+};
+
+export default api;

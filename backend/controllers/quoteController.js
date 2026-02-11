@@ -50,22 +50,22 @@ exports.createQuote = async (req, res) => {
 
 exports.getAllQuotes = async (req, res) => {
   try {
-    const { search, status, page, limit } = req.query;
+    const { date, search, status, page, limit } = req.query;
     const business = await Business.findOne({ userId: new mongoose.Types.ObjectId(req.user.userId), isActive: true });
-
     if (!business) {
       return res.status(404).json({
         success: false,
-        message: "Business not Found or Cancelled"
-      })
+        // redirect: '/',
+        message: 'Business not Found or Cancelled'
+      });
     }
+
+
     let businessId = business._id
     const query = { businessId };
     if (status) {
       query.status = status;
     }
-
-
 
     if (search) {
       query.$or = [
@@ -73,15 +73,24 @@ exports.getAllQuotes = async (req, res) => {
         { email: { $regex: search, $options: "i" } },
       ];
     }
+
+    if (date) {
+      query.date = { $gte: date };}
     const quotes = await Quote.find(query)
       .sort({ createdAt: -1 })
       .limit(Number(limit))
       .skip((page - 1) * limit)
     // .populate("businessId");
 
+
+    if (!quotes) {
+      return res.status(404).json({
+        success: false,
+        message: 'No Quotes Found'
+      });
+    }
+
     const total = await Quote.countDocuments(query);
-
-
     const statusCounts = await Quote.aggregate([
       { $match: { businessId: businessId.toString() } },
       {
@@ -114,7 +123,7 @@ exports.getAllQuotes = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: quotes,
+      data: quotes || [],
       pagination: {
         total,
         totalPages: Math.ceil(total / limit),
@@ -122,7 +131,8 @@ exports.getAllQuotes = async (req, res) => {
         limit: Number(limit)
       },
       counts,
-      businessId
+      businessId,
+      domain: business.domain
     });
 
   } catch (error) {
@@ -547,7 +557,6 @@ exports.thankYou = async (req, res) => {
 
 
 exports.imageQuotes = async (req, res) => {
-  console.log('image end point')
   const { filename } = req.params;
   if (!filename) { return res.status(400).json({ success: false, message: 'Filename is required' }) }
   const filePath = path.join(__dirname, '..', 'uploads', filename);
