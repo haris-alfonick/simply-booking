@@ -2,7 +2,7 @@ import React from 'react'
 import { ArrowRight, Lock, Mail, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { login } from '../api/Api'
+import { login, googleLogin, facebookLogin, appleLogin, twitterLogin, API_BASE_URL } from '../api/Api'
 import { showError, showSuccess } from '../utils/toast'
 
 const Login = () => {
@@ -36,12 +36,6 @@ const Login = () => {
                 localStorage.setItem('expiresAt', result.expiresAt);
                 showSuccess("Login successful");
                 navigate(result.redirect);
-
-
-                // redirect
-
-
-                // if (result.role === 1) { navigate("/maindashboard") } else { navigate("/clientdashboard") }
             } else {
                 showError("Invalid login response");
             }
@@ -53,8 +47,169 @@ const Login = () => {
         }
     };
 
+    // Google Login
+    const handleGoogleLogin = async () => {
+        try {
+            // Open Google OAuth popup
+            const width = 500;
+            const height = 600;
+            const left = window.screen.width / 2 - width / 2;
+            const top = window.screen.height / 2 - height / 2;
+
+            const popup = window.open(
+                `${API_BASE_URL}/auth/google`,
+                'Google Login',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
+
+            // Listen for message from popup
+            window.addEventListener('message', async (event) => {
+                if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+                    popup.close();
+                    const { token, user, expiresAt, redirect } = event.data.data;
+                    localStorage.setItem("user", JSON.stringify(user));
+                    localStorage.setItem("token", JSON.stringify(token));
+                    localStorage.setItem('expiresAt', expiresAt);
+                    showSuccess("Login successful");
+                    navigate(redirect);
+                } else if (event.data.type === 'GOOGLE_AUTH_ERROR') {
+                    popup.close();
+                    showError(event.data.message || "Google login failed");
+                }
+            });
+        } catch (err) {
+            showError("Failed to initiate Google login");
+            console.error("Google login error:", err);
+        }
+    };
+
+    // Facebook Login
+    const handleFacebookLogin = async () => {
+        try {
+            const width = 500;
+            const height = 600;
+            const left = window.screen.width / 2 - width / 2;
+            const top = window.screen.height / 2 - height / 2;
+
+            const popup = window.open(
+                `${API_BASE_URL}/auth/facebook`,
+                'Facebook Login',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
+
+            window.addEventListener('message', async (event) => {
+                if (event.data.type === 'FACEBOOK_AUTH_SUCCESS') {
+                    popup.close();
+                    const { token, user, expiresAt, redirect } = event.data.data;
+                    localStorage.setItem("user", JSON.stringify(user));
+                    localStorage.setItem("token", JSON.stringify(token));
+                    localStorage.setItem('expiresAt', expiresAt);
+                    showSuccess("Login successful");
+                    navigate(redirect);
+                } else if (event.data.type === 'FACEBOOK_AUTH_ERROR') {
+                    popup.close();
+                    showError(event.data.message || "Facebook login failed");
+                }
+            });
+        } catch (err) {
+            showError("Failed to initiate Facebook login");
+            console.error("Facebook login error:", err);
+        }
+    };
+
+    // Apple Login
+    const handleAppleLogin = async () => {
+        try {
+            const width = 500;
+            const height = 600;
+            const left = window.screen.width / 2 - width / 2;
+            const top = window.screen.height / 2 - height / 2;
+
+            const popup = window.open(
+                `${API_BASE_URL}/auth/apple`,
+                'Apple Login',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
+
+            window.addEventListener('message', async (event) => {
+                if (event.data.type === 'APPLE_AUTH_SUCCESS') {
+                    popup.close();
+                    const { token, user, expiresAt, redirect } = event.data.data;
+                    localStorage.setItem("user", JSON.stringify(user));
+                    localStorage.setItem("token", JSON.stringify(token));
+                    localStorage.setItem('expiresAt', expiresAt);
+                    showSuccess("Login successful");
+                    navigate(redirect);
+                } else if (event.data.type === 'APPLE_AUTH_ERROR') {
+                    popup.close();
+                    showError(event.data.message || "Apple login failed");
+                }
+            });
+        } catch (err) {
+            showError("Failed to initiate Apple login");
+            console.error("Apple login error:", err);
+        }
+    };
+
+    // Twitter Login
+    const handleTwitterLogin = async () => {
+        try {
+            const width = 500;
+            const height = 600;
+            const left = window.screen.width / 2 - width / 2;
+            const top = window.screen.height / 2 - height / 2;
+
+            const popup = window.open(
+                `${API_BASE_URL}/auth/twitter`,
+                'Twitter Login',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
+
+            window.addEventListener('message', async (event) => {
+                if (event.data.type === 'TWITTER_AUTH_SUCCESS') {
+                    popup.close();
+                    const { token, user, expiresAt, redirect } = event.data.data;
+                    localStorage.setItem("user", JSON.stringify(user));
+                    localStorage.setItem("token", JSON.stringify(token));
+                    localStorage.setItem('expiresAt', expiresAt);
+                    showSuccess("Login successful");
+                    navigate(redirect);
+                } else if (event.data.type === 'TWITTER_AUTH_ERROR') {
+                    popup.close();
+                    showError(event.data.message || "Twitter login failed");
+                }
+            });
+        } catch (err) {
+            showError("Failed to initiate Twitter login");
+            console.error("Twitter login error:", err);
+        }
+    };
+
+
+
     return (
-        <div className='min-h-screen bg-gradient-to-bl from-sky-300 via-sky-100 from-0% via-5% to-white flex items-center justify-center p-4'>
+        // <div className='min-h-screen bg-gradient-to-bl from-sky-300 via-sky-100 from-0% via-5% to-white flex items-center justify-center p-4'>
+        <div className='min-h-screen bg-sky-100 flex items-center justify-center p-4'>
+
+            <div
+                className="
+      pointer-events-none
+      absolute
+      rounded-full
+      bg-[#11A4D4]/20
+      blur-3xl
+      animate-float
+
+      top-[-80px] right-[-80px]
+      w-[180px] h-[180px]
+
+      sm:top-[-100px] sm:right-[-120px]
+      sm:w-[240px] sm:h-[240px]
+
+      lg:top-[-115px] lg:right-[-160px]
+      lg:w-[320px] lg:h-[320px]
+    "
+            />
             <div className='w-full max-w-md mt-[-100px]'>
                 <div className='flex item-center justify-center mb-8'>
                     <div className='bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] rounded-lg py-2 px-4 shadow-lg'>
@@ -95,15 +250,16 @@ const Login = () => {
                                     placeholder="Password"
                                 />
                                 <button
+                                    type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
                             </div>
-                            <label className="flex items-center justify-end font-bold text-sm text-blue-500 my-2">
+                            <Link to='/forgot-password' className="flex items-center justify-end font-bold text-sm text-blue-500 my-2">
                                 Forgot Password?
-                            </label>
+                            </Link>
                         </div>
 
                         <button onClick={() => HandleSubmit()} disabled={loading} className='w-full bg-gradient-to-r from-[#11A4D4] to-[#25AFF4] hover:bg-cyan-600 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-cyan-500/30 flex items-center justify-center'>
@@ -118,7 +274,7 @@ const Login = () => {
                     </div>
 
                     <div className="flex justify-center gap-4">
-                        <button className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 shadow-lg rounded-[50%] transition-all">
+                        <button onClick={handleGoogleLogin} className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 shadow-lg rounded-[50%] transition-all">
                             <svg className="w-8 h-8" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -126,17 +282,17 @@ const Login = () => {
                                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                             </svg>
                         </button>
-                        <button className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 shadow-lg rounded-[50%] transition-all">
+                        <button onClick={handleAppleLogin} className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 shadow-lg rounded-[50%] transition-all">
                             <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
                             </svg>
                         </button>
-                        <button className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 shadow-lg rounded-[50%] transition-all">
+                        <button onClick={handleFacebookLogin} className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 shadow-lg rounded-[50%] transition-all">
                             <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#1877F2">
                                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                             </svg>
                         </button>
-                        <button className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 shadow-lg rounded-[50%] transition-all">
+                        <button onClick={handleTwitterLogin} className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 shadow-lg rounded-[50%] transition-all">
                             <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#1DA1F2">
                                 <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
                             </svg>
@@ -154,3 +310,7 @@ const Login = () => {
 }
 
 export default Login
+
+
+
+

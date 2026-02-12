@@ -8,6 +8,7 @@ export { default as About } from './pages/About';
 export { default as Contact } from './pages/Contact';
 
 export { default as Login } from './pages/Login';
+export { default as ForgotPassword } from './pages/Forgotpassword';
 
 export { default as SignUp } from './pages/SignUp';
 

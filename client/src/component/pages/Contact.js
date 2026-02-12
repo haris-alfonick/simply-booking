@@ -78,13 +78,13 @@ const Contact = () => {
       />
       <Navbar />
       <section className='px-2 md:py-4 lg:p-6 xl:p-8'>
-        <div className='max-w-7xl mx-auto px-4 mb-8 sm:px-6 lg:px-8 text-center'>
+        <div className='max-w-6xl mx-auto px-4 mb-8 sm:px-6 lg:px-8 text-center'>
           <div className='lg:mt-10 lg:mb-16 mb-8'>
             <h1 className="text-[clamp(1.8rem,6vw,3.5rem)] text-[#11A4D4] mb-4 leading-[1.1] sm:leading-[1.05] font-outfit font-semibold align-center">
               Get in Touch
             </h1>
             <p
-              className="font-arial regular text-[clamp(0.95rem,3vw,1.25rem)] text-gray-600 mb-8 max-w-3xl mx-auto leading-[1.4]">
+              className="font-arial regular text-[clamp(0.95rem,3vw,1.25rem)] text-[#627084] mb-8 max-w-3xl mx-auto leading-[1.4]">
               Have question about our platform? We’d love to here from you. Send
               us a message and we’ll respond as soon as possible.
             </p>
@@ -93,7 +93,7 @@ const Contact = () => {
       </section>
 
       <section className='bg-white mx-auto py-8 lg:py-12 xl:py-16 px-4 lg:px-16'>
-        <div className='max-w-7xl mx-auto sm:px-6 lg:px-8 text-center'>
+        <div className='max-w-6xl mx-auto sm:px-6 lg:px-8 text-center'>
           {/* <div className=' flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-8'> */}
           {/* <div className='flex flex-col items-center text-center'>
             <div className='text-orange-500 mb-2 h-12 w-12 flex items-center justify-center rounded-[50%]  bg-orange-100  '>
@@ -139,7 +139,7 @@ const Contact = () => {
       </section>
 
       <section className='bg-gray-50 mx-auto py-8 lg:py-12 xl:py-16 px-4 lg:px-16'>
-        <div className='max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mx-auto sm:px-6 lg:px-8 gap-8'>
+        <div className='max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center mx-auto sm:px-6 lg:px-8 gap-8'>
 
 
           <div className='bg-white shadow-lg rounded-lg p-6 w-full'>
@@ -274,7 +274,7 @@ const Contact = () => {
       </section>
 
       <section className='bg-gray-100 py-8 lg:py-12 xl:py-16 px-4 lg:px-16 mb-6 md:mb-12 lg:mb-16'>
-        <div className='max-w-7xl mx-auto px-4 py-16 text-center'>
+        <div className='max-w-6xl mx-auto px-4 py-16 text-center'>
           <MapPin className='w-8 h-8 mx-auto text-gray-500' />
           <h2 className=' font-bold text-gray-500 my-2 '>
             Interactive map coming soon

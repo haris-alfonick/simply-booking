@@ -17,7 +17,7 @@ const Navbar = () => {
 
   return (
 
-    <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <div className=" mx-auto px-4 sm:px-6 lg:px-24 py-4">
       <div className="flex justify-between items-center h-16">
         <div className="text-2xl font-bold text-[#11A4D4] outfit"><Link to="/">SimplyBooking</Link></div>
 
@@ -38,7 +38,7 @@ const Navbar = () => {
           )}
         </button>
 
-        <nav className="hidden md:flex space-x-10 items-center">
+        <nav className="hidden md:flex space-x-8 items-center gap-4">
           <Link to="/about" className="text-[#627084] font-arial">About Us</Link>
           <Link to="/contact" className="text-[#627084] font-arial">Contact Us</Link>
           {token ?
@@ -48,7 +48,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="flex items-center justify-center gap-2 px-4 py-2 text-center text-white rounded bg-[linear-gradient(135deg,#11A4D4_0%,#25AFF4_50%,#5ACCF2_100%)]"
+                className="left-[1332px] flex items-center justify-center gap-2 px-4 py-2 text-center text-white rounded-lg bg-[linear-gradient(135deg,#11A4D4_0%,#25AFF4_50%,#5ACCF2_100%)]"
               >
                 Log In
                 <ArrowRight className="w-4 h-4 mt-1" />
@@ -59,9 +59,8 @@ const Navbar = () => {
 
         </nav>
       </div>
-
       {isOpen && (
-        <nav className="md:hidden flex flex-col space-y-4 pb-4 absolute top-16 pt-5 left-0 w-full bg-[#F8FAFC] shadow-md z-10 px-4">
+        <nav className="md:hidden fixed flex flex-col space-y-4 pb-4 top-0 left-0 w-[50%] h-screen bg-[#F8FAFC] shadow-md z-50 px-4 pt-5">
           <Link to="/about" className="text-[#627084] font-arial">About Us</Link>
           <Link to="/contact" className="text-[#627084] font-arial">Contact Us</Link>
           {
@@ -79,7 +78,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/login')}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-center text-white rounded bg-[linear-gradient(135deg,#11A4D4_0%,#25AFF4_50%,#5ACCF2_100%)]"
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-center text-white rounded-lg bg-[linear-gradient(135deg,#11A4D4_0%,#25AFF4_50%,#5ACCF2_100%)] hover:bg-[#11A4D4]"
                 >
                   Log In
                   <ArrowRight className="w-4 h-4 mt-1" />

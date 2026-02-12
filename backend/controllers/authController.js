@@ -2,6 +2,8 @@ const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
+const Business = require('../models/Business');
+const mongoose = require('mongoose');
 
 dotenv.config({ path: 'config/config.env' });
 const generateOTP = () => {
@@ -268,13 +270,10 @@ exports.login = async (req, res) => {
     user.lastLoginAt = new Date();
     await user.save();
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
-
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '8h' });
+    const business = await Business.findOne({ userId: new mongoose.Types.ObjectId(user._id), isActive: true });
     const decoded = jwt.decode(token);
+    const redirectUrl = user.role === 1 ? '/maindashboard' : business ? '/clientdashboard' : '/booking';
     res.status(200).json({
       message: 'Login successful',
       token,
@@ -286,7 +285,8 @@ exports.login = async (req, res) => {
         role: user.role,
         isVerified: user.isVerified,
         lastLoginAt: user.lastLoginAt
-      }
+      },
+      redirect: redirectUrl
     });
 
   } catch (error) {
