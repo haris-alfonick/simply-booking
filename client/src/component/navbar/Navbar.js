@@ -38,13 +38,13 @@ const Navbar = () => {
           )}
         </button>
 
-        <nav className="hidden md:flex space-x-8 items-center">
-          <Link to="/about" className="text-[627084] font-arial">About Us</Link>
-          <Link to="/contact" className="text-[627084] font-arial">Contact Us</Link>
+        <nav className="hidden md:flex space-x-10 items-center">
+          <Link to="/about" className="text-[#627084] font-arial">About Us</Link>
+          <Link to="/contact" className="text-[#627084] font-arial">Contact Us</Link>
           {token ?
-            <Link to="/clientdashboard" className="text-[627084] font-arial">Dashboard</Link>
+            <Link to="/clientdashboard" className="text-[#627084] font-arial">Dashboard</Link>
             : <>
-              <Link to="/signup" className="text-[627084] font-arial">Join</Link>
+              <Link to="/signup" className="text-[#627084] font-arial">Join</Link>
               <button
                 type="button"
                 onClick={() => navigate('/login')}
@@ -62,20 +62,20 @@ const Navbar = () => {
 
       {isOpen && (
         <nav className="md:hidden flex flex-col space-y-4 pb-4 absolute top-16 pt-5 left-0 w-full bg-[#F8FAFC] shadow-md z-10 px-4">
-          <Link to="/about" className="text-[627084] font-arial">About Us</Link>
-          <Link to="/contact" className="text-[627084] font-arial">Contact Us</Link>
+          <Link to="/about" className="text-[#627084] font-arial">About Us</Link>
+          <Link to="/contact" className="text-[#627084] font-arial">Contact Us</Link>
           {
             token ? (
               user && user.role === 1 ? (
-                <Link to="/maindashboard" className="text-[627084] font-arial">Admin Panel</Link>
+                <Link to="/maindashboard" className="text-[#627084] font-arial">Admin Panel</Link>
               ) : (
                 user && user.role === 0 ? (
-                  <Link to="/clientdashboard" className="text-[627084] font-arial">Dashboard</Link>
+                  <Link to="/clientdashboard" className="text-[#627084] font-arial">Dashboard</Link>
                 ) : null
               )
             ) : (
               <>
-                <Link to="/signup" className="text-[627084] font-arial">Join</Link>
+                <Link to="/signup" className="text-[#627084] font-arial">Join</Link>
                 <button
                   type="button"
                   onClick={() => navigate('/login')}
